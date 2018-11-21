@@ -1,0 +1,10 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+#	name = Camen Piho
+#	email = camen.piho.r@gmail.com
+[user]
+	email = camenpihor@gmail.com
+	name = camen
+[core]
+	excludesfile = .gitignore_global
