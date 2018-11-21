@@ -44,7 +44,6 @@ done
 echo -e "\nSymlinking dotfiles"
 dotfile_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dotfiles=( .emacs.d
-           .gitconfig
            .vimrc
            .zshrc
            .gitignore_global
