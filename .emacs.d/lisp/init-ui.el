@@ -9,5 +9,6 @@
 (setq ring-bell-function 'ignore)
 (show-paren-mode t)
 (display-battery-mode)
+(global-set-key (kbd "C-c =") 'toggle-frame-fullscreen)
 
 (provide 'init-ui)
