@@ -26,7 +26,6 @@
 
 ;; old buffer switching
 (global-set-key (kbd "C-c h b") 'switch-to-buffer)
-
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "M-X") 'execute-extended-command)
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
@@ -45,6 +44,7 @@
                       (concat user-emacs-directory "lisp/"))))
 
 (global-set-key (kbd "C-c d") 'cpiho/find-init-file)
+(define-key helm-find-files-map (kbd "TAB") #'helm-execute-persistent-action)
 
 (provide 'init-helm)
 

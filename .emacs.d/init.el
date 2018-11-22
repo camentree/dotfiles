@@ -25,4 +25,3 @@
 (setq custom-file
       (concat (expand-file-name user-emacs-directory) "custom.el"))
 (load custom-file 'noerror)
-

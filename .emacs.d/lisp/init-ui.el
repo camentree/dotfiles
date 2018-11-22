@@ -4,5 +4,10 @@
 
 (tool-bar-mode 0)
 (menu-bar-mode 0)
+(toggle-scroll-bar 0) 
+(setq-default cursor-type 'box)
+(setq ring-bell-function 'ignore)
+(show-paren-mode t)
+(display-battery-mode)
 
 (provide 'init-ui)

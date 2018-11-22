@@ -2,8 +2,7 @@
 (cpiho/require-package 'flycheck-color-mode-line)
 
 ;; flycheck
-(global-set-key (kbd "C-c 1") 'flycheck-mode)
-(global-set-key (kbd "C-c e l") 'flycheck-list-errors)
+(global-set-key (kbd "C-c 1") 'flycheck-list-errors)
 
 (add-to-list 'display-buffer-alist
              `(,(rx bos "*Flycheck errors*" eos)
