@@ -4,11 +4,12 @@
 # Packaging
 .cask
 
-# Backup files
-*~
-
 # Undo-tree save-files
 *.~undo-tree
 
 .emacs.d/elpa/
 .emacs.d/projectile-bookmarks.eld
+.emacs.d/.python-environments/
+.emacs.d/ac-comphist.dat
+.emacs.d/emojis/
+
