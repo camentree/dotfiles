@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (company-jedi flycheck importmagic py-isort py-autopep8 material-theme magit jedi helm-projectile helm-dash helm-ag elpy auto-dim-other-buffers ag))))
+    (planet-theme flycheck-pos-tip flycheck-pos-tip-mode flycheck-color-mode-line emojify awesome-tray yafolding multiple-cursors ace-window company-jedi flycheck importmagic py-isort py-autopep8 material-theme magit jedi helm-projectile helm-dash helm-ag elpy auto-dim-other-buffers ag))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

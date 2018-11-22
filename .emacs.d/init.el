@@ -10,14 +10,17 @@
 (require 'init-themes)
 
 ;; Languages
-;; python, postgres, html, css, js, lisp, markdown, text
+;; postgres, html, css, js, lisp, markdown, text, flycheck
 (require 'init-python)
 
 ;; Packages
-;; projectile, helm, multiple cursors, org, 
+;; org, mu4e
 (require 'init-magit)
 (require 'init-projectile)
 (require 'init-helm)
+(require 'init-ace-window)
+(require 'init-yafolding)
+(require 'init-flycheck)
 
 (setq custom-file
       (concat (expand-file-name user-emacs-directory) "custom.el"))
