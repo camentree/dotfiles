@@ -10,13 +10,13 @@
 (cpiho/require-package 'projectile)
 (cpiho/require-package 'ag)
 
-(projectile-mode)
-
 (defvar projectile-keymap-prefix)
 (setq projectile-keymap-prefix (kbd "C-c p"))
 
 (defvar projectile-enable-caching)
 (setq projectile-enable-caching t)
+
+(projectile-mode)
 
 (defvar projectile-completion-system)
 (setq projectile-completion-system 'helm)
