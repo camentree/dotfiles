@@ -5,8 +5,6 @@ plugins=(git brew docker history)
 
 source $ZSH/oh-my-zsh.sh
 
-export PATH="/Users/camen/miniconda3/bin:$PATH"
-
 alias pyc="rm *.pyc && rm __pycache__"
 alias vd="source deactivate"
 alias vl="conda info --envs"
@@ -17,3 +15,6 @@ function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () {set -o allexport; source .env; set +o allexport ; }
 
+export PATH="/Users/camen/miniconda3/bin:$PATH"
+export PATH="$PATH:$HOME/.rvm/bin"
+export PATH="/usr/local/opt/ruby/bin:$PATH"
