@@ -5,6 +5,8 @@
 ;; Settings for postres development
 
 ;;; Code:
+(require 'sql)
+
 (add-hook 'sql-mode-hook
       (lambda ()
         (setq indent-tabs-mode t)
@@ -24,7 +26,7 @@
 (unless (locate-file "psql" exec-path)
   (let ((mac-psql "/usr/local/bin/psql"))
     (if (file-exists-p mac-psql)
-        (defvar sql-postgres-program mac-psql))))
+        (setq sql-postgres-program mac-psql))))
 
 (provide 'init-postgres)
 ;;; init-postgres.el ends here
