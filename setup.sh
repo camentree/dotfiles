@@ -25,10 +25,10 @@ brew update
 
 echo -e "\nInstalling Homebrew packages"
 brew_packages=( git
-  		          postgresql
-  		          emacs
-			  ruby
-	            )
+		postgresql
+  		emacs
+		ruby
+	      )
 for pkg in "${brew_packages[@]}"; do
   if ! brew list -1 | grep -q "^${pkg}\$"; then
     echo "Installing $pkg"

@@ -18,8 +18,9 @@
 (require 'init-themes)
 
 ;; Languages
-;; postgres, html, css, js, lisp, markdown, text, flycheck
+;; html, css, js, lisp, markdown, text, flycheck
 (require 'init-python)
+(require 'init-postgres)
 
 ;; Packages
 ;; org, mu4e
