@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-helm.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for helm, helm-projectile, helm-ag, and helm-dash packages
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

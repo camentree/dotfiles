@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-projectile.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for projectile and ag packages
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-basic.el -- Emacs initialiazation settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for default behavior of Emacs
 
 ;;; Code:
 (defconst autosaves-directory

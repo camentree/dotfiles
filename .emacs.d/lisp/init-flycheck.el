@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-flycheck.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for flycheck package
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

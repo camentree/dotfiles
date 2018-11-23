@@ -1,10 +1,11 @@
-;;; package -- Summary
+;;; init-python -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Seetings for python development in Emacs
 
 ;;; Code:
+
 (declare-function cpiho/require-package "init-packages")
 
 (cpiho/require-package 'elpy)

@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; custom.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Cusomtization settings persisted by the customization buffer
 
 ;;; Code:
 (custom-set-variables

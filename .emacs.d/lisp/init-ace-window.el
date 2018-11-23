@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-ace.el -- Emacs initializetion settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for ace-window package
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

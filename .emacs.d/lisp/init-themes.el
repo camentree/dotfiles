@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-themes.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for Emacs GUI themes
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

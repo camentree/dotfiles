@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-yafolding.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for yafolding package
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

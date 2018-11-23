@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-ui.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for various UI elements in Emacs GUI
 
 ;;; Code:
 (set-face-attribute 'default nil :font "SF Mono")

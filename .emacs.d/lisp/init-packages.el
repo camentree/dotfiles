@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-packages.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for package management
 
 ;;; Code:
 (require 'package)

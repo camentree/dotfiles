@@ -1,8 +1,8 @@
-;;; package -- Summary
+;;; init-magit.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Settings for magit package
 
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")

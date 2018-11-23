@@ -1,8 +1,9 @@
-;;; package -- Summary
+;;; init.el -- Emacs initialization settings
 
 ;;; Commentary:
 
-;;; Summary
+;; Central location for initialization settings.  Imports
+;; the various files necessary for initialization.
 
 ;;; Code:
 (package-initialize)
