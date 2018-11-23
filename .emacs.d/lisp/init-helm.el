@@ -1,4 +1,13 @@
-(require 'init-projectile)
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
+(declare-function cpiho/require-package "init-packages")
+
+(require 'projectile)
 (cpiho/require-package 'helm)
 (cpiho/require-package 'helm-projectile)
 (cpiho/require-package 'helm-ag)
@@ -6,22 +15,14 @@
 
 (helm-mode 1)
 
-(global-set-key (kbd "C-c h k") 'helm-show-kill-ring)
-(global-set-key (kbd "C-c h r") 'helm-register)
-(global-set-key (kbd "C-c h i") 'helm-imenu)
-(global-set-key (kbd "C-c h j") 'helm-etags-select)
-(global-set-key (kbd "C-c h f") 'helm-find-files)
-(global-set-key (kbd "C-x b") 'helm-buffers-list)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
-(global-set-key (kbd "C-c h o") 'helm-org-in-buffer-headings)
-(global-set-key (kbd "C-c h d") 'helm-dash-at-point)
 (global-set-key (kbd "M-s s") 'helm-projectile-ag)
 
 ;; apropos override
 (global-set-key (kbd "C-h a") 'helm-apropos)
 
 ;; Don't use helm for standard find-file. I keep `C-x f` available
-;; asfind-file with standard completion.
+;; as find-file with standard completion.
 (add-to-list 'helm-completing-read-handlers-alist '(find-file))
 
 ;; old buffer switching
@@ -38,13 +39,13 @@
 (define-key projectile-mode-map [remap projectile-ag] nil)
 (define-key projectile-mode-map (kbd "C-c p s a") #'helm-projectile-ag)
 
-(defun cpiho/find-init-file (arg)
+(defun cpiho/find-init-file (file)
+  "Find FILE in .emacs.d/lisp/ directory."
   (interactive "P")
   (helm-find-files-1 (expand-file-name
                       (concat user-emacs-directory "lisp/"))))
 
 (global-set-key (kbd "C-c d") 'cpiho/find-init-file)
-(define-key helm-find-files-map (kbd "TAB") #'helm-execute-persistent-action)
 
 (provide 'init-helm)
-
+;;; init-helm.el ends here

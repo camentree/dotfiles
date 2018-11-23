@@ -1,12 +1,24 @@
-(setq projectile-keymap-prefix (kbd "C-c p"))
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
+(declare-function cpiho/require-package "init-packages")
 
 (cpiho/require-package 'projectile)
 (cpiho/require-package 'ag)
 
-(projectile-global-mode)
+(projectile-mode)
 
+(defvar projectile-keymap-prefix)
+(setq projectile-keymap-prefix (kbd "C-c p"))
+
+(defvar projectile-enable-caching)
 (setq projectile-enable-caching t)
 
+(defvar projectile-completion-system)
 (setq projectile-completion-system 'helm)
 
 (defun cpiho/projectile-init ()
@@ -14,9 +26,10 @@
 
   ;; I don't like that projectile-ag doesn't take a regexp. And even
   ;; running it with C-u doesn't seem to work?
-  (define-key projectile-mode-map (kbd "C-c p s s") #'ag-project-regexp)
-  )
+  (defvar projectile-mode-map)
+  (define-key projectile-mode-map (kbd "C-c p s s") #'ag-project-regexp))
 
 (add-hook 'projectile-mode-hook #'cpiho/projectile-init)
 
 (provide 'init-projectile)
+;;; init-projectile ends here

@@ -1,3 +1,10 @@
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
 (defconst autosaves-directory
   (expand-file-name "autosaves/"
                     user-emacs-directory))
@@ -13,4 +20,5 @@
 (global-set-key (kbd "C-x f") 'find-file)
 
 (provide 'init-basic)
+;;; init-basic.el ends here
 

@@ -1,3 +1,10 @@
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
 (package-initialize)
 
 (add-to-list 'load-path
@@ -25,3 +32,6 @@
 (setq custom-file
       (concat (expand-file-name user-emacs-directory) "custom.el"))
 (load custom-file 'noerror)
+
+(provide 'init)
+;;; init.el ends here

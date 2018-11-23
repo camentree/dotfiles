@@ -1,3 +1,12 @@
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
+(declare-function cpiho/require-package "init-packages")
+
 (cpiho/require-package 'yafolding)
 
 (define-key yafolding-mode-map (kbd "C-M-\\") 'yafolding-toggle-all)
@@ -7,8 +16,5 @@
 (add-hook 'prog-mode-hook
           (lambda () (yafolding-mode)))
 
-(lambda ()
-    (yafolding-show-all)
-    (delete-trailing-whitespace))
-
 (provide 'init-yafolding)
+;;; init-yafolding.el ends here

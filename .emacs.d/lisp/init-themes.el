@@ -1,7 +1,15 @@
+;;; package -- Summary
+
+;;; Commentary:
+
+;;; Summary
+
+;;; Code:
+(declare-function cpiho/require-package "init-packages")
+
 (cpiho/require-package 'material-theme)
-;;(cpiho/require-package 'planet-theme)
 
 (load-theme 'material t)
-;; (load-theme 'planet t)
 
 (provide 'init-themes)
+;;; init-themes.el ends here
