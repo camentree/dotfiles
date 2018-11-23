@@ -15,8 +15,9 @@
 
 ;; elpy
 (elpy-enable)
-(defvar python-shell-interpreter)
-(defvar python-shell-interpreter-args)
+;; TODO think about using Jupyter
+(defvar python-shell-interpreter) ;; for some reason I can't set the value here or elpy-config won't configure correctly
+(defvar python-shell-interpreter-args) ;; for some reason I can't set the value here or elpy-config won't configure correctly
 (setq python-shell-interpreter "ipython"
       python-shell-interpreter-args "-i --simple-prompt")
 

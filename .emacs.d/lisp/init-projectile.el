@@ -10,16 +10,13 @@
 (cpiho/require-package 'projectile)
 (cpiho/require-package 'ag)
 
-(defvar projectile-keymap-prefix)
-(setq projectile-keymap-prefix (kbd "C-c p"))
+(defvar projectile-keymap-prefix (kbd "C-c p"))
 
-(defvar projectile-enable-caching)
-(setq projectile-enable-caching t)
+(defvar projectile-enable-caching t)
 
 (projectile-mode)
 
-(defvar projectile-completion-system)
-(setq projectile-completion-system 'helm)
+(defvar projectile-completion-system 'helm)
 
 (defun cpiho/projectile-init ()
   "My projectile initialization."
