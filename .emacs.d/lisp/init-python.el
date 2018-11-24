@@ -15,11 +15,15 @@
 
 ;; elpy
 (elpy-enable)
-;; TODO think about using Jupyter
-(defvar python-shell-interpreter) ;; for some reason I can't set the value here or elpy-config won't configure correctly
-(defvar python-shell-interpreter-args) ;; for some reason I can't set the value here or elpy-config won't configure correctly
-(setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt")
+
+(defvar python-shell-interpreter)
+(defvar python-shell-interpreter-args)
+(defvar python-shell-prompt-detect-failure-warning)
+(setq python-shell-interpreter "jupyter"
+      python-shell-interpreter-args "console --simple-prompt"
+      python-shell-prompt-detect-failure-warning nil)
+(add-to-list 'python-shell-completion-native-disabled-interpreters
+             "jupyter")
 
 ;; pyvenv
 (setenv "WORKON_HOME" "/Users/camen/miniconda3/envs")

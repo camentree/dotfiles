@@ -12,6 +12,8 @@
 
 ;; flycheck
 (global-set-key (kbd "C-c 1") 'flycheck-list-errors)
+(global-set-key (kbd "C-,") 'flycheck-next-error)
+(global-set-key (kbd "C-;") 'flycheck-previous-error)
 
 (add-to-list 'display-buffer-alist
              `(,(rx bos "*Flycheck errors*" eos)

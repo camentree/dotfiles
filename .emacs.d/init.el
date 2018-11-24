@@ -11,29 +11,31 @@
 (add-to-list 'load-path
 	     (expand-file-name "lisp" user-emacs-directory))
 
-;; Basic
-(require 'init-packages)
-(require 'init-basic)
-(require 'init-ui)
-(require 'init-themes)
-
-;; Languages
-;; html, css, js, lisp, markdown, text, flycheck
-(require 'init-python)
-(require 'init-postgres)
-
-;; Packages
-;; org, mu4e
-(require 'init-magit)
-(require 'init-projectile)
-(require 'init-helm)
-(require 'init-ace-window)
-(require 'init-yafolding)
-(require 'init-flycheck)
-
 (setq custom-file
       (concat (expand-file-name user-emacs-directory) "custom.el"))
 (load custom-file 'noerror)
+
+;; General
+(require 'init-basic)
+(require 'init-packages)
+(require 'init-themes)
+(require 'init-ui)
+
+;; Languages
+;; html, css, js, lisp, markdown, text
+(require 'init-postgres)
+(require 'init-python)
+
+;; Packages
+;; org, mu4e
+(require 'init-ace-window)
+(require 'init-flycheck)
+(require 'init-flyspell)
+(require 'init-helm)
+(require 'init-magit)
+(require 'init-multiple-cursors)
+(require 'init-projectile)
+(require 'init-yafolding)
 
 (provide 'init)
 ;;; init.el ends here
