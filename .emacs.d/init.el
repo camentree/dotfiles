@@ -28,12 +28,13 @@
 
 ;; Packages
 ;; org, mu4e, save frame configurations
+;; TODO the order importing these packages matters which is bad :/ projectile must be before helm
+(require 'init-projectile)
 (require 'init-ace-window)
 (require 'init-flycheck)
 (require 'init-flyspell)
 (require 'init-helm)
 (require 'init-magit)
-(require 'init-projectile)
 (require 'init-yafolding)
 
 (provide 'init)
