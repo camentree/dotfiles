@@ -8,6 +8,8 @@
 (require 'flyspell) ;; requires ispell
 (require 'ispell) ;; installed by brew package `aspell`
 
+;; TODO ignore text in back ticks (\`)
+
 (add-hook 'prog-mood-hook 'flyspell-prog-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)
 

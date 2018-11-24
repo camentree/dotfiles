@@ -33,7 +33,6 @@
 (require 'init-flyspell)
 (require 'init-helm)
 (require 'init-magit)
-(require 'init-multiple-cursors)
 (require 'init-projectile)
 (require 'init-yafolding)
 
