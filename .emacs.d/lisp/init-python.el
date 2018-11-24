@@ -11,7 +11,7 @@
 (cpiho/require-package 'elpy)
 (cpiho/require-package 'pyvenv)
 
-(require 'flycheck)
+(require 'init-flycheck)
 
 ;; elpy
 (elpy-enable)
@@ -26,7 +26,7 @@
              "jupyter")
 
 ;; pyvenv
-(setenv "WORKON_HOME" "/Users/camen/miniconda3/envs")
+(setenv "WORKON_HOME" (substitute-in-file-name "$HOME/miniconda3/envs"))
 (pyvenv-mode 1)
 (pyvenv-workon "camen3.6")
 (global-set-key (kbd "C-c v a") 'pyvenv-workon)

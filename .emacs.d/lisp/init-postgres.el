@@ -3,11 +3,10 @@
 ;;; Commentary:
 
 ;; Settings for postres development
+;; I tried using sqlint (ruby gem) for linting, but it labels an `ORDER BY` as wrong and it is a huge pain to install, so I am not using it
 
 ;;; Code:
-(require 'sql)
-
-;; I tried using sqlint (ruby gem) for linting, but it labels an `ORDER BY` as wrong and it is a huge pain to install, so I am not using it
+(require 'sql) ;; native package
 
 (add-hook 'sql-mode-hook
       (lambda ()

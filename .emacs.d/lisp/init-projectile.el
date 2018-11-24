@@ -11,7 +11,6 @@
 (cpiho/require-package 'ag)
 
 (defvar projectile-keymap-prefix (kbd "C-c p"))
-
 (defvar projectile-enable-caching t)
 
 (projectile-mode)

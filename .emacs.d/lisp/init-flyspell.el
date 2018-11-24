@@ -5,10 +5,8 @@
 ;; Settings for native package Flyspell, a spell checker
 
 ;;; Code:
-(require 'flyspell) ;; requires ispell
+(require 'flyspell) ;; native package; relies on `ispell`
 (require 'ispell) ;; installed by brew package `aspell`
-
-;; TODO ignore text in back ticks (\`)
 
 (add-hook 'prog-mood-hook 'flyspell-prog-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)

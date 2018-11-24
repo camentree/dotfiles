@@ -7,7 +7,7 @@
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")
 
-(require 'projectile)
+(require 'init-projectile)
 (cpiho/require-package 'helm)
 (cpiho/require-package 'helm-projectile)
 (cpiho/require-package 'helm-ag)
