@@ -7,7 +7,7 @@
 ;;; Code:
 (require 'sql)
 
-(setq flycheck-sql-sqlint-executable "/usr/local/lib/ruby/gems/2.5.0/gems/sqlint-0.1.9/bin/sqlint")
+;; I tried using sqlint (ruby gem) for linting, but it labels an `ORDER BY` as wrong and it is a huge pain to install, so I am not using it
 
 (add-hook 'sql-mode-hook
       (lambda ()

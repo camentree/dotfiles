@@ -27,7 +27,7 @@
 (require 'init-python)
 
 ;; Packages
-;; org, mu4e
+;; org, mu4e, save frame configurations
 (require 'init-ace-window)
 (require 'init-flycheck)
 (require 'init-flyspell)
