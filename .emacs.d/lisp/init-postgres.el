@@ -7,6 +7,8 @@
 ;;; Code:
 (require 'sql)
 
+(setq flycheck-sql-sqlint-executable "/usr/local/lib/ruby/gems/2.5.0/gems/sqlint-0.1.9/bin/sqlint")
+
 (add-hook 'sql-mode-hook
       (lambda ()
         (setq indent-tabs-mode t)
