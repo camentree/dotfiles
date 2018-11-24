@@ -7,6 +7,7 @@
 
 ;;; Code:
 (require 'sql) ;; native package
+(require 'init-basic) ;; in order to find `psql` on `exec-path`
 
 (add-hook 'sql-mode-hook
       (lambda ()
@@ -23,11 +24,6 @@
       (sql-set-sqli-buffer))
     (split-window-sensibly)
     (switch-to-buffer postgres-buffer)))
-
-(unless (locate-file "psql" exec-path)
-  (let ((mac-psql "/usr/local/bin/psql"))
-    (if (file-exists-p mac-psql)
-        (setq sql-postgres-program mac-psql))))
 
 (provide 'init-postgres)
 ;;; init-postgres.el ends here
