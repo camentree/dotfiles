@@ -16,8 +16,10 @@
 (load custom-file 'noerror)
 
 ;; General
-(require 'init-basic)
+;; init-packages should be imported first since many settings file rely on
+;; `cpiho/require-package` defined therein
 (require 'init-packages)
+(require 'init-basic)
 (require 'init-themes)
 (require 'init-ui)
 

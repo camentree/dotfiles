@@ -8,7 +8,7 @@
 (declare-function cpiho/require-package "init-packages")
 
 (cpiho/require-package 'projectile)
-(cpiho/require-package 'ag)
+(cpiho/require-package 'ag) ;; necessitates ag found at /usr/local/bin/ag
 
 (defvar projectile-keymap-prefix (kbd "C-c p"))
 (defvar projectile-enable-caching t)

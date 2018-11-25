@@ -5,7 +5,6 @@
 ;; Settings for default behavior of Emacs
 
 ;;; Code:
-(require 'init-packages)
 (declare-function cpiho/require-package "init-packages")
 
 (cpiho/require-package 'exec-path-from-shell)

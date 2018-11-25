@@ -27,8 +27,9 @@ echo -e "\nInstalling Homebrew packages"
 brew_packages=( git
 		postgresql
   		emacs
-		ruby
 		aspell
+		the_silver_searcher
+		python
 	      )
 for pkg in "${brew_packages[@]}"; do
   if ! brew list -1 | grep -q "^${pkg}\$"; then
