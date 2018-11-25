@@ -9,5 +9,6 @@
 
 (cpiho/require-package 'markdown-mode)
 (defvar markdown-command "pandoc")
+
 (provide 'init-markdown)
 ;;; init-markdown.el ends here

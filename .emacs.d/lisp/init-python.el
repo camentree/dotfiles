@@ -30,7 +30,7 @@
 (pyvenv-mode 1)
 (pyvenv-workon "camen3.6")
 (global-set-key (kbd "C-c v a") 'pyvenv-workon)
-(global-set-key (kbd "C-c v d") 'pyvenv-deactivate) ;; I have to press another key after "d" for this to take effect. It might just be that the mode line doesn't update?
+(global-set-key (kbd "C-c v d") 'pyvenv-deactivate
 
 (provide 'init-python)
 ;;; init-python.el ends here

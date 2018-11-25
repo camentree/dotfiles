@@ -18,6 +18,7 @@
 
 (show-paren-mode t)
 (display-battery-mode)
+(setq column-number-mode t)
 (global-set-key (kbd "C-M-=") 'toggle-frame-fullscreen)
 
 (provide 'init-ui)

@@ -29,8 +29,8 @@ brew_packages=( git
   		emacs
 		aspell
 		the_silver_searcher
-		python
 		pandoc
+		ruby
 	      )
 for pkg in "${brew_packages[@]}"; do
   if ! brew list -1 | grep -q "^${pkg}\$"; then
@@ -49,6 +49,7 @@ echo -e "\nSymlinking dotfiles"
 dotfile_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 dotfiles=( .emacs.d
            .vimrc
+	   .zshenv
            .zshrc
            .gitignore_global
          )

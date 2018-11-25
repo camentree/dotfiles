@@ -3,7 +3,8 @@
 ;;; Commentary:
 
 ;; Settings for postres development
-;; I tried using sqlint (ruby gem) for linting, but it labels an `ORDER BY` as wrong and it is a huge pain to install, so I am not using it
+;; I tried using sqlint (ruby gem) for linting, but it labels an `ORDER BY`
+;; as wrong and it is a huge pain to install, so I am not using it
 
 ;;; Code:
 (require 'sql) ;; native package
