@@ -24,7 +24,7 @@
 (require 'init-ui)
 
 ;; Languages
-;; Markdown, Text
+;; Text
 (require 'init-postgres)
 (require 'init-python)
 (require 'init-html)
