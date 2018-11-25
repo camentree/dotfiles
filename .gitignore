@@ -12,4 +12,4 @@
 .emacs.d/.python-environments/
 .emacs.d/ac-comphist.dat
 .emacs.d/emojis/
-
+.emacs.d/custom.el
