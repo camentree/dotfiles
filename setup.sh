@@ -30,6 +30,7 @@ brew_packages=( git
 		aspell
 		the_silver_searcher
 		python
+		pandoc
 	      )
 for pkg in "${brew_packages[@]}"; do
   if ! brew list -1 | grep -q "^${pkg}\$"; then

@@ -24,10 +24,11 @@
 (require 'init-ui)
 
 ;; Languages
-;; html, css, js, lisp, markdown, text
+;; Markdown, Text
 (require 'init-postgres)
 (require 'init-python)
 (require 'init-html)
+(require 'init-markdown)
 
 ;; Packages
 ;; org, mu4e, save frame configurations
