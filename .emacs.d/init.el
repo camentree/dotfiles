@@ -27,6 +27,7 @@
 ;; html, css, js, lisp, markdown, text
 (require 'init-postgres)
 (require 'init-python)
+(require 'init-html)
 
 ;; Packages
 ;; org, mu4e, save frame configurations
