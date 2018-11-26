@@ -9,9 +9,11 @@
 
 (cpiho/require-package 'exec-path-from-shell)
 (cpiho/require-package 'column-enforce-mode)
+(require 'exec-path-from-shell)
+(require 'column-enforce-mode)
 
 ;; get env variables from zshenv
-(defvar exec-path-from-shell-arguments nil)
+;; (setq exec-path-from-shell-arguments nil)
 (exec-path-from-shell-initialize)
 
 ;; location for auto-created files
@@ -32,7 +34,7 @@
   "Set line limit to 80."
   (auto-fill-mode)
   (column-enforce-mode)
-  (defvar column-enforce-column 80)
+  (setq column-enforce-column 80)
   (setq fill-column 80))
 
 (add-hook 'prog-mode-hook 'default-auto-fill)
