@@ -16,23 +16,22 @@
 (load custom-file 'noerror)
 
 ;; General
-;; init-packages should be imported first since many settings file rely on
-;; `cpiho/require-package` defined therein
+;; must import init-packages first for `cpiho/require-package`
 (require 'init-packages)
 (require 'init-basic)
 (require 'init-themes)
 (require 'init-ui)
 
 ;; Languages
-;; Text
+(require 'init-markdown)
 (require 'init-postgres)
 (require 'init-python)
 (require 'init-html)
-(require 'init-markdown)
 
 ;; Packages
 ;; org, mu4e, save frame configurations
 (require 'init-ace-window)
+(require 'init-company)
 (require 'init-flycheck)
 (require 'init-flyspell)
 (require 'init-helm)
