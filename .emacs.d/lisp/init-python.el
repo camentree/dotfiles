@@ -12,13 +12,11 @@
 (cpiho/require-package 'pyvenv)
 
 (require 'init-flycheck)
+(require 'elpy)
 
 ;; elpy
 (elpy-enable)
 
-(defvar python-shell-interpreter)
-(defvar python-shell-interpreter-args)
-(defvar python-shell-prompt-detect-failure-warning)
 (setq python-shell-interpreter "jupyter"
       python-shell-interpreter-args "console --simple-prompt"
       python-shell-prompt-detect-failure-warning nil)

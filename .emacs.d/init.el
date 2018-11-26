@@ -21,6 +21,7 @@
 (require 'init-basic)
 (require 'init-themes)
 (require 'init-ui)
+(require 'init-modeline)
 
 ;; Languages
 (require 'init-markdown)
@@ -29,7 +30,7 @@
 (require 'init-html)
 
 ;; Packages
-;; org, mu4e, save frame configurations
+;; org, mu4e
 (require 'init-ace-window)
 (require 'init-company)
 (require 'init-flycheck)
