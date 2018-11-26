@@ -30,5 +30,9 @@
 (global-set-key (kbd "C-c v a") 'pyvenv-workon)
 (global-set-key (kbd "C-c v d") 'pyvenv-deactivate)
 
+;; remove default elpy hooks
+(add-hook 'python-mode-hook
+	  (lambda() (highligh-indentation-mode -1)))
+
 (provide 'init-python)
 ;;; init-python.el ends here
