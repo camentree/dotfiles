@@ -11,14 +11,13 @@
 (require 'doom-modeline)
 (require 'pyvenv)
 
-(defvar virtual-env)
 (doom-modeline-def-segment virtual-env
-  (concat " " (symbol-value 'pyvenv-virtual-env-name) " "))
-  
+  (concat "/" (symbol-value 'pyvenv-virtual-env-name) " "))
+
 (doom-modeline-def-modeline
  'custom
  '(bar buffer-info "   " buffer-position)
- '(global major-mode virtual-env vcs flycheck))
+ '(major-mode virtual-env vcs flycheck global))
 
 (doom-modeline-set-modeline 'custom t)
 (doom-modeline-init)
@@ -27,5 +26,10 @@
 (setq doom-modeline-icon nil)
 (setq doom-modeline-python-executable nil)
 
+(display-battery-mode)
+(setq-default display-time-format " %k:%M]")
+(setq-default display-time-default-load-average nil)
+(display-time-mode)
+	      
 (provide 'init-modeline)
 ;;; init-modeline.el ends here

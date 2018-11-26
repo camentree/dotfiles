@@ -15,10 +15,9 @@
 
 (setq-default cursor-type 'box)
 (setq ring-bell-function 'ignore)
-
 (show-paren-mode t)
-(display-battery-mode)
 (setq column-number-mode t)
+
 (global-set-key (kbd "C-M-=") 'toggle-frame-fullscreen)
 
 (provide 'init-ui)
