@@ -7,8 +7,10 @@
 ;;; Code:
 (declare-function cpiho/require-package "init-packages")
 
-;; get env variables from zshenv
 (cpiho/require-package 'exec-path-from-shell)
+(cpiho/require-package 'column-enforce-mode)
+
+;; get env variables from zshenv
 (defvar exec-path-from-shell-arguments nil)
 (exec-path-from-shell-initialize)
 
@@ -29,9 +31,10 @@
 (defun default-auto-fill ()
   "Set line limit to 80."
   (auto-fill-mode)
+  (column-enforce-mode)
+  (defvar column-enforce-column 80)
   (setq fill-column 80))
 
-(add-hook 'text-mode-hook 'default-auto-fill)
 (add-hook 'prog-mode-hook 'default-auto-fill)
 
 (provide 'init-basic)

@@ -11,15 +11,15 @@
 (require 'ispell)
 (require 'init-basic) ;; in order to find `aspell` on `exec-path`
 
-(add-hook 'prog-mood-hook 'flyspell-prog-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)
 
-;; disable flyspell in sub modes of text-mode
-(dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+;; Disable flyspell in sub modes of text-mode
+(dolist (hook '(change-log-mode-hook log-edit-mode-hook html-mode-hook))
       (add-hook hook (lambda () (flyspell-mode -1))))
 
 (setq flyspell-issue-message-flag nil) ;; performance
 (setq flyspell-sort-corrections nil)
+(setq ispell-program-name "/usr/local/bin/aspell")
 
 (provide 'init-flyspell)
 ;;; init-flyspell.el ends here
