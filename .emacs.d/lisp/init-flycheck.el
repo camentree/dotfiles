@@ -9,6 +9,7 @@
 
 (cpiho/require-package 'flycheck)
 (cpiho/require-package 'flycheck-color-mode-line)
+(require 'flycheck)
 
 ;; flycheck
 (global-set-key (kbd "C-c 1") 'flycheck-list-errors)
@@ -22,6 +23,8 @@
               (side            . bottom)
               (reusable-frames . visible)
               (window-height   . 0.33)))
+
+(setq-default flycheck-emacs-lisp-load-path 'inherit)
 
 ;; flycheck-color-mode-line
 (eval-after-load "flycheck"
