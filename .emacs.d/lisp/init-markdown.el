@@ -6,10 +6,10 @@
 
 ;;; Code:
 (require 'init-packages)
+(require 'init-basic)
 (cpiho/require-package 'markdown-mode)
 
 (require 'markdown-mode)
-(require 'init-basic)
 
 (setq markdown-command "pandoc")
 (add-hook 'markdown-mode-hook 'cpiho/default-auto-fill)

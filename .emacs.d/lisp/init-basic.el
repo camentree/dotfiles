@@ -30,7 +30,7 @@
 (setq inhibit-startup-message t)
 (global-set-key (kbd "C-x f") 'find-file)
 
-(defun cpihp/default-auto-fill ()
+(defun cpiho/default-auto-fill ()
   "Set line limit to 80."
   (auto-fill-mode)
   (column-enforce-mode)
