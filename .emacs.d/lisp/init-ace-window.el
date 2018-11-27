@@ -5,9 +5,9 @@
 ;; Settings for ace-window package
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'ace-window)
+
 (require 'ace-window)
 
 (global-set-key (kbd "M-o") 'ace-window)

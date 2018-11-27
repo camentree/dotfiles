@@ -5,10 +5,10 @@
 ;; Settings for default behavior of Emacs
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'exec-path-from-shell)
 (cpiho/require-package 'column-enforce-mode)
+
 (require 'exec-path-from-shell)
 (require 'column-enforce-mode)
 
@@ -30,14 +30,15 @@
 (setq inhibit-startup-message t)
 (global-set-key (kbd "C-x f") 'find-file)
 
-(defun default-auto-fill ()
+(defun cpihp/default-auto-fill ()
   "Set line limit to 80."
   (auto-fill-mode)
   (column-enforce-mode)
   (setq column-enforce-column 80)
   (setq fill-column 80))
 
-(add-hook 'prog-mode-hook 'default-auto-fill)
+(add-hook 'prog-mode-hook 'cpiho/default-auto-fill)
+(setq-default show-trailing-whitespace t)
 
 (provide 'init-basic)
 ;;; init-basic.el ends here

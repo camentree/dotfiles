@@ -5,8 +5,7 @@
 ;; Settings for Emacs GUI themes
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'material-theme)
 
 (load-theme 'material t)

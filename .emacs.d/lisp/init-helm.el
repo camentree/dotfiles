@@ -5,14 +5,14 @@
 ;; Settings for helm, helm-projectile, helm-ag, and helm-dash packages
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (require 'init-projectile)
 (cpiho/require-package 'helm)
 (cpiho/require-package 'helm-projectile)
 (cpiho/require-package 'helm-ag)
 (cpiho/require-package 'helm-dash)
 
+(require 'helm-mode)
 (helm-mode 1)
 
 (global-set-key (kbd "C-x C-f") 'helm-find-files)

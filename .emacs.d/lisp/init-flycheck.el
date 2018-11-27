@@ -5,10 +5,10 @@
 ;; Settings for flycheck package
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'flycheck)
 (cpiho/require-package 'flycheck-color-mode-line)
+
 (require 'flycheck)
 
 ;; flycheck

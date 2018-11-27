@@ -5,9 +5,9 @@
 ;; Settings for company-mode
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'company)
+
 (require 'company)
 
 (add-hook 'after-init-hook 'global-company-mode)

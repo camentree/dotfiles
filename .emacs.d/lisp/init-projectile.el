@@ -5,10 +5,10 @@
 ;; Settings for projectile and ag packages
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'projectile)
-(cpiho/require-package 'ag) ;; necessitates ag found at /usr/local/bin/ag
+(cpiho/require-package 'ag) ;; installed by brew
+
 (require 'projectile)
 
 (setq projectile-enable-caching t)

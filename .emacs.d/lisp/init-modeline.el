@@ -5,7 +5,7 @@
 ;; Settings for modeline
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
+(require 'init-packages)
 (cpiho/require-package 'doom-modeline)
 
 (require 'doom-modeline)
@@ -30,6 +30,6 @@
 (setq-default display-time-format " %k:%M]")
 (setq-default display-time-default-load-average nil)
 (display-time-mode)
-	      
+
 (provide 'init-modeline)
 ;;; init-modeline.el ends here

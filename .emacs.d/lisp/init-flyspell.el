@@ -5,10 +5,8 @@
 ;; Settings for native package Flyspell, a spell checker
 
 ;;; Code:
-(require 'flyspell) ;; native package; relies on `ispell`
-;; flyspell relies on `ispell` which ships with the brew
-;; package `aspell`, which it finds at /usr/local/bin/aspell
-(require 'ispell)
+(require 'flyspell)
+(require 'ispell) ;; installed by brew `aspell`
 (require 'init-basic) ;; in order to find `aspell` on `exec-path`
 
 (add-hook 'text-mode-hook 'flyspell-mode)

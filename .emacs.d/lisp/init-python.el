@@ -5,9 +5,7 @@
 ;; Seetings for python development in Emacs
 
 ;;; Code:
-
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'elpy)
 (cpiho/require-package 'pyvenv)
 
@@ -32,7 +30,7 @@
 
 ;; remove default elpy hooks
 (add-hook 'python-mode-hook
-	  (lambda() (highligh-indentation-mode -1)))
+	  (lambda() (highlight-indentation-mode -1)))
 
 (provide 'init-python)
 ;;; init-python.el ends here

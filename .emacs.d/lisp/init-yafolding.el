@@ -5,8 +5,7 @@
 ;; Settings for yafolding package
 
 ;;; Code:
-(declare-function cpiho/require-package "init-packages")
-
+(require 'init-packages)
 (cpiho/require-package 'yafolding)
 
 (define-key yafolding-mode-map (kbd "C-M-\\") 'yafolding-toggle-all)
