@@ -28,6 +28,7 @@
 (require 'init-postgres)
 (require 'init-python)
 (require 'init-html)
+(require 'init-shell-script)
 
 ;; Packages
 ;; org, mu4e

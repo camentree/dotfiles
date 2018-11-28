@@ -5,10 +5,23 @@ set -e # exit on error
 # Zsh
 if ! which zsh > /dev/null; then
   echo "Installing Zsh"
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 else
   echo "Zsh already installed"
+fi
+
+# Conda
+if ! which conda > /dev/null; then
+  echo -e "\nInstalling Conda"
+  curl -fsSL https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
+  bash ~/miniconda.sh -b -p $HOME/miniconda
+  rm ~/miniconda.sh
+  echo -e "Creating conda python3.6 environment"
+  vn 3.6
+
+else
+  echo "Conda already installed"
 fi
 
 # Homebrew
@@ -26,7 +39,7 @@ brew update
 echo -e "\nInstalling Homebrew packages"
 brew_packages=( git
 		postgresql
-  		emacs
+   		emacs
 		aspell
 		the_silver_searcher
 		pandoc
