@@ -6,6 +6,7 @@
 
 ;;; Code:
 (require 'init-packages)
+(require 'init-blacken)
 (cpiho/require-package 'elpy)
 (cpiho/require-package 'pyvenv)
 
@@ -13,6 +14,9 @@
 (require 'elpy)
 
 ;; elpy
+(setq elpy-modules
+   (quote
+    (elpy-module-eldoc elpy-module-yasnippet elpy-module-sane-defaults)))
 (elpy-enable)
 
 (setq python-shell-interpreter "jupyter"
@@ -28,9 +32,10 @@
 (global-set-key (kbd "C-c v a") 'pyvenv-workon)
 (global-set-key (kbd "C-c v d") 'pyvenv-deactivate)
 
-;; remove default elpy hooks
-(add-hook 'python-mode-hook
-	  (lambda() (highlight-indentation-mode -1)))
+;; black
+(setq blacken-allow-py36 t)
+(setq blacken-line-length 'fill)
+(add-hook 'python-mode-hook 'blacken-mode)
 
 (provide 'init-python)
 ;;; init-python.el ends here
