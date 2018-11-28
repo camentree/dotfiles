@@ -7,7 +7,6 @@
 ;;; Code:
 (require 'init-packages)
 (cpiho/require-package 'projectile)
-(cpiho/require-package 'ag) ;; installed by brew
 
 (require 'projectile)
 
