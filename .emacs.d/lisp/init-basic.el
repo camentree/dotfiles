@@ -38,7 +38,9 @@
   (setq fill-column 80))
 
 (add-hook 'prog-mode-hook 'cpiho/default-auto-fill)
-(setq-default show-trailing-whitespace t)
+(add-hook 'prog-mode-hook
+	  (lambda ()
+	    (setq-default show-trailing-whitespace t)))
 
 (provide 'init-basic)
 ;;; init-basic.el ends here

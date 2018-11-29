@@ -22,6 +22,7 @@
 (require 'init-themes)
 (require 'init-ui)
 (require 'init-modeline)
+(require 'init-term)
 
 ;; Languages
 (require 'init-markdown)
