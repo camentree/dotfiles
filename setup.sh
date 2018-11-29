@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e # exit on error
 
+zsh_url="https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh"
+conda_url="https://repo.continuum.io/miniconda"
+conda_url="$conda_url/Miniconda3-latest-MacOSX-x86_64.sh"
+brew_url="https://raw.githubusercontent.com/Homebrew/install/master/install"
 
 # Zsh
 if ! which zsh > /dev/null; then
   echo "Installing Zsh"
-  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  sh -c "$(curl -fsSL $zsh_url)"
 
 else
   echo "Zsh already installed"
@@ -14,20 +18,20 @@ fi
 # Conda
 if ! which conda > /dev/null; then
   echo -e "\nInstalling Conda"
-  curl -fsSL https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda.sh
+  curl -fsSL $conda_url -o ~/miniconda.sh
   bash ~/miniconda.sh -b -p $HOME/miniconda
   rm ~/miniconda.sh
-  echo -e "Creating conda python3.6 environment"
+  echo "Creating conda python3.6 environment"
   vn 3.6
 
 else
-  echo "Conda already installed"
+  echo -e "\nConda already installed"
 fi
 
 # Homebrew
 if ! which brew > /dev/null; then
   echo -e "\nInstalling Homebrew"
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  /usr/bin/ruby -e "$(curl -fsSL $brew_url)"
 
 else
   echo -e "\nHomebrew already installed"
