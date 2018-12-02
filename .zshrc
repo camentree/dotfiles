@@ -8,7 +8,12 @@ alias vd="source deactivate"
 alias vl="conda info --envs"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.7}" ; }
-function vn () { conda create --name "$(virtualenv_name $1)" python=${1-3.7} jedi rope autopep8 yapf flake8; }
+function vn () {
+  conda create --name "$(virtualenv_name $1)" python=${1-3.7}
+  jedi rope autopep8 yapf flake8; }
 function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
+function vi() { while read requirement;
+		do conda install --yes $requirement;
+		done < requirements.txt }
 function envexport () {set -o allexport; source .env; set +o allexport ; }

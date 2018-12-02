@@ -8,12 +8,19 @@
 (require 'term)
 
 (add-hook 'term-mode-hook
-	  (function
-	   (lambda ()
-	     (auto-fill-mode -1)
-	     (setq tab-width 8)
-	     (setq-default show-trailing-whitespace nil)
-	     (text-scale-decrease 1))))
+	  (lambda ()
+	    (auto-fill-mode -1)
+	    (setq tab-width 8)
+	    (setq-local show-trailing-whitespace nil)
+	    (text-scale-decrease 1)))
+
+(add-hook 'term-line-mode-hook
+	  (lambda ()
+	    (setq-default cursor-type 'line)))
+
+(add-hook 'term-char-mode-hook
+	  (lambda ()
+	    (setq-default cursor-type 'bar)))
 
 (provide 'init-term)
 ;;; init-term.el ends here

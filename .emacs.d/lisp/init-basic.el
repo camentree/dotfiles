@@ -35,12 +35,10 @@
   (auto-fill-mode)
   (column-enforce-mode)
   (setq column-enforce-column 80)
-  (setq fill-column 80))
+  (setq fill-column 80)
+  (setq-default show-trailing-whitespace t))
 
 (add-hook 'prog-mode-hook 'cpiho/default-auto-fill)
-(add-hook 'prog-mode-hook
-	  (lambda ()
-	    (setq-default show-trailing-whitespace t)))
 
 (provide 'init-basic)
 ;;; init-basic.el ends here
