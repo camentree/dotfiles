@@ -36,7 +36,7 @@
   (column-enforce-mode)
   (setq column-enforce-column 80)
   (setq fill-column 80)
-  (setq-default show-trailing-whitespace t))
+  (setq-local show-trailing-whitespace t))
 
 (add-hook 'prog-mode-hook 'cpiho/default-auto-fill)
 
