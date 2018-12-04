@@ -5,6 +5,7 @@
 ;; Settings for various UI elements in Emacs GUI
 
 ;;; Code:
+;; http://osxdaily.com/2018/01/07/use-sf-mono-font-mac/
 (set-face-attribute 'default nil :font "SF Mono")
 (set-face-attribute 'default nil :height 150)
 (set-face-attribute 'default nil :weight 'normal)
