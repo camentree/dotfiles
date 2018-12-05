@@ -6,8 +6,8 @@
 
 ;;; Code:
 (require 'init-packages)
-(require 'init-blacken)
 (require 'init-flycheck)
+(require 'init-blacken)
 (cpiho/require-package 'elpy)
 (cpiho/require-package 'pyvenv)
 
@@ -36,6 +36,7 @@
 (setq blacken-allow-py36 t)
 (setq blacken-line-length 'fill)
 (add-hook 'python-mode-hook 'blacken-mode)
+;;(add-hook 'before-save-hook 'elpy-black-fix-code)
 
 (provide 'init-python)
 ;;; init-python.el ends here
