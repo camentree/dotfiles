@@ -6,10 +6,10 @@
 
 ;;; Code:
 (require 'init-packages)
+(require 'init-python)
 (cpiho/require-package 'doom-modeline)
 
 (require 'doom-modeline)
-(require 'pyvenv)
 
 (doom-modeline-def-segment virtual-env
   (concat "/" (symbol-value 'pyvenv-virtual-env-name) " "))

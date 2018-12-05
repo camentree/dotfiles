@@ -7,8 +7,8 @@
 ;;; Code:
 (require 'package)
 
-(setq package-archives '(("elpa"      . "https://elpa.gnu.org/packages/")
-                         ("melpa"     . "https://melpa.org/packages/")
+(setq package-archives '(("melpa"     . "https://melpa.org/packages/")
+			 ("elpa"      . "https://elpa.gnu.org/packages/")
                          ("org"       . "http://orgmode.org/elpa/")))
 
 (setq package-menu-async nil)

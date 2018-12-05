@@ -7,10 +7,10 @@
 ;;; Code:
 (require 'init-packages)
 (require 'init-blacken)
+(require 'init-flycheck)
 (cpiho/require-package 'elpy)
 (cpiho/require-package 'pyvenv)
 
-(require 'init-flycheck)
 (require 'elpy)
 
 ;; elpy
