@@ -69,6 +69,7 @@ dotfiles=( .emacs.d
            .vimrc
            .zshrc
            .gitignore_global
+	   .condarc
          )
 
 for filename in "${dotfiles[@]}" ; do
