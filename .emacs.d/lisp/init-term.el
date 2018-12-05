@@ -11,8 +11,7 @@
 	  (lambda ()
 	    (auto-fill-mode -1)
 	    (setq tab-width 8)
-	    (setq-local show-trailing-whitespace nil)
-	    (text-scale-decrease 1)))
+	    (setq-local show-trailing-whitespace nil)))
 
 (add-hook 'term-line-mode-hook
 	  (lambda ()

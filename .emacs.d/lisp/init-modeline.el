@@ -19,6 +19,8 @@
  '(bar buffer-info "   " buffer-position)
  '(major-mode virtual-env vcs flycheck global))
 
+;;(set-face-attribute 'doom-modeline-bar nil :background "#20E41A")
+
 (doom-modeline-set-modeline 'custom t)
 (doom-modeline-init)
 

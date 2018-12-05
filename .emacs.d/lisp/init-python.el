@@ -36,7 +36,10 @@
 (setq blacken-allow-py36 t)
 (setq blacken-line-length 'fill)
 (add-hook 'python-mode-hook 'blacken-mode)
-;;(add-hook 'before-save-hook 'elpy-black-fix-code)
+
+;; flycheck
+;(add-hook 'python-mode-hook #'(lambda () (setq flycheck-checker 'python-pylint)))
+;(eval-after-load 'flycheck (cons 'python-pylint (delq 'python-pylint flycheck-checkers)))
 
 (provide 'init-python)
 ;;; init-python.el ends here
