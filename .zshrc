@@ -8,8 +8,9 @@ alias vd="source deactivate"
 alias vl="conda info --envs"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.6}" ; }
-function vn () { conda create --name "$(virtualenv_name $1)" python=${1-3.6} ; \
-	       jedi pylint }
+function vn () {
+  conda create --name "$(virtualenv_name $1)" python=${1-3.6} \
+	jedi pylint }
 function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source .env; set +o allexport ; }
