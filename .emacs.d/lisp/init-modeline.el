@@ -7,6 +7,7 @@
 ;;; Code:
 (require 'init-packages)
 (require 'init-python)
+(require 'init-flycheck)
 (cpiho/require-package 'doom-modeline)
 
 (require 'doom-modeline)
@@ -18,8 +19,6 @@
  'custom
  '(bar buffer-info "   " buffer-position)
  '(major-mode virtual-env vcs flycheck global))
-
-;;(set-face-attribute 'doom-modeline-bar nil :background "#20E41A")
 
 (doom-modeline-set-modeline 'custom t)
 (doom-modeline-init)
