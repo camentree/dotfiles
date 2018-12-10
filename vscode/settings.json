@@ -1,0 +1,80 @@
+{
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.cache": true,
+        "**/.coverage": true,
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.hg": true,
+        "**/.ipynb_checkpoints": true,
+        "**/.svn": true,
+        "**/.tox": true,
+        "**/.vscode": true,
+        "**/*.egg-info": true,
+        "**/*.pyc": true,
+        "**/CVS": true,
+        "**/.pytest_cache": true,
+        "**/htmlcov": true,
+    },
+    "files.trimTrailingWhitespace": true,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDelete": false,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.renderIndentGuides": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wrappingIndent": "same",
+    "editor.wordWrapColumn": 90,
+    "editor.multiCursorModifier": "ctrlCmd",
+    "editor.rulers": [
+        90
+    ],
+    "editor.minimap.enabled": false,
+    "editor.fontFamily": "'SF Mono'",
+    "editor.fontSize": 14,
+    "editor.formatOnSave": true,
+    "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.fontWeight": "100",
+    "terminal.integrated.fontSize": 14,
+    "workbench.statusBar.feedback.visible": false,
+    "workbench.colorTheme": "Material Theme High Contrast",
+    "workbench.iconTheme": "eq-material-theme-icons",
+    "workbench.startupEditor": "none",
+    "workbench.activityBar.visible": false,
+    "workbench.tips.enabled": false,
+    "workbench.settings.editor": "json",
+    "workbench.editor.showTabs": false,
+    "window.zoomLevel": 0,
+    "window.nativeFullScreen": false,
+    "keyboard.touchbar.enabled": true,
+    "[css]": {
+        "editor.tabSize": 2
+    },
+    "[html]": {
+        "editor.tabSize": 2
+    },
+    "[javascript]": {
+        "editor.tabSize": 2
+    },
+    "[python]": {
+        "editor.formatOnPaste": false
+    },
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "--line-length",
+        "90",
+        "--py36"
+    ],
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleArgs": [
+        "--convention=numpy"
+    ],
+    "python.linting.pylintArgs": [
+        "--load-plugins=pylint_django"
+    ],
+    // Extension Settings
+    "autoDocstring.docstringFormat": "numpy",
+    "autoDocstring.generateDocstringOnEnter": true,
+}

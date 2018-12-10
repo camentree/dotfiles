@@ -71,6 +71,10 @@ dotfiles=( .emacs.d
            .gitignore_global
 	   .condarc
          )
+dotfiles_vscode=(
+  settings.json
+  keybindings.json
+)
 
 for filename in "${dotfiles[@]}" ; do
   file="$dotfile_dir/$filename"
@@ -83,6 +87,22 @@ for filename in "${dotfiles[@]}" ; do
   if [[ ! -e $target ]]; then
     echo "Making symlink for $target"
     ln -s $file $target
+  else
+    echo "$target or symlink already exists"
+  fi
+done
+
+for filename in "${dotfiles_vscode[@]}" ; do
+  file="$dotfile_dir/vscode/$filename"
+  if [[ ! -e "$file" ]]; then
+	  echo "$file does not exist"
+	  exit 1;
+  fi
+
+  target="$HOME/Library/Application Support/Code/User/$filename"
+  if [[ ! -e $target ]]; then
+    echo "Making symlink for $target"
+    ln -s "$file" "$target"
   else
     echo "$target or symlink already exists"
   fi
