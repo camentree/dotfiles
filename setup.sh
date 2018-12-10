@@ -70,6 +70,7 @@ dotfiles=( .emacs.d
            .zshrc
            .gitignore_global
 	   .condarc
+           com.googlecode.iterm2.plist
          )
 dotfiles_vscode=(
   settings.json
