@@ -3,7 +3,8 @@
 ## Additional Files
 
 - .zshenv
-- .ssh/config ([example][1])
+- .ssh/config ([example](https://www.digitalocean.com/community/tutorials/ \
+how-to-configure-custom-connection-options-for-your-ssh-client)
 
 
 ## Additional Applications
@@ -13,6 +14,3 @@
 - chrome
 - postico
 - iterm2
-
-[1]: (https://www.digitalocean.com/community/tutorials/ \
-how-to-configure-custom-connection-options-for-your-ssh-client)
