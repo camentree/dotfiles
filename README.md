@@ -14,5 +14,5 @@
 - postico
 - iterm2
 
-[1]: (https://www.digitalocean.com/community/tutorials/
+[1]: (https://www.digitalocean.com/community/tutorials/ \
 how-to-configure-custom-connection-options-for-your-ssh-client)
