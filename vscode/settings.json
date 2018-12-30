@@ -17,10 +17,12 @@
         "**/CVS": true,
         "**/.pytest_cache": true,
         "**/htmlcov": true,
+        "**/node_modules/**": true,
     },
     "files.trimTrailingWhitespace": true,
     "explorer.confirmDragAndDrop": false,
     "explorer.confirmDelete": false,
+    "explorer.autoReveal": false,
     "editor.detectIndentation": false,
     "editor.insertSpaces": true,
     "editor.renderIndentGuides": false,
@@ -74,6 +76,7 @@
     "python.linting.pylintArgs": [
         "--load-plugins=pylint_django"
     ],
+    "python.linting.pylintUseMinimalCheckers": false,
     // Extension Settings
     "autoDocstring.docstringFormat": "numpy",
     "autoDocstring.generateDocstringOnEnter": true,
