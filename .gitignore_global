@@ -2,3 +2,10 @@
 *~
 *#
 *.cache
+*htmlcov/
+__pycache__
+.env
+.coverage
+dist/
+.vscode/
+node_modules/
