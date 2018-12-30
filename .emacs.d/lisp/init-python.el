@@ -19,11 +19,13 @@
     (elpy-module-eldoc elpy-module-yasnippet elpy-module-sane-defaults)))
 (elpy-enable)
 
-(setq python-shell-interpreter "jupyter"
-      python-shell-interpreter-args "console --simple-prompt"
-      python-shell-prompt-detect-failure-warning nil)
-(add-to-list 'python-shell-completion-native-disabled-interpreters
-             "jupyter")
+;(setq python-shell-interpreter "jupyter"
+;      python-shell-interpreter-args "console --simple-prompt"
+;      python-shell-prompt-detect-failure-warning nil)
+;(add-to-list 'python-shell-completion-native-disabled-interpreters
+					;             "jupyter")
+(setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "--simple-prompt -i")
 
 ;; pyvenv
 (setenv "WORKON_HOME" (substitute-in-file-name "$HOME/miniconda3/envs"))

@@ -31,11 +31,12 @@
 (global-set-key (kbd "C-x f") 'find-file)
 
 (defun cpiho/default-auto-fill ()
-  "Set line limit to 100."
+  "Set line limit to 90."
+  (defvar max-column 90)
   (auto-fill-mode)
   (column-enforce-mode)
-  (setq column-enforce-column 100)
-  (setq fill-column 100)
+  (setq column-enforce-column max-column)
+  (setq fill-column max-column)
   (setq-local show-trailing-whitespace t))
 
 (add-hook 'prog-mode-hook 'cpiho/default-auto-fill)
