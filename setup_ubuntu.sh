@@ -75,5 +75,6 @@ if which zsh > /dev/null 2>&1;
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
     chsh -s `which zsh`
     exec zsh
+fi
 
 echo -e "\nAll done! You may need to add \`source ~/.bashrc\` in ~/.bash_profile"
