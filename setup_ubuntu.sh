@@ -11,6 +11,8 @@ APT_PACKAGES=(
   "vim"
   "postgresql"
   "zsh"
+  "nodejs"
+  "npm"
 )
 
 for pkg in "${APT_PACKAGES[@]}"; do
