@@ -45,8 +45,7 @@ fi
 echo -e "\nSymlinking some files"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FILES_TO_LINK=(
-  ".bashrc" # bash configuration
-  ".vimrc" # vim goodness
+  ".vimrc"
   ".zshrc"
 )
 
