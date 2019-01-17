@@ -66,4 +66,13 @@ for filename in "${FILES_TO_LINK[@]}"; do
   fi
 done
 
+echo -e "\nInstalling Zsh"
+if which zsh > /dev/null 2>&1;
+  then
+    echo "zsh appears to already be installed"
+  else
+    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+    chsh -s `which zsh`
+    exec zsh
+
 echo -e "\nAll done! You may need to add \`source ~/.bashrc\` in ~/.bash_profile"
