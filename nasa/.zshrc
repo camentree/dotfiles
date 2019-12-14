@@ -1,7 +1,7 @@
-export ZSH="/u/cpiho/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
-plugins=(git brew docker history)
+plugins=(git docker history)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -16,3 +16,7 @@ function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
 PROMPT="%{$fg[cyan]%}%n@%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
+module use -a /u/analytix/tools/modulefiles
+module load miniconda3/v4
+
+source activate /home7/analytix/tools/opt/miniconda3
