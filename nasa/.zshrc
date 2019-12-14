@@ -1,7 +1,7 @@
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
-plugins=(git docker history)
+plugins=(git history)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -15,8 +15,13 @@ function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
+# add username and hostname to zsh prompt
 PROMPT="%{$fg[cyan]%}%n@%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
-module use -a /u/analytix/tools/modulefiles
-module load miniconda3/v4
 
-source activate /home7/analytix/tools/opt/miniconda3
+# modules can only be loaded from pleioades front ends
+if [[ "pfe" < ${(%):-%M} ]]
+then
+  module use -a /u/analytix/tools/modulefiles
+  module load miniconda3/v4
+  source activate /home7/analytix/tools/opt/miniconda3
+fi
