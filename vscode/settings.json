@@ -17,6 +17,7 @@
         "**/CVS": true,
         "**/.pytest_cache": true,
         "**/htmlcov": true,
+        "**/node_modules": true,
     },
     "files.trimTrailingWhitespace": true,
     "explorer.confirmDragAndDrop": false,
@@ -39,17 +40,21 @@
     "terminal.external.osxExec": "iTerm.app",
     "terminal.integrated.fontWeight": "100",
     "terminal.integrated.fontSize": 14,
-    "workbench.statusBar.feedback.visible": false,
     "workbench.colorTheme": "Material Theme High Contrast",
-    "workbench.iconTheme": "eq-material-theme-icons",
     "workbench.startupEditor": "none",
     "workbench.activityBar.visible": false,
     "workbench.tips.enabled": false,
     "workbench.settings.editor": "json",
     "workbench.editor.showTabs": false,
-    "window.zoomLevel": 0,
+    // "window.zoomLevel": 1,
     "window.nativeFullScreen": false,
-    "keyboard.touchbar.enabled": true,
+    "keyboard.touchbar.enabled": false,
+    "[vue]": {
+        "editor.tabSize": 2
+    },
+    "[markdown]": {
+        "editor.tabSize": 2
+    },
     "[css]": {
         "editor.tabSize": 2
     },
@@ -72,12 +77,10 @@
     "python.linting.pydocstyleArgs": [
         "--convention=numpy"
     ],
-    "python.linting.pylintArgs": [
-        "--load-plugins=pylint_django"
-    ],
     "python.linting.pylintUseMinimalCheckers": false,
     // Extension Settings
     "autoDocstring.docstringFormat": "numpy",
     "autoDocstring.generateDocstringOnEnter": true,
-    "javascript.updateImportsOnFileMove.enabled": "always",
+    "latex-workshop.view.pdf.viewer": "browser",
+    "window.zoomLevel": 1,
 }
