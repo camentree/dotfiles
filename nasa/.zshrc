@@ -1,7 +1,7 @@
-export ZSH="/home/heartwood/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
-plugins=(git brew docker history)
+plugins=(git history)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -15,6 +15,13 @@ function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
-export PATH="/usr/local/opt/ruby/bin:$PATH"
-export PATH="/Users/camen/miniconda3/bin:$PATH"
-export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda/lib/:$DYLD_FALLBACK_LIBRARY_PATH
+# add username and hostname to zsh prompt
+PROMPT="%{$fg[cyan]%}%n@%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
+
+# modules can only be loaded from pleioades front ends
+if [[ "pfe" < ${(%):-%M} ]]
+then
+  module use -a /u/analytix/tools/modulefiles
+  module load miniconda3/v4
+  source activate /home7/analytix/tools/opt/miniconda3
+fi
