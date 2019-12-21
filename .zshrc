@@ -1,4 +1,4 @@
-export ZSH="/home/heartwood/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
 plugins=(git brew docker history)
@@ -16,4 +16,8 @@ function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
 export PATH="/usr/local/opt/ruby/bin:$PATH"
-export PATH="/home/heartwood/miniconda3/bin:$PATH"
+export PATH="$HOME/miniconda3/bin:$PATH"
+export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda/lib/:$DYLD_FALLBACK_LIBRARY_PATH
+
+# add username and hostname to zsh prompt
+PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
