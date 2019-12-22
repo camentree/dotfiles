@@ -8,6 +8,7 @@
      .zshrc
 2. `./nasa/setup_lfe.sh` Installing useful things onto the Lou Front End (LFE)
   1. symlinks the home directory's config files to the config files on the PFE
+  2. NOTE: conda is not available in Lou
 
 ## Useful Commands
 

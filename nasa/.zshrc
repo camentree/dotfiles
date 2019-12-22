@@ -27,4 +27,8 @@ then
   module load miniconda3/v4
   source activate $PFE_HOME/.conda/envs/${USER}3.6
 fi
+
+# get access to software like `tmux`
+# https://www.nas.nasa.gov/hecc/support/kb/software-on-nas-systems_116.html
 module load pkgsrc/2018Q3
+

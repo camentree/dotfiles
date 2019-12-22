@@ -46,4 +46,8 @@ else
   echo "Base conda environment already installed"
 fi
 
+if ! [ -f "${HOME}/.git-credentials" ]; then
+  git config --global credential.helper store
+fi
+
 echo -e "\nAll done!"
