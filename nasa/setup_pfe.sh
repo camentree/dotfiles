@@ -5,6 +5,7 @@ echo -e "\nSymlinking some files"
 FILES_TO_LINK=(
   ".vimrc"
   ".zshrc"
+  ".gitignore_global"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
   file="${HOME}/documents/dotfiles/nasa/${filename}"
@@ -13,7 +14,7 @@ for filename in "${FILES_TO_LINK[@]}"; do
     exit 1;
   fi
 
-  target="${filename}"
+  target="${HOME}/${filename}"
   if ! [ -f "${target}" ]; then
     echo "Making symlink for $file"
     ln -s "${file}" "${target}";

@@ -7,6 +7,7 @@ echo -e "\nSymlinking some files"
 FILES_TO_LINK=(
   ".vimrc"
   ".zshrc"
+  ".gitignore_global"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
   file="${PFE_HOME}/documents/dotfiles/nasa/${filename}"
@@ -23,5 +24,9 @@ for filename in "${FILES_TO_LINK[@]}"; do
     echo "${target} already exists"
   fi
 done
+
+if [ -z ${ZSH} ]; then
+  exec zsh
+fi
 
 echo -e "\nAll done!"
