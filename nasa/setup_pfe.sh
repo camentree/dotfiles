@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e # exit on error
 
+NASA_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+
 echo -e "\nSymlinking some files"
 FILES_TO_LINK=(
   ".vimrc"
@@ -8,7 +10,7 @@ FILES_TO_LINK=(
   ".gitignore_global"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
-  file="${HOME}/documents/dotfiles/nasa/${filename}"
+  file="${NASA_DIR}/${filename}"
   if ! [ -f "${file}" ]; then
     echo "${file} does not exist!  Exiting..."
     exit 1;
@@ -50,5 +52,7 @@ fi
 if ! [ -f "${HOME}/.git-credentials" ]; then
   git config --global credential.helper store
 fi
+
+git config --global core.excludesfile "${HOME}/.gitignore_global"
 
 echo -e "\nAll done!"
