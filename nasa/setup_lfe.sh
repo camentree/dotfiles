@@ -2,6 +2,7 @@
 set -e # exit on error
 
 PFE_HOME="/nasa/u/${USER}"
+NASA_DIR_PFE="$(dirname "$(readlink -f ${PFE_HOME}/.zshrc)")"
 
 echo -e "\nSymlinking some files"
 FILES_TO_LINK=(
@@ -10,7 +11,7 @@ FILES_TO_LINK=(
   ".gitignore_global"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
-  file="${PFE_HOME}/documents/dotfiles/nasa/${filename}"
+  file="${NASA_DIR_PFE}/${filename}"
   if ! [ -f "${file}" ]; then
     echo "${file} does not exist!  Exiting..."
     exit 1;
