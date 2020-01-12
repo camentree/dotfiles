@@ -32,3 +32,4 @@ fi
 # https://www.nas.nasa.gov/hecc/support/kb/software-on-nas-systems_116.html
 module load pkgsrc/2018Q3
 
+export PATH="${PFE_HOME}/.local/bin:${PATH}"
