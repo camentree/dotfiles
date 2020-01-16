@@ -28,7 +28,7 @@ done
 
 echo -e "\nInstalling Oh My Zsh"
 if ! [ -d "${HOME}/.oh-my-zsh" ]; then
-  yum install zsh
+  sudo yum install zsh
   wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
   chsh -s `which zsh`
   exec zsh
@@ -56,6 +56,7 @@ if conda --version > /dev/null 2>&1;
 fis
 
 if ! [ -f "${HOME}/.git-credentials" ]; then
+  sudo yum install git
   git config --global credential.helper store
 fi
 
