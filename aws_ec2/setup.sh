@@ -3,34 +3,10 @@ set -e # exit on error
 
 THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-echo -e "\nSymlinking some files"
-FILES_TO_LINK=(
-  ".vimrc"
-  ".zshrc"
-  ".gitignore_global"
-  ".condarc"
-)
-for filename in "${FILES_TO_LINK[@]}"; do
-  file="${THIS_DIR}/${filename}"
-  if ! [ -f "${file}" ]; then
-    echo "${file} does not exist!  Exiting..."
-    exit 1;
-  fi
-
-  target="${HOME}/${filename}"
-  if ! [ -f "${target}" ]; then
-    echo "Making symlink for $file"
-    ln -s "${file}" "${target}";
-  else
-    echo "${target} already exists"
-  fi
-done
-
 echo -e "\nInstalling Oh My Zsh"
 if ! [ -d "${HOME}/.oh-my-zsh" ]; then
   sudo yum install zsh
   wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-  chsh -s `which zsh`
   exec zsh
 
 else
@@ -53,12 +29,35 @@ if conda --version > /dev/null 2>&1;
       else
         echo "Miniconda already installed at ${INSTALL_FOLDER}"
     fi
-fis
+fi
 
 if ! [ -f "${HOME}/.git-credentials" ]; then
   sudo yum install git
   git config --global credential.helper store
 fi
+
+echo -e "\nSymlinking some files"
+FILES_TO_LINK=(
+  ".vimrc"
+  ".zshrc"
+  ".gitignore_global"
+  ".condarc"
+)
+for filename in "${FILES_TO_LINK[@]}"; do
+  file="${THIS_DIR}/${filename}"
+  if ! [ -f "${file}" ]; then
+    echo "${file} does not exist!  Exiting..."
+    exit 1;
+  fi
+
+  target="${HOME}/${filename}"
+  if ! [ -f "${target}" ]; then
+    echo "Making symlink for $file"
+    ln -s "${file}" "${target}";
+  else
+    echo "${target} already exists"
+  fi
+done
 
 git config --global core.excludesfile "${HOME}/.gitignore_global"
 
