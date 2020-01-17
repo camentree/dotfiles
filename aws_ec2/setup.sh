@@ -4,13 +4,12 @@ set -e # exit on error
 THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
 echo -e "\nInstalling Oh My Zsh"
-if ! [ -d "${HOME}/.oh-my-zsh" ]; then
-  sudo yum install zsh
-  wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-  exec zsh
-
-else
-  echo "Oh My Zsh already installed"
+if ! [ -d "${HOME}/.oh-my-zsh" ];
+  then
+    sudo yum -y install zsh
+    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+  else
+    echo "Oh My Zsh already installed"
 fi
 
 echo -e "\nInstalling Miniconda 3"
@@ -31,9 +30,17 @@ if conda --version > /dev/null 2>&1;
     fi
 fi
 
-if ! [ -f "${HOME}/.git-credentials" ]; then
-  sudo yum install git
-  git config --global credential.helper store
+echo -e "\nInstalling git"
+if git --version > /dev/null 2>&1;
+  then
+    sudo yum install -y git
+  else
+    echo "Git already isntalled"
+fi
+
+if ! [ -f "${HOME}/.git-credentials" ];
+  then
+    git config --global credential.helper store
 fi
 
 echo -e "\nSymlinking some files"
@@ -45,17 +52,19 @@ FILES_TO_LINK=(
 )
 for filename in "${FILES_TO_LINK[@]}"; do
   file="${THIS_DIR}/${filename}"
-  if ! [ -f "${file}" ]; then
-    echo "${file} does not exist!  Exiting..."
-    exit 1;
+  if ! [ -f "${file}" ];
+    then
+      echo "${file} does not exist!  Exiting..."
+      exit 1;
   fi
 
   target="${HOME}/${filename}"
-  if ! [ -f "${target}" ]; then
-    echo "Making symlink for $file"
-    ln -s "${file}" "${target}";
-  else
-    echo "${target} already exists"
+  if ! [ -f "${target}" ];
+    then
+      echo "Making symlink for $file"
+      ln -s "${file}" "${target}";
+    else
+      echo "${target} already exists"
   fi
 done
 
