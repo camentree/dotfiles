@@ -33,9 +33,9 @@ fi
 echo -e "\nInstalling git"
 if git --version > /dev/null 2>&1;
   then
-    sudo yum install -y git
-  else
     echo "Git already isntalled"
+  else
+    sudo yum install -y git
 fi
 
 if ! [ -f "${HOME}/.git-credentials" ];
