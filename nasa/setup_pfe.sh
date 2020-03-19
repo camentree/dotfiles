@@ -36,14 +36,13 @@ else
 fi
 
 echo -e "\nInstalling base conda environment"
-env_name="${USER}3.6"
+env_name="base3.6"
 if ! [ -d "${HOME}/.conda/envs/${env_name}" ]; then
   conda create -y --name "${env_name}" python=3.6
-  conda activate "${env_name}"
-  conda install -c conda-forge jupyterlab
+  source activate "${env_name}"
+  conda install -c conda-forge jupyterlab --yes
   pip install callisto
-  callisto
-  source deactivate
+  conda deactivate
 
 else
   echo "Base conda environment already installed"

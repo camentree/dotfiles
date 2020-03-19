@@ -21,9 +21,9 @@ set clipboard=unnamed
 set laststatus=2
 set path=.,,$PWD/**
 set shiftwidth=2
-set softtabstop=2
-set tabstop=2
-set textwidth=80
+set softtabstop=4
+set tabstop=4
+set textwidth=90
 
 if has("autocmd")
   " Enable file type detection.
