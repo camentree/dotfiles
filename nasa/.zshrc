@@ -33,5 +33,3 @@ then
   module use -a /u/analytix/tools/modulefiles
   module load miniconda3/v4
 fi
-
-export PATH = "$PATH"
