@@ -1,0 +1,12 @@
+[user]
+	name = Camen
+	email = camenpihor@gmail.com
+[core]
+	excludesfile = /Users/camen/.gitignore_global
+[credential]
+	helper = osxkeychain
+[alias]
+  cm = commit
+  co = checkout
+  st = status
+  br = branch
