@@ -8,6 +8,7 @@ FILES_TO_LINK=(
   ".vimrc"
   ".zshrc"
   ".gitignore_global"
+  ".gitconfig"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
   file="${NASA_DIR}/${filename}"

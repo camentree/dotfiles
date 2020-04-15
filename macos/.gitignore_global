@@ -11,4 +11,5 @@ dist/
 node_modules/
 *.egg-info/
 build/
+.ipynb_checkpoints/
 *.swp
