@@ -9,6 +9,7 @@ FILES_TO_LINK=(
   ".zshrc"
   ".gitignore_global"
   ".gitconfig"
+  ".condarc"
 )
 for filename in "${FILES_TO_LINK[@]}"; do
   file="${NASA_DIR}/${filename}"

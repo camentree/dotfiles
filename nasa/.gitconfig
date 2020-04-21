@@ -2,11 +2,11 @@
 	name = Camen
 	email = camenpihor@gmail.com
 [core]
-	excludesfile = /Users/camen/.gitignore_global
-[credential]
-	helper = osxkeychain
+	excludesfile = /home4/cpiho/.gitignore_global
 [alias]
-  cm = commit
-  co = checkout
-  st = status
-  br = branch
+    cm = commit
+    co = checkout
+    st = status
+    br = branch
+[credential]
+    helper = store

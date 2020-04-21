@@ -1,0 +1,9 @@
+channels:
+  - conda-forge
+  - defaults
+
+envs_dirs:
+  - /nobackup/cpiho/.conda/envs
+
+pkgs_dirs:
+  - /nobackup/cpiho/conda/pkgs
