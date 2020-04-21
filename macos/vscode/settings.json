@@ -18,6 +18,8 @@
         "**/.pytest_cache": true,
         "**/htmlcov": true,
         "**/node_modules": true,
+        "**/build": true,
+        "**/dist": true,
     },
     "files.trimTrailingWhitespace": true,
     "explorer.confirmDragAndDrop": false,
@@ -81,6 +83,6 @@
     // Extension Settings
     "autoDocstring.docstringFormat": "numpy",
     "autoDocstring.generateDocstringOnEnter": true,
-    "latex-workshop.view.pdf.viewer": "browser",
     "window.zoomLevel": 1,
+    "terminal.integrated.inheritEnv": false,
 }
