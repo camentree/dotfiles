@@ -49,6 +49,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FILES_TO_LINK=(
   ".vimrc"
   ".zshrc"
+  ".condarc"
+  ".gitconfig"
+  ".gitignore_global"
 )
 
 for filename in "${FILES_TO_LINK[@]}"; do
@@ -76,5 +79,11 @@ if which zsh > /dev/null 2>&1;
     chsh -s `which zsh`
     exec zsh
 fi
+
+if [[ ! -e "$HOME/.git-credentials" ]]; then
+	  git config --global credential.helper store
+  fi
+
+  git config --global core.excludesfile "$HOME/.gitignore_global"
 
 echo -e "\nAll done! You may need to add \`source ~/.bashrc\` in ~/.bash_profile"
