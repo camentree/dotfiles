@@ -3,14 +3,6 @@ set -e # exit on error
 
 THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-echo -e "\nInstalling Oh My Zsh"
-if ! [ -d "${HOME}/.oh-my-zsh" ];
-  then
-    sudo yum -y install zsh
-    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-  else
-    echo "Oh My Zsh already installed"
-fi
 
 echo -e "\nInstalling Miniconda 3"
 if conda --version > /dev/null 2>&1;
@@ -28,19 +20,6 @@ if conda --version > /dev/null 2>&1;
       else
         echo "Miniconda already installed at ${INSTALL_FOLDER}"
     fi
-fi
-
-echo -e "\nInstalling git"
-if git --version > /dev/null 2>&1;
-  then
-    echo "Git already isntalled"
-  else
-    sudo yum install -y git
-fi
-
-if ! [ -f "${HOME}/.git-credentials" ];
-  then
-    git config --global credential.helper store
 fi
 
 echo -e "\nSymlinking some files"
