@@ -11,10 +11,13 @@ alias vl="conda info --envs"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.8}" ; }
 function vn () { conda create -y --name "$(virtualenv_name $1)" python=${1-3.8} ; }
-function va () { source activate "$(virtualenv_name $1)" ; }
+function va () { source activate "$(virtualenv_name $1)" ; envexport .env ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all -y ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
-function gclean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
+function git-clean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
+function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
+function nas-jupyter () { ssh -o "StrictHostKeyChecking ask" -L 18080:localhost:8888 -o ProxyJump=sfe,$1 -l cpiho $2 -i ~/.ssh/id_rsa_nasa ; }
+
 
 # export PATH="$HOME/miniconda/bin:$PATH"  # commented out by conda initialize
 
