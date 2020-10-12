@@ -8,6 +8,7 @@ source $ZSH/oh-my-zsh.sh
 alias pyc="rm *.pyc && rm __pycache__"
 alias vd="source deactivate"
 alias vl="conda info --envs"
+alias scc4="ssh cpiho@scc4.bu.edu"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.6}" ; }
 function vn () { conda create -y --name "$(virtualenv_name $1)" python=${1-3.6} ; }
