@@ -50,7 +50,7 @@ if [[ ! -e "$HOME/Miniconda" ]]; then
   bash ~/miniconda.sh -b -p $HOME/miniconda
   rm ~/miniconda.sh
 
-  conda create -n r_4_0 r-base==4.0.3 r-essentials -c rstudio
+  conda create -n r_4_0 r-base==4.0.3 r-essentials -c r rstudio
 else
   echo "Already Installed"
 fi
