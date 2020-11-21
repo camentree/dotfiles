@@ -8,6 +8,7 @@ source $ZSH/oh-my-zsh.sh
 alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias vd="conda deactivate"
 alias vl="conda info --envs"
+alias vr="conda activate r_4_0"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.8}" ; }
 function vn () { conda create -y --name "$(virtualenv_name $1)" python=${1-3.8} ; }
@@ -16,9 +17,9 @@ function vdd () { conda remove --name "$(virtualenv_name $1)" --all -y ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 function git-clean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
-function nas-jupyter () { ssh -o "StrictHostKeyChecking ask" -L 18080:localhost:8888 -o ProxyJump=sfe,$1 -l cpiho $2 -i ~/.ssh/id_rsa_nasa ; }
 
-
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
 # export PATH="$HOME/miniconda/bin:$PATH"  # commented out by conda initialize
 
 # add username and hostname to zsh prompt
