@@ -92,6 +92,10 @@ for filename in "${dotfiles[@]}" ; do
   fi
 done
 
+# https://github.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist
+echo -e "\nAdding hosts file"
+sudo cp "$THIS_DIR/hosts" "/etc/hosts"
+
 if [[ ! -e "$HOME/.git-credentials" ]]; then
   git config --global credential.helper store
 fi
