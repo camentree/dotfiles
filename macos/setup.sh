@@ -6,11 +6,11 @@ THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
 ZSH_URL="https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh"
 CONDA_URL="https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
-BREW_URL="https://raw.githubusercontent.com/Homebrew/install/master/install"
+BREW_URL="https://raw.githubusercontent.com/Homebrew/install/master/install.sh"
 
 # ZSH
 echo -e "\nOh My Zsh"
-if ! which zsh > /dev/null; then
+if [[ ! -e "$HOME/.oh-my-zsh" ]]; then
   echo "Installing..."
   sh -c "$(curl -fsSL $ZSH_URL)"
 else
@@ -21,7 +21,7 @@ fi
 echo -e "\nHomebrew"
 if ! which brew > /dev/null; then
   echo "Installing..."
-  /usr/bin/ruby -e "$(curl -fsSL $brew_url)"
+  /bin/bash -c "$(curl -fsSL $BREW_URL)"
 else
   echo "Already Installed"
 fi
@@ -40,14 +40,17 @@ for pkg in "${packages[@]}"; do
     echo "$pkg already installed"
   fi
 done
+brew cask install julia
 
 # Miniconda
 echo -e "\nMiniconda3"
-if ! which conda > /dev/null; then
+if [[ ! -e "$HOME/Miniconda" ]]; then
   echo "Installing..."
   curl -fsSL $CONDA_URL -o ~/miniconda.sh
   bash ~/miniconda.sh -b -p $HOME/miniconda
   rm ~/miniconda.sh
+
+  conda create -n r_4_0 r-base==4.0.3 r-essentials -c r rstudio
 else
   echo "Already Installed"
 fi
@@ -61,7 +64,17 @@ dotfiles=( .emacs.d
            .gitconfig
 	         .condarc
 	         vscode
+           # https://stackoverflow.com/questions/6205157/iterm-2-how-to-set-keyboard-shortcuts-to-jump-to-beginning-end-of-line/29403520#29403520
+          com.googlecode.iterm2.plist
          )
+
+if [[ -e "$HOME/.zshrc" ]] ; then
+  mv "$HOME/.zshrc" "$HOME/.zshrc-old"
+fi
+
+if [[ -e "$HOME/com.googlecode.iterm2.plist" ]] ; then
+  mv "$HOME/com.googlecode.iterm2.plist" "$HOME/com.googlecode.iterm2.plist-old"
+fi
 
 for filename in "${dotfiles[@]}" ; do
   echo "$filename"
@@ -78,6 +91,10 @@ for filename in "${dotfiles[@]}" ; do
     ln -s $filepath $target
   fi
 done
+
+# https://github.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist
+echo -e "\nAdding hosts file"
+sudo cp "$THIS_DIR/hosts" "/etc/hosts"
 
 if [[ ! -e "$HOME/.git-credentials" ]]; then
   git config --global credential.helper store
