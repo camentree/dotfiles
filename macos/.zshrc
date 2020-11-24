@@ -17,6 +17,7 @@ function vdd () { conda remove --name "$(virtualenv_name $1)" --all -y ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 function git-clean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
+function remote-jupyter () { ssh $1 -L 7070:localhost:${2-8888} ; }
 
 bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
