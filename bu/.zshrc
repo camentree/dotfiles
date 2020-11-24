@@ -18,5 +18,7 @@ function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
