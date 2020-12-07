@@ -23,5 +23,5 @@ bindkey "^X^_" redo
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 
-export PATH="$HOME/miniconda/bin:$PATH"
+export PATH="$HOME/miniconda3/bin:$PATH"
 
