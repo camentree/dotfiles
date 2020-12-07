@@ -13,6 +13,7 @@ APT_PACKAGES=(
   "vim"
   "wget"
   "zsh"
+  "tmux"
 )
 
 for pkg in "${APT_PACKAGES[@]}"; do

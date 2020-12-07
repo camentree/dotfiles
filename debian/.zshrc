@@ -1,4 +1,5 @@
-export ZSH="/home/camen/.oh-my-zsh"
+export ZSH="/root/.oh-my-zsh"
+export HOME="/home/camen"
 
 ZSH_THEME="robbyrussell"
 plugins=(git brew docker history)
@@ -16,23 +17,11 @@ function vdd () { conda remove --name "$(virtualenv_name $1)" --all -y ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 function gclean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
 
-# export PATH="$HOME/miniconda/bin:$PATH"  # commented out by conda initialize
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/camen/miniconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/camen/miniconda/etc/profile.d/conda.sh" ]; then
-        . "/Users/camen/miniconda/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/camen/miniconda/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+export PATH="$HOME/miniconda/bin:$PATH"
 
