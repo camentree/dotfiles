@@ -32,6 +32,7 @@ brew update
 echo "Installing Packages..."
 packages=( git
 	   postgresql
+     r
          )
 for pkg in "${packages[@]}"; do
   if ! brew ls --versions "$pkg" > /dev/null; then
