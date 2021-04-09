@@ -71,18 +71,15 @@ for filename in "${FILES_TO_LINK[@]}"; do
 done
 
 echo -e "\nInstalling Zsh"
-if which zsh > /dev/null 2>&1;
-  then
-    echo "zsh appears to already be installed"
-  else
-    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-    chsh -s `which zsh`
-    exec zsh
+if [[ ! -e "$HOME/.oh-my-zsh" ]]; then
+  wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+  chsh -s `which zsh`
+  exec zsh
 fi
 
 if [[ ! -e "$HOME/.git-credentials" ]]; then
-	  git config --global credential.helper store
-  fi
+	git config --global credential.helper store
+fi
 
   git config --global core.excludesfile "$HOME/.gitignore_global"
 
