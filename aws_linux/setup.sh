@@ -82,7 +82,7 @@ PACKAGES=(
   "tmux"
 )
 for package in "${PACKAGES[@]}"; do
-  sudo yum install ${package}
+  sudo yum install -y ${package}
 done
 
 
