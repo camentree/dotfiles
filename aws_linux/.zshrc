@@ -19,11 +19,10 @@ bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
 
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google_cloud_platform/camen-piho-lea.json"
+export PATH="$PATH:$HOME/OTB-7.2.0-Darwin64/bin"
 export PATH="$HOME/miniconda3/bin:$PATH"
 export OTB_APPLICATION_PATH="$HOME/OTB-7.2.0-Darwin64/lib/otb/applications"
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
-
-source "$HOME/OTB-7.2.0-Darwin64/otbenv.profile"
 
