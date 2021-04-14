@@ -113,5 +113,6 @@ for filename in "${FILES_TO_LINK[@]}"; do
   fi
 done
 
+cp "${THIS_DIR}/.gitconfig" "${HOME}/.gitconfig"
 
 echo -e "\nAll done!"
