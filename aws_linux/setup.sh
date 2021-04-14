@@ -19,6 +19,7 @@ if ! [ -d "${HOME}/.oh-my-zsh" ];
     sudo yum -y install zsh
     wget $ZSH_URL -O - | zsh
     mv "$HOME/.zshrc" "$HOME/.zshrc_old"
+    chsh -s $(which zsh)
   else
     echo "Oh My Zsh already installed"
 fi
@@ -77,7 +78,7 @@ fi
 
 # Packages
 echo -e "\nInstalling some packages"
-PACKAGES = (
+PACKAGES=(
   "tmux"
 )
 for package in "${PACKAGES[@]}"; do
@@ -112,6 +113,5 @@ for filename in "${FILES_TO_LINK[@]}"; do
   fi
 done
 
-chsh -s $(which zsh)
 
 echo -e "\nAll done!"
