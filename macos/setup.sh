@@ -13,6 +13,7 @@ echo -e "\nOh My Zsh"
 if [[ ! -e "$HOME/.oh-my-zsh" ]]; then
   echo "Installing..."
   sh -c "$(curl -fsSL $ZSH_URL)"
+  mv "$HOME/.zshrc" "$HOME/.zshrc_old"
 else
   echo "Already Installed"
 fi
@@ -68,10 +69,6 @@ dotfiles=( .emacs.d
            # https://stackoverflow.com/questions/6205157/iterm-2-how-to-set-keyboard-shortcuts-to-jump-to-beginning-end-of-line/29403520#29403520
           com.googlecode.iterm2.plist
          )
-
-if [[ -e "$HOME/.zshrc" ]] ; then
-  mv "$HOME/.zshrc" "$HOME/.zshrc-old"
-fi
 
 if [[ -e "$HOME/com.googlecode.iterm2.plist" ]] ; then
   mv "$HOME/com.googlecode.iterm2.plist" "$HOME/com.googlecode.iterm2.plist-old"

@@ -1,7 +1,7 @@
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
-plugins=(git brew docker history)
+plugins=(git docker history)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -15,9 +15,12 @@ function va () { source activate "$(virtualenv_name $1)" ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
 
-export PATH="/usr/local/opt/ruby/bin:$PATH"
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
+
+export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google_cloud_platform/camen-piho-lea.json"
 export PATH="$HOME/miniconda3/bin:$PATH"
-export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda/lib/:$DYLD_FALLBACK_LIBRARY_PATH
+export OTB_APPLICATION_PATH="$HOME/OTB-7.2.0-Darwin64/lib/otb/applications"
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
