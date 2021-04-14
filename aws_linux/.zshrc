@@ -24,3 +24,6 @@ export OTB_APPLICATION_PATH="$HOME/OTB-7.2.0-Darwin64/lib/otb/applications"
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
+
+source "$HOME/OTB-7.2.0-Darwin64/otbenv.profile"
+
