@@ -9,7 +9,6 @@ alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias vd="conda deactivate"
 alias vl="conda info --envs"
 alias vr="conda activate r_4_0"
-alias ec2="ssh -i ~/.ssh/camen-home.pem ec2-user@ec2-54-185-148-80.us-west-2.compute.amazonaws.com"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.8}" ; }
 function vn () { conda create -y --name "$(virtualenv_name $1)" python=${1-3.8} ; }
@@ -29,6 +28,7 @@ bindkey "^X^_" redo
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google_cloud_platform/camen-piho-lea.json"
 export PATH=$PATH:/Users/camen/OTB-7.2.0-Darwin64/bin
 export OTB_APPLICATION_PATH=/Users/camen/OTB-7.2.0-Darwin64/lib/otb/applications
+export OTB_LOGGER_LEVEL="CRITICAL"
 # export PATH="$HOME/miniconda/bin:$PATH"  # commented out by conda initialize
 
 # add username and hostname to zsh prompt

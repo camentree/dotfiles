@@ -6,6 +6,7 @@ THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 ZSH_URL="https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh"
 CONDA_URL="http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 OTB_URL="https://www.orfeo-toolbox.org/packages/OTB-7.2.0-Linux64.run -O ~/OTB-7.2.0-Linux64.run"
+GSUTIL_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-336.0.0-linux-x86_64.tar.gz"
 
 # ZSH
 echo -e "\nInstalling Oh My Zsh"
@@ -20,21 +21,16 @@ fi
 
 # Miniconda
 echo -e "\nInstalling Miniconda 3"
-if conda --version > /dev/null 2>&1;
+INSTALL_FOLDER="$HOME/miniconda3"
+if ! [ -d INSTALL_FOLDER ];
   then
     echo "conda appears to already be installed"
   else
-    INSTALL_FOLDER="$HOME/miniconda3"
-    if [ ! -d ${INSTALL_FOLDER} ] || [ ! -e ${INSTALL_FOLDER/bin/conda} ];
-      then
-        DOWNLOAD_PATH="miniconda.sh"
-        wget $CONDA_URL -O ${DOWNLOAD_PATH};
-        echo "Installing miniconda to ${INSTALL_FOLDER}"
-        bash ${DOWNLOAD_PATH} -b -f -p ${INSTALL_FOLDER}
-        rm ${DOWNLOAD_PATH}
-      else
-        echo "Miniconda already installed at ${INSTALL_FOLDER}"
-    fi
+    DOWNLOAD_PATH="miniconda.sh"
+    wget $CONDA_URL -O ${DOWNLOAD_PATH};
+    echo "Installing miniconda to ${INSTALL_FOLDER}"
+    bash ${DOWNLOAD_PATH} -b -f -p ${INSTALL_FOLDER}
+    rm ${DOWNLOAD_PATH}
 fi
 
 # Git
@@ -46,28 +42,34 @@ if git --version > /dev/null 2>&1;
     sudo yum install -y git
 fi
 
-if ! [ -f "${HOME}/.git-credentials" ];
-  then
-    git config --global credential.helper store
-fi
-
 # OrfeoToolBox
 echo -e "\nInstalling OrfeoToolBox"
-if ! [ -d "${HOME}/OTB" ];
+INSTALL_FOLDER="$HOME/OTB-7.2.0-Darwin64"
+if ! [ -d INSTALL_FOLDER ];
   then
     echo "OTB appears to already be installed"
   else
-    INSTALL_FOLDER="$HOME/OTB-7.2.0-Darwin64"
-    if [ ! -d ${INSTALL_FOLDER} ];
-      then
-        DOWNLOAD_PATH="OTB-Linux64.run"
-        wget $OTB_URL -O ${DOWNLOAD_PATH};
-        echo "Installing OTB to ${INSTALL_FOLDER}"
-        bash ${DOWNLOAD_PATH} -b -f -p ${INSTALL_FOLDER}
-        rm ${DOWNLOAD_PATH}
-      else
-        echo "OTB already installed at ${INSTALL_FOLDER}"
-    fi
+    DOWNLOAD_PATH="OTB-Linux64.run"
+    wget $OTB_URL -O ${DOWNLOAD_PATH};
+    echo "Installing OTB to ${INSTALL_FOLDER}"
+    bash ${DOWNLOAD_PATH} -b -f -p ${INSTALL_FOLDER}
+    rm ${DOWNLOAD_PATH}
+fi
+
+# gsutil
+echo -e "\nInstalling gsutil"
+INSTALL_FOLDER="$HOME/google-cloud-sdk"
+if ! [ -d INSTALL_FOLDER ];
+  then
+    echo "gsutil appears to already be installed"
+  else
+    DOWNLOAD_PATH="google-cloud-sdk-336.0.0-linux-x86_64.tar.gz"
+    wget $GSUTIL_URL -O ${DOWNLOAD_PATH};
+    echo "Installing gsutil to ${INSTALL_FOLDER}"
+    tar -xf $DOWNLOAD_PATH -C "$HOME"
+    bash ${INSTALL_FOLDER}/install.sh
+    bash ${INSTALL_FOLDER}/bin/gcloud init
+    rm ${DOWNLOAD_PATH}
 fi
 
 # Symlink Files
