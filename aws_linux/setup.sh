@@ -8,6 +8,11 @@ CONDA_URL="http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 OTB_URL="https://www.orfeo-toolbox.org/packages/OTB-7.2.0-Linux64.run -O ~/OTB-7.2.0-Linux64.run"
 GSUTIL_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-336.0.0-linux-x86_64.tar.gz"
 
+# Linux Setup
+echo -e "\nSetting up linux..."
+sudo passwd ec2-user
+sudo yum install util-linux-user -y
+
 # ZSH
 echo -e "\nInstalling Oh My Zsh"
 if ! [ -d "${HOME}/.oh-my-zsh" ];
@@ -15,6 +20,7 @@ if ! [ -d "${HOME}/.oh-my-zsh" ];
     sudo yum -y install zsh
     wget $ZSH_URL -O - | zsh
     mv "$HOME/.zshrc" "$HOME/.zshrc_old"
+    chsh -s $(which zsh)
   else
     echo "Oh My Zsh already installed"
 fi
@@ -72,6 +78,16 @@ if ! [ -d INSTALL_FOLDER ];
     rm ${DOWNLOAD_PATH}
 fi
 
+# Packages
+echo -e "\nInstalling some packages"
+PACKAGES=(
+  "tmux"
+)
+for package in "${PACKAGES[@]}"; do
+  sudo yum install -y ${package}
+done
+
+
 # Symlink Files
 echo -e "\nSymlinking some files"
 FILES_TO_LINK=(
@@ -98,5 +114,7 @@ for filename in "${FILES_TO_LINK[@]}"; do
       echo "${target} already exists"
   fi
 done
+
+cp "${THIS_DIR}/.gitconfig" "${HOME}/.gitconfig"
 
 echo -e "\nAll done!"
