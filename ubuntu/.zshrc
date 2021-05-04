@@ -8,31 +8,23 @@ source $ZSH/oh-my-zsh.sh
 alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias vd="conda deactivate"
 alias vl="conda info --envs"
+alias vr="conda activate r_4_0"
 
 function virtualenv_name () { echo "${PWD##*/}${1-3.8}" ; }
 function vn () { conda create -y --name "$(virtualenv_name $1)" python=${1-3.8} ; }
-function va () { source activate "$(virtualenv_name $1)" ; }
+function va () { source activate "$(virtualenv_name $1)" ; envexport .env ; }
 function vdd () { conda remove --name "$(virtualenv_name $1)" --all -y ; }
 function envexport () { set -o allexport; source $1; set +o allexport ; }
-function gclean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
+function git-clean () { git branch | grep -v "master\|*" | xargs git branch -D ; }
+function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 
-# export PATH="$HOME/miniconda/bin:$PATH"  # commented out by conda initialize
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
+
+export PATH=$PATH:$HOME/OTB-7.2.0-Darwin64/bin
+export OTB_APPLICATION_PATH=$HOME/OTB-7.2.0-Darwin64/lib/otb/applications
+export OTB_LOGGER_LEVEL="CRITICAL"
+export PATH="$HOME/miniconda/bin:$PATH" alize
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/camen/miniconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/camen/miniconda/etc/profile.d/conda.sh" ]; then
-        . "/Users/camen/miniconda/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/camen/miniconda/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-

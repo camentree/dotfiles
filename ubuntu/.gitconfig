@@ -1,12 +1,10 @@
 [user]
-	name = Camen
-	email = camenpihor@gmail.com
-[core]
-	excludesfile = /home/camen/.gitignore_global
+    name = Camen
+    email = camenpihor@gmail.com
 [credential]
 	helper = store
 [alias]
-  cm = commit
-  co = checkout
-  st = status
-  br = branch
+    cm = commit
+    co = checkout
+    st = status
+    br = branch

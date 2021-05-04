@@ -1,23 +1,90 @@
 #!/bin/bash
 set -e # exit on error
 
+THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-apt update
-# check if python if not install
-apt install python3.8 -y
-apt install python3-pip -y
-# check if git if not install
-apt install git-all -y
+ZSH_URL="https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh"
+CONDA_URL="http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
-# check ig gdal if not install
-apt install gdal-bin -y
+echo -e "\nInstalling packages from apt"
+apt-get update
 
-git config --global user.email "camenpihor@gmail.com"
-git config --global user.name "camen"
-git config credential.helper store
+APT_PACKAGES=(
+  "bash"
+  "git"
+  "vim"
+  "zsh"
+  "gdal-bin"
+)
+
+for pkg in "${APT_PACKAGES[@]}"; do
+  if ! dpkg-query -W -f='${Status}' "${pkg}" 2>/dev/null | grep -c "ok installed";
+  then
+    echo "Installing $pkg"
+    apt-get -y install "$pkg"
+  else
+    echo "$pkg already installed"
+  fi
+done
+
+echo -e "\nInstalling OhMyZsh"
+if [[ ! -e "$HOME/.oh-my-zsh" ]]; then
+  wget ${ZSH_URL} -O - | zsh
+  chsh -s `which zsh`
+  mv "$HOME/.zshrc" "$HOME/.zshrc_old"
+fi
+
+echo -e "\nInstalling python versions"
+if conda --version > /dev/null 2>&1;
+  then
+    echo "conda appears to already be installed"
+  else
+    INSTALL_FOLDER="$HOME/miniconda3"
+    if [ ! -d ${INSTALL_FOLDER} ] || [ ! -e ${INSTALL_FOLDER/bin/conda} ];
+      then
+        DOWNLOAD_PATH="miniconda.sh"
+        wget ${CONDA_URL} -O ${DOWNLOAD_PATH};
+        echo "Installing miniconda to ${INSTALL_FOLDER}"
+        bash ${DOWNLOAD_PATH} -b -f -p ${INSTALL_FOLDER}
+        rm ${DOWNLOAD_PATH}
+      else
+        echo "Miniconda already installed at ${INSTALL_FOLDER}"
+    fi
+fi
+
+echo -e "\nSymlinking some files"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILES_TO_LINK=(
+  ".vimrc"
+  ".zshrc"
+  ".condarc"
+  ".gitconfig"
+  ".gitignore_global"
+)
+
+for filename in "${FILES_TO_LINK[@]}"; do
+  file="${DIR}/${filename}"
+  if ! [ -f "${file}" ]; then
+    echo "${file} does not exist!  Exiting..."
+    exit 1;
+  fi
+  target="${HOME}/${filename}"
+  if ! [ -f "${target}" ];
+  then
+    echo "Making symlink for $file"
+    ln -s "${file}" "${target}";
+  else
+    echo "${target} already exists"
+  fi
+done
+
+
+git config --global core.excludesfile "$HOME/.gitignore_global"
 
 # memory monitoring
 curl -sSO https://dl.google.com/cloudagents/add-monitoring-agent-repo.sh
 bash add-monitoring-agent-repo.sh
 apt install stackdriver-agent -y
 service stackdriver-agent start
+
+echo -e "\nAll done!"
