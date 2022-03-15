@@ -42,7 +42,6 @@ for pkg in "${packages[@]}"; do
     echo "$pkg already installed"
   fi
 done
-brew cask install julia
 
 # Miniconda
 echo -e "\nMiniconda3"
