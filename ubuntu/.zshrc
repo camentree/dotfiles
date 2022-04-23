@@ -24,7 +24,7 @@ bindkey "^X^_" redo
 export PATH=$PATH:$HOME/OTB-7.2.0-Darwin64/bin
 export OTB_APPLICATION_PATH=$HOME/OTB-7.2.0-Darwin64/lib/otb/applications
 export OTB_LOGGER_LEVEL="CRITICAL"
-export PATH="$HOME/miniconda/bin:$PATH" alize
+export PATH="$HOME/miniconda3/bin:$PATH"
 
 # add username and hostname to zsh prompt
 PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
