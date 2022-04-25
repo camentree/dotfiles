@@ -7,7 +7,7 @@ ZSH_URL="https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh"
 CONDA_URL="http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 echo -e "\nInstalling packages from apt"
-apt-get update
+sudo apt-get update
 
 APT_PACKAGES=(
   "bash"
@@ -21,7 +21,7 @@ for pkg in "${APT_PACKAGES[@]}"; do
   if ! dpkg-query -W -f='${Status}' "${pkg}" 2>/dev/null | grep -c "ok installed";
   then
     echo "Installing $pkg"
-    apt-get -y install "$pkg"
+    sudo apt-get -y install "$pkg"
   else
     echo "$pkg already installed"
   fi
