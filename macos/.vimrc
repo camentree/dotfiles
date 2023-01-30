@@ -1,9 +1,11 @@
 syntax on
 colorscheme slate
-set background=light
+set background=dark
 
 set expandtab
 set ignorecase
+set hls
+set ic
 set incsearch
 set modeline
 set nowrap
@@ -23,7 +25,7 @@ set path=.,,$PWD/**
 set shiftwidth=2
 set softtabstop=2
 set tabstop=2
-set textwidth=80
+set textwidth=90
 set mouse=a
 if has("mouse_sgr")
     set ttymouse=sgr

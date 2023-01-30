@@ -35,6 +35,7 @@ function git-pr () { open "$(git config --get remote.origin.url | sed s/....$//)
 bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
 
+export HOMEBREW_NO_AUTO_UPDATE=1
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google/camen-piho-home-7aa72f3df01e.json"
 export PYTHON_EGG_CACHE=/Users/cpiho/miniconda/Library/Cachces/Python-Eggs
 export OTB_LOGGER_LEVEL="CRITICAL"
