@@ -5,7 +5,7 @@ THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
 
 ZSH_URL="https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh"
-CONDA_URL="https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
+CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"
 BREW_URL="https://raw.githubusercontent.com/Homebrew/install/master/install.sh"
 
 # ZSH
@@ -32,8 +32,6 @@ brew update
 
 echo "Installing Packages..."
 packages=( git
-	   postgresql
-     r
          )
 for pkg in "${packages[@]}"; do
   if ! brew ls --versions "$pkg" > /dev/null; then
@@ -51,7 +49,6 @@ if [[ ! -e "$HOME/Miniconda" ]]; then
   bash ~/miniconda.sh -b -p $HOME/miniconda
   rm ~/miniconda.sh
 
-  conda create -n r_4_0 r-base==4.0.3 r-essentials -c r rstudio
 else
   echo "Already Installed"
 fi
@@ -64,7 +61,9 @@ dotfiles=( .emacs.d
            .gitignore_global
            .gitconfig
 	         .condarc
-	         vscode
+           nvim
+           .tmux.conf
+           .p10k.zsh
            # https://stackoverflow.com/questions/6205157/iterm-2-how-to-set-keyboard-shortcuts-to-jump-to-beginning-end-of-line/29403520#29403520
           com.googlecode.iterm2.plist
          )

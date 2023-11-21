@@ -2,7 +2,7 @@
 	name = Camen
 	email = camenpihor@gmail.com
 [core]
-	excludesfile = ~/.gitignore_global
+	excludesfile = /Users/camen/.gitignore_global
 [credential]
 	helper = store
 [alias]

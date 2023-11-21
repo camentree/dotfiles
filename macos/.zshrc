@@ -1,15 +1,19 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="robbyrussell"
-#ZSH_THEME="spaceship"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+#ZSH_THEME="robbyrussell"
 plugins=(history)
 
-SPACESHIP_TIME_SHOW=true
-SPACESHIP_TIME_12HR=true
-SPACESHIP_GIT_STATUS_SHOW=false
-SPACESHIP_GCLOUD_SHOW=false
 source $ZSH/oh-my-zsh.sh
 
+alias vim="nvim"
 alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias vd="conda deactivate"
 alias vl="conda info --envs"
@@ -50,14 +54,14 @@ PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/cpiho/miniconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$('/Users/camen/miniconda/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "/Users/cpiho/miniconda/etc/profile.d/conda.sh" ]; then
-        . "/Users/cpiho/miniconda/etc/profile.d/conda.sh"
+    if [ -f "/Users/camen/miniconda/etc/profile.d/conda.sh" ]; then
+        . "/Users/camen/miniconda/etc/profile.d/conda.sh"
     else
-        export PATH="/Users/cpiho/miniconda/bin:$PATH"
+        export PATH="/Users/camen/miniconda/bin:$PATH"
     fi
 fi
 unset __conda_setup
@@ -69,3 +73,6 @@ if [ -f '/Users/cpiho/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/cpiho/goo
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/cpiho/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/cpiho/google-cloud-sdk/completion.zsh.inc'; fi
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
