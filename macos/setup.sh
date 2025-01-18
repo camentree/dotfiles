@@ -31,8 +31,10 @@ echo "Updating..."
 brew update
 
 echo "Installing Packages..."
-packages=( git
-         )
+packages=(
+    git
+    neovim
+)
 for pkg in "${packages[@]}"; do
   if ! brew ls --versions "$pkg" > /dev/null; then
       brew install "$pkg"
@@ -60,7 +62,7 @@ dotfiles=( .emacs.d
            .zshrc
            .gitignore_global
            .gitconfig
-	         .condarc
+           .condarc
            nvim
            .tmux.conf
            .p10k.zsh
