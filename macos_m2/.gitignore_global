@@ -16,3 +16,4 @@ build/
 *.pyc
 local.sbt
 CLAUDE.local*
+.zshenv.local
