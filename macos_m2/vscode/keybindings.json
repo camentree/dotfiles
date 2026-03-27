@@ -142,11 +142,6 @@
     "when": "browserCanGoForward && activeEditor == 'workbench.editor.browser'",
   },
   {
-    "key": "cmd+]",
-    "command": "editor.unfold",
-    "when": "editorTextFocus && foldingEnabled",
-  },
-  {
     "key": "alt+cmd+]",
     "command": "-editor.unfold",
     "when": "editorTextFocus && foldingEnabled",
@@ -367,5 +362,15 @@
     "key": "alt+s",
     "command": "-markdown.extension.editing.toggleStrikethrough",
     "when": "false",
+  },
+  {
+    "key": "cmd+]",
+    "command": "editor.unfoldRecursively",
+    "when": "editorTextFocus && foldingEnabled",
+  },
+  {
+    "key": "cmd+k cmd+]",
+    "command": "-editor.unfoldRecursively",
+    "when": "editorTextFocus && foldingEnabled",
   },
 ]

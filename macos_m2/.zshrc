@@ -52,3 +52,6 @@ PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 # load nvm and completion
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+
+# Remove . from word characters so Option+Delete stops at periods
+WORDCHARS=${WORDCHARS//.}
