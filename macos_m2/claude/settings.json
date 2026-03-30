@@ -1,0 +1,56 @@
+{
+  "env": {
+    "JAVA_HOME": "/Users/camen/.local/share/mise/installs/java/temurin-17.0.16+8",
+    "PATH": "/Users/camen/.local/share/mise/installs/java/temurin-17.0.16+8/bin:/Users/camen/.local/share/mise/installs/sbt/1.12.5/bin:/bin:/usr/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/Users/camen/.local/bin",
+    "DIRHELPER_USER_DIR_SUFFIX": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(git branch *)",
+      "Bash(git diff *)",
+      "Bash(git fetch *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+      "Bash(git status *)",
+      "Bash(cat *)",
+      "Bash(sysctl *)",
+      "Bash(lsof *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(grep *)",
+      "Bash(sbt *)",
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Bash(env *)",
+      "Bash(defaults *)",
+      "Bash(mdfind *)",
+      "Bash(npm run compile *)",
+      "Bash(curl -X GET *)",
+      "WebSearch",
+      "Read",
+      "Bash(mise where:*)",
+      "Skill(keybindings-help)"
+    ],
+    "defaultMode": "default",
+    "additionalDirectories": ["~/", "/tmp"]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "august-team@august-marketplace": true,
+    "august-fix-flaky-test@august-marketplace": true,
+    "august-review-comments@august-marketplace": true,
+    "august-review-pr@august-marketplace": true
+  },
+  "effortLevel": "medium",
+  "promptSuggestionEnabled": false,
+  "autoDreamEnabled": true
+}

@@ -238,6 +238,8 @@ dotfiles=(
   .gitconfig
   .tmux.conf
   .p10k.zsh
+  agent-status.sh
+  agent-windows.sh
 )
 
 for filename in "${dotfiles[@]}" ; do

@@ -55,3 +55,6 @@ PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 
 # Remove . from word characters so Option+Delete stops at periods
 WORDCHARS=${WORDCHARS//.}
+
+# Agent workflow (tmux + git worktrees)
+[[ -f ~/agent-windows.sh ]] && source ~/agent-windows.sh
