@@ -1,0 +1,43 @@
+{
+  "env": {
+    "DIRHELPER_USER_DIR_SUFFIX": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(git branch *)",
+      "Bash(git diff *)",
+      "Bash(git fetch *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+      "Bash(git status *)",
+      "Bash(cat *)",
+      "Bash(lsof *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(grep *)",
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Bash(env *)",
+      "Bash(defaults *)",
+      "Bash(mdfind *)",
+      "Bash(curl -X GET *)",
+      "WebSearch",
+      "Read",
+      "Skill(keybindings-help)"
+    ],
+    "defaultMode": "default",
+    "additionalDirectories": ["~/", "/tmp"]
+  },
+  "effortLevel": "medium",
+  "promptSuggestionEnabled": false,
+  "autoDreamEnabled": true
+}

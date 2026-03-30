@@ -41,6 +41,12 @@
   home.file.".vimrc".source = ./dotfiles/vimrc;
 
   # ============================================================
+  # Agent scripts (Claude Code + tmux + git worktrees)
+  # ============================================================
+  home.file."agent-status.sh".source = ./dotfiles/agent-status.sh;
+  home.file."agent-windows.sh".source = ./dotfiles/agent-windows.sh;
+
+  # ============================================================
   # Tmux — plugins managed by Nix (no TPM needed)
   # ============================================================
   programs.tmux = {
@@ -124,7 +130,7 @@
         alias cov-clean="rm .coverage.*"
         alias git-open="open \`git config --get remote.origin.url\`"
         alias vd="deactivate"
-        alias rebuild="cd ~/Documents/dotfiles && sudo \$(which darwin-rebuild) switch --flake .#server"
+        alias rebuild="cd ~/Documents/dotfiles/nix && sudo \$(which darwin-rebuild) switch --flake .#server"
 
         # Functions
         function loadenv () { set -o allexport; source "''${1:-.env}"; set +o allexport ; }
@@ -158,6 +164,9 @@
 
         # Remove . from word characters so Option+Delete stops at periods
         WORDCHARS=''${WORDCHARS//.}
+
+        # Agent workflow (tmux + git worktrees)
+        [[ -f ~/agent-windows.sh ]] && source ~/agent-windows.sh
       ''
     ];
   };
@@ -178,6 +187,18 @@
   # iTerm2 plist
   # ============================================================
   home.file."com.googlecode.iterm2.plist".source = ./dotfiles/iterm2.plist;
+
+  # ============================================================
+  # Claude Code
+  # ============================================================
+  home.file.".claude/settings.json" = {
+    source = ./claude/settings.json;
+    force = true;
+  };
+  home.file.".claude/CLAUDE.md" = {
+    source = ./claude/CLAUDE.md;
+    force = true;
+  };
 
   # ============================================================
   # SSH config (preserve what we already set up)

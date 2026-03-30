@@ -11,8 +11,8 @@ Declarative system config for my Macs using [Nix](https://nixos.org/),
 git clone git@github.com:camentree/dotfiles.git ~/Documents/dotfiles
 
 # 2. Run setup (installs Nix, builds config)
-cd ~/Documents/dotfiles && bash setup.sh        # defaults to "server"
-cd ~/Documents/dotfiles && bash setup.sh work    # for work machine
+cd ~/Documents/dotfiles/nix && bash setup.sh        # defaults to "server"
+cd ~/Documents/dotfiles/nix && bash setup.sh work    # for work machine
 
 # 3. Restart terminal
 
@@ -23,38 +23,48 @@ rebuild
 ## File Structure
 
 ```
-flake.nix              ← Entry point. Only touch when adding a new machine.
-macos.nix              ← macOS settings shared across ALL machines.
-shell.nix              ← User config shared across ALL machines.
-hosts/
-  server.nix           ← Intel server: nginx, postgres, always-on power.
-dotfiles/              ← Raw config files. Edit directly, then `rebuild`.
-  tmux.conf
-  vimrc
-  p10k.zsh
-  gitignore_global
-  iterm2.plist
-  vscode/
-    settings.json
-    keybindings.json
+nix/
+  flake.nix              ← Entry point. Only touch when adding a new machine.
+  macos.nix              ← macOS settings shared across ALL machines.
+  shell.nix              ← User config shared across ALL machines.
+  hosts/
+    server.nix           ← Intel server: nginx, postgres, always-on power.
+  dotfiles/              ← Raw config files. Edit directly, then `rebuild`.
+    tmux.conf
+    vimrc
+    p10k.zsh
+    gitignore_global
+    agent-status.sh      ← Colors tmux tabs by Claude Code state.
+    agent-windows.sh     ← Agent workflow: tmux + git worktrees.
+    iterm2.plist
+    vscode/
+      settings.json
+      keybindings.json
+  claude/
+    settings.json        ← Claude Code permissions and preferences.
+    CLAUDE.md            ← User-level instructions for Claude.
 ```
 
 ### What goes where?
 
-| I want to change...             | Edit this file          |
-|---------------------------------|-------------------------|
-| Zsh aliases or functions        | `shell.nix`             |
-| Git config                      | `shell.nix`             |
-| Add/remove a tmux plugin        | `shell.nix`             |
-| Tmux keybindings or theme       | `dotfiles/tmux.conf`    |
-| Vim settings                    | `dotfiles/vimrc`        |
-| VSCode settings                 | `dotfiles/vscode/settings.json` |
-| VSCode keybindings              | `dotfiles/vscode/keybindings.json` |
-| Dock, keyboard, Finder, trackpad | `macos.nix`            |
-| Add a package to ALL machines   | `macos.nix`             |
-| Add a server-only package       | `hosts/server.nix`      |
-| Powerlevel10k prompt            | `dotfiles/p10k.zsh`     |
-| iTerm2 settings                 | `dotfiles/iterm2.plist` |
+| I want to change...              | Edit this file               |
+|----------------------------------|------------------------------|
+| Zsh aliases or functions         | `nix/shell.nix`              |
+| Git config                       | `nix/shell.nix`              |
+| Add/remove a tmux plugin         | `nix/shell.nix`              |
+| Tmux keybindings or theme        | `nix/dotfiles/tmux.conf`     |
+| Vim settings                     | `nix/dotfiles/vimrc`         |
+| VSCode settings                  | `nix/dotfiles/vscode/settings.json` |
+| VSCode keybindings               | `nix/dotfiles/vscode/keybindings.json` |
+| Dock, keyboard, Finder, trackpad | `nix/macos.nix`              |
+| Add a package to ALL machines    | `nix/macos.nix`              |
+| Add a server-only package        | `nix/hosts/server.nix`       |
+| Powerlevel10k prompt             | `nix/dotfiles/p10k.zsh`      |
+| iTerm2 settings                  | `nix/dotfiles/iterm2.plist`  |
+| Claude Code settings             | `nix/claude/settings.json`   |
+| Claude instructions              | `nix/claude/CLAUDE.md`       |
+| Agent tmux coloring              | `nix/dotfiles/agent-status.sh` |
+| Agent workflow functions          | `nix/dotfiles/agent-windows.sh` |
 
 ## What Nix Manages
 
@@ -125,13 +135,8 @@ These need manual install/configuration:
 
 ## Claude Code Settings
 
-Claude Code stores settings in `~/.claude/settings.json`. This repo includes
-a shared config at `claude/settings.json` — symlink it after setup:
-
-```bash
-mkdir -p ~/.claude
-ln -sf ~/Documents/dotfiles/claude/settings.json ~/.claude/settings.json
-```
+Managed by Nix. Settings and CLAUDE.md are symlinked into `~/.claude/`
+automatically on rebuild. Edit `nix/claude/settings.json` and `nix/claude/CLAUDE.md`.
 
 ## Old Machine Configs
 
