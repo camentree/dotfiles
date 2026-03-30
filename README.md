@@ -8,11 +8,11 @@ Declarative system config for my Macs using [Nix](https://nixos.org/),
 
 ```bash
 # 1. Clone
-git clone git@github.com:camentree/dotfiles.git ~/Documents/dotfiles
+git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles
 
 # 2. Run setup (installs Nix, builds config)
-cd ~/Documents/dotfiles/nix && bash setup.sh        # defaults to "server"
-cd ~/Documents/dotfiles/nix && bash setup.sh work    # for work machine
+cd ~/Projects/dotfiles/nix && bash setup.sh        # defaults to "server"
+cd ~/Projects/dotfiles/nix && bash setup.sh work    # for work machine
 
 # 3. Restart terminal
 

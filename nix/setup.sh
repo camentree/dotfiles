@@ -5,8 +5,8 @@ set -e
 # First-time Nix setup for a new Mac
 #
 # Usage:
-#   1. Clone this repo:  git clone git@github.com:camentree/dotfiles.git ~/Documents/dotfiles
-#   2. Run:              cd ~/Documents/dotfiles && bash setup.sh
+#   1. Clone this repo:  git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles
+#   2. Run:              cd ~/Projects/dotfiles && bash setup.sh
 #   3. Restart terminal
 #   4. Run:              rebuild
 #

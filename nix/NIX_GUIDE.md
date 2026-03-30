@@ -17,7 +17,7 @@ Three pieces work together on your server:
 ## How Your Config is Structured
 
 ```
-~/Documents/dotfiles/nix/
+~/Projects/dotfiles/nix/
 ├── flake.nix             ← Entry point. Wires machines together.
 ├── macos.nix             ← macOS settings shared across ALL machines.
 ├── shell.nix             ← User config: zsh, git, tmux, vim, vscode, claude.
@@ -54,12 +54,12 @@ of truth — if it's not in the config, it's not on the system.
 
 ### Add a new package
 
-1. Open `~/Documents/dotfiles/nix/macos.nix` (for common packages) or
-   `~/Documents/dotfiles/nix/hosts/server.nix` (for server-only packages)
+1. Open `~/Projects/dotfiles/nix/macos.nix` (for common packages) or
+   `~/Projects/dotfiles/nix/hosts/server.nix` (for server-only packages)
 2. Add the package name to the `environment.systemPackages` list
 3. Rebuild:
    ```bash
-   cd ~/Documents/dotfiles/nix && darwin-rebuild switch --flake .#server
+   cd ~/Projects/dotfiles/nix && darwin-rebuild switch --flake .#server
    ```
 
 **Finding package names:** Go to https://search.nixos.org/packages and search.
@@ -74,11 +74,11 @@ There are two kinds:
 
 **Complex dotfiles** (raw files in dotfiles/):
 - tmux.conf, vimrc, p10k.zsh, VSCode settings
-- Edit the file in `~/Documents/dotfiles/nix/dotfiles/`, then rebuild
+- Edit the file in `~/Projects/dotfiles/nix/dotfiles/`, then rebuild
 
 After any change:
 ```bash
-cd ~/Documents/dotfiles/nix && darwin-rebuild switch --flake .#server
+cd ~/Projects/dotfiles/nix && darwin-rebuild switch --flake .#server
 ```
 
 ### Change a macOS default
@@ -93,7 +93,7 @@ Available native options: https://daiderd.com/nix-darwin/manual/index.html
 This is the only command you need to remember:
 
 ```bash
-cd ~/Documents/dotfiles/nix && darwin-rebuild switch --flake .#server
+cd ~/Projects/dotfiles/nix && darwin-rebuild switch --flake .#server
 ```
 
 This will:
@@ -106,13 +106,13 @@ This will:
 **Shortcut:** Add an alias! It's already not in the config, so you could add to
 the `initExtra` section in home.nix:
 ```nix
-alias rebuild="cd ~/Documents/dotfiles/nix && darwin-rebuild switch --flake .#server"
+alias rebuild="cd ~/Projects/dotfiles/nix && darwin-rebuild switch --flake .#server"
 ```
 
 ### Update all packages
 
 ```bash
-cd ~/Documents/dotfiles/nix
+cd ~/Projects/dotfiles/nix
 nix flake update          # Updates flake.lock to latest versions
 darwin-rebuild switch --flake .#server
 ```
@@ -188,7 +188,7 @@ All packages live in `/nix/store/`. Each package has a unique hash in its path:
 
 | Task | Command |
 |------|---------|
-| Rebuild after config change | `cd ~/Documents/dotfiles/nix && darwin-rebuild switch --flake .#server` |
+| Rebuild after config change | `cd ~/Projects/dotfiles/nix && darwin-rebuild switch --flake .#server` |
 | Update all packages | `nix flake update && darwin-rebuild switch --flake .#server` |
 | Search for a package | `nix search nixpkgs <name>` |
 | Roll back | `sudo darwin-rebuild switch --rollback` |
