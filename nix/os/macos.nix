@@ -118,8 +118,8 @@
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771300</integer></dict>' \
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771298</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771296</integer></dict>'
 
-    # iTerm2: load prefs from custom folder
-    defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$HOME"
+    # iTerm2: read/write prefs directly from dotfiles repo (stays in sync with git)
+    defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$HOME/Projects/dotfiles/nix/dotfiles"
     defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
 
     # Screen saver idle time (5 minutes)

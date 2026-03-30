@@ -377,11 +377,11 @@
 			<key>AWDS Pane Option</key>
 			<string>Recycle</string>
 			<key>AWDS Tab Directory</key>
-			<string>/Users/camen/Documents</string>
+			<string>/Users/camen/Projects</string>
 			<key>AWDS Tab Option</key>
 			<string>Yes</string>
 			<key>AWDS Window Directory</key>
-			<string>/Users/camen/Documents</string>
+			<string>/Users/camen/Projects</string>
 			<key>AWDS Window Option</key>
 			<string>Yes</string>
 			<key>Ambiguous Double Width</key>
@@ -1633,7 +1633,7 @@
 			<key>Window Type</key>
 			<integer>0</integer>
 			<key>Working Directory</key>
-			<string>/Users/camen</string>
+			<string>/Users/camen/Projects</string>
 		</dict>
 	</array>
 	<key>OnlyWhenMoreTabs</key>

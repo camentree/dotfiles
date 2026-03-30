@@ -85,8 +85,9 @@
     "agent-status.sh"    = { source = ./dotfiles/agent-status.sh; };
     "agent-windows.sh"   = { source = ./dotfiles/agent-windows.sh; };
 
-    # iTerm2
-    "com.googlecode.iterm2.plist" = { source = ./dotfiles/iterm2.plist; };
+    # iTerm2 — uses its built-in "custom folder" feature instead of a symlink.
+    # iTerm2 reads/writes directly to dotfiles/iterm2.plist, so changes
+    # in the UI are automatically tracked by git. See activation script below.
 
     # VSCode
     "Library/Application Support/Code/User/settings.json"    = { source = ./dotfiles/vscode/settings.json;    force = true; };

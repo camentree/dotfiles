@@ -31,5 +31,9 @@
     sudo pmset -a womp 1
     # Restart after power failure
     sudo pmset -a autorestart 1
+
+    # Install Node LTS via mise (for Homebridge)
+    sudo -u camen mise install node@22 2>/dev/null
+    sudo -u camen mise use --global node@22 2>/dev/null
   '';
 }
