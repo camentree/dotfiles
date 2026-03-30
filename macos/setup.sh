@@ -34,7 +34,7 @@ echo "Installing Packages..."
 packages=(
     git
     neovim
-)
+)   
 for pkg in "${packages[@]}"; do
   if ! brew ls --versions "$pkg" > /dev/null; then
       brew install "$pkg"

@@ -1,0 +1,58 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Nix store paths (powerlevel10k, oh-my-zsh, etc.)
+[[ -f ~/.nix-paths.sh ]] && source ~/.nix-paths.sh
+
+# Oh-my-zsh
+ZSH_THEME=""  # we use powerlevel10k sourced below
+plugins=(history)
+source $ZSH/oh-my-zsh.sh
+
+# Powerlevel10k
+[[ -n "$NIX_P10K" ]] && source "$NIX_P10K/share/zsh-powerlevel10k/powerlevel10k.zsh-theme"
+
+# Aliases
+alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
+alias cov-clean="rm .coverage.*"
+alias git-open="open \`git config --get remote.origin.url\`"
+alias vd="deactivate"
+function rebuild () { cd ~/Documents/dotfiles/nix && sudo $(which darwin-rebuild) switch --flake ".#${1:?Usage: rebuild <machine-name>}" ; }
+
+# Functions
+function loadenv () { set -o allexport; source "${1:-.env}"; set +o allexport ; }
+function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branch -D ; }
+function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
+function touch2 () { mkdir -p "$(dirname "$1")" && touch "$1" ; }
+
+# Python virtual environment helpers (uv-based)
+function vn () {
+  local python="${1:-3.13}"
+  uv venv --python "$python" ".venv"
+  echo "Created .venv (python $python)"
+  source .venv/bin/activate
+}
+function va () { source .venv/bin/activate ; }
+function vdd () {
+  deactivate 2>/dev/null
+  rm -rf .venv
+  echo "Removed .venv"
+}
+
+# Key bindings
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
+
+# Add hostname to prompt
+PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
+
+# Load p10k config
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Remove . from word characters so Option+Delete stops at periods
+WORDCHARS=${WORDCHARS//.}
+
+# Agent workflow (tmux + git worktrees)
+[[ -f ~/agent-windows.sh ]] && source ~/agent-windows.sh
