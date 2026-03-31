@@ -33,7 +33,6 @@
     sudo pmset -a autorestart 1
 
     # Install Node via mise
-    sudo -u camen mise install node@24
-    sudo -u camen mise use --global node@24
+    # Node is managed by mise outside of nix: mise install node@24 && mise use --global node@24
   '';
 }

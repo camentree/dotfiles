@@ -35,6 +35,8 @@
     htop
     jq
     mise
+    nodejs_24
+    python3
     tmux
     uv
     vim
