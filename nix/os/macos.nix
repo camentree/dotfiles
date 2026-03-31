@@ -28,6 +28,7 @@
   # Packages — installed on every machine
   # ============================================================
   environment.systemPackages = with pkgs; [
+    claude-code
     curl
     gh
     git
