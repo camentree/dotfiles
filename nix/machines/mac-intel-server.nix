@@ -32,8 +32,6 @@
     # Restart after power failure
     sudo pmset -a autorestart 1
 
-    # Install Node via mise (for Homebridge)
-    sudo -u camen mise install node@24 2>/dev/null
-    sudo -u camen mise use --global node@24 2>/dev/null
+    # Node is managed by mise — run `mise install node@24` manually
   '';
 }
