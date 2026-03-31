@@ -32,6 +32,8 @@
     # Restart after power failure
     sudo pmset -a autorestart 1
 
-    # Node is managed by mise — run `mise install node@24` manually
+    # Install Node via mise
+    sudo -u camen mise install node@24
+    sudo -u camen mise use --global node@24
   '';
 }
