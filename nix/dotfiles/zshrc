@@ -102,6 +102,7 @@ function vdd () {
   rm -rf .venv
   echo "Removed .venv"
 }
+function datasci () { source ~/.venvs/datasci/bin/activate && ipython; }
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
