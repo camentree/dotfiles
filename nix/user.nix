@@ -83,6 +83,7 @@
     ".p10k.zsh"          = { source = ./dotfiles/p10k.zsh; };
     ".gitignore_global"  = { source = ./dotfiles/gitignore_global;  force = true; };
     "agent-status.sh"    = { source = ./dotfiles/agent-status.sh; };
+    ".ipython/profile_default/startup/00-imports.py" = { source = ./dotfiles/ipython_startup_imports.py; };
 
     # iTerm2 — uses its built-in "custom folder" feature instead of a symlink.
     # iTerm2 reads/writes directly to dotfiles/iterm2.plist, so changes
