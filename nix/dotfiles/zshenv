@@ -9,8 +9,5 @@ fi
 # Apple Shortcuts sets this variable which crashes JVM native socket binding
 unset DIRHELPER_USER_DIR_SUFFIX
 
-# Base python virtual environment
-source "$HOME/.venvs/base3.13/bin/activate"
-
 # Machine-specific overrides and secrets (not tracked in git)
 [[ -f ~/.zshenv.local ]] && source ~/.zshenv.local
