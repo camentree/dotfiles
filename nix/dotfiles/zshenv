@@ -10,8 +10,7 @@ fi
 unset DIRHELPER_USER_DIR_SUFFIX
 
 # Base python virtual environment
-export VIRTUAL_ENV="$HOME/.venvs/base3.13"
-export PATH="$VIRTUAL_ENV/bin:$PATH"
+source "$HOME/.venvs/base3.13/bin/activate"
 
 # Machine-specific overrides and secrets (not tracked in git)
 [[ -f ~/.zshenv.local ]] && source ~/.zshenv.local

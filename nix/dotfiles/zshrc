@@ -19,24 +19,84 @@ alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias cov-clean="rm .coverage.*"
 alias git-open="open \`git config --get remote.origin.url\`"
 alias vd="deactivate"
-function nix-rebuild () { cd ~/Projects/dotfiles/nix && sudo $(which darwin-rebuild) switch --flake ".#${1:?Usage: nix-rebuild <machine-name>}" ; }
-function nix-current () { readlink /run/current-system ; }
-function nix-ls () { darwin-rebuild --list-generations ; }
+
 
 # Functions
+function _is-repo () { git rev-parse --git-dir &>/dev/null; }
+function _is-branch () { git show-ref --verify --quiet "refs/heads/$1"; }
+function _is-session () { tmux has-session -t "$1" &>/dev/null; }
+
 function loadenv () { set -o allexport; source "${1:-.env}"; set +o allexport ; }
 function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branch -D ; }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 function touch2 () { mkdir -p "$(dirname "$1")" && touch "$1" ; }
 
-# Python virtual environment helpers (uv-based)
+function nix-rebuild () { cd ~/Projects/dotfiles/nix && sudo $(which darwin-rebuild) switch --flake ".#${1:?Usage: nix-rebuild <machine-name>}" ; }
+function nix-current () { readlink /run/current-system ; }
+function nix-ls () { darwin-rebuild --list-generations ; }
+
+function _worktree-path () { echo "$(git rev-parse --path-format=absolute --git-common-dir | sed 's/\/.git$//')/.worktrees/$1" }
+function worktree () {
+  local branch="$1"
+  local change_directory="${2:-true}"
+
+  [ -z "$branch" ] && { echo "Usage: worktree <branch> [cd=true|false]"; return 1; }
+  _is-repo || { echo "Not in a git repo"; return 1; }
+
+  local worktree_path=$(_worktree-path "$branch")
+  if [ ! -d "$worktree_path" ]; then
+    local flag=$( _is-branch "$branch" && echo "" || echo "-b" )
+    git worktree add "$worktree_path" $flag "$branch" >&2 || return 1
+  fi
+  if [[ "$change_directory" == "true" ]]; then
+    cd "$worktree_path"
+  else
+    echo "$worktree_path"
+  fi
+}
+function worktree-rm () {
+  local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+  [ -z "$branch" ] && { echo "Usage: worktree-rm [branch]"; return 1; }
+  local root=$(git rev-parse --path-format=absolute --git-common-dir | sed 's/\/.git$//')
+  cd "$root"
+  git worktree remove "$(_worktree-path "$branch")" --force 2>/dev/null && echo "Removed: $branch"
+}
+function worktree-ls () { git worktree list 2>/dev/null || echo "Not in a git repo"; }
+
+_AGENT_TMUX_SESSION="agents"
+function agent () {
+  local branch="$1"
+  [ -z "$branch" ] && { echo "Usage: agent <branch>"; return 1; }
+
+  local worktree_path=$(worktree "$branch" false) || return 1
+
+  if _is-session "$_AGENT_TMUX_SESSION"; then
+    tmux new-window -t "$_AGENT_TMUX_SESSION" -n "$branch" -c "$worktree_path"
+  else
+    tmux new-session -d -s "$_AGENT_TMUX_SESSION" -n "$branch" -c "$worktree_path"
+  fi
+  tmux send-keys -t "${_AGENT_TMUX_SESSION}:${branch}" 'claude' Enter
+
+  echo "Agent: $branch → $worktree_path"
+  [ -z "$TMUX" ] && tmux attach -t "$_AGENT_TMUX_SESSION"
+}
+function agent-rm () {
+  local branch="$1"
+  [ -z "$branch" ] && { echo "Usage: agent-rm <branch>"; return 1; }
+  tmux kill-window -t "${_AGENT_TMUX_SESSION}:${branch}" 2>/dev/null
+  worktree-rm "$branch"
+}
+function agent-ls () {
+  tmux list-windows -t "$_AGENT_TMUX_SESSION" -F '  #{window_name} (#{window_index}) #{pane_current_command}' 2>/dev/null || echo "No agent session"
+}
+
+function va () { source .venv/bin/activate ; }
 function vn () {
   local python="${1:-3.13}"
   uv venv --python "$python" ".venv"
   echo "Created .venv (python $python)"
   source .venv/bin/activate
 }
-function va () { source .venv/bin/activate ; }
 function vdd () {
   deactivate 2>/dev/null
   rm -rf .venv
@@ -55,6 +115,3 @@ PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
 
 # Remove . from word characters so Option+Delete stops at periods
 WORDCHARS=${WORDCHARS//.}
-
-# Agent workflow (tmux + git worktrees)
-[[ -f ~/agent-windows.sh ]] && source ~/agent-windows.sh
