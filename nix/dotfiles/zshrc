@@ -19,7 +19,9 @@ alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias cov-clean="rm .coverage.*"
 alias git-open="open \`git config --get remote.origin.url\`"
 alias vd="deactivate"
-function rebuild () { cd ~/Projects/dotfiles/nix && sudo $(which darwin-rebuild) switch --flake ".#${1:?Usage: rebuild <machine-name>}" ; }
+function nix-rebuild () { cd ~/Projects/dotfiles/nix && sudo $(which darwin-rebuild) switch --flake ".#${1:?Usage: nix-rebuild <machine-name>}" ; }
+function nix-current () { readlink /run/current-system ; }
+function nix-ls () { darwin-rebuild --list-generations ; }
 
 # Functions
 function loadenv () { set -o allexport; source "${1:-.env}"; set +o allexport ; }
