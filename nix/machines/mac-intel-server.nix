@@ -32,7 +32,5 @@
     # Restart after power failure
     sudo pmset -a autorestart 1
 
-    # Install Node via mise
-    # Node is managed by mise outside of nix: mise install node@24 && mise use --global node@24
   '';
 }
