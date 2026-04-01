@@ -33,4 +33,31 @@
     sudo pmset -a autorestart 1
 
   '';
+
+  # ============================================================
+  # Home Assistant
+  # ============================================================
+  launchd.user.agents.home-assistant = {
+    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/bin/start && exec /Users/camen/Projects/home-assistant/bin/start'";
+    serviceConfig = {
+      KeepAlive.PathState = {
+        "/Users/camen/Projects/home-assistant/bin/start" = true;
+      };
+      RunAtLoad = true;
+      StandardOutPath = "/tmp/home-assistant.stdout.log";
+      StandardErrorPath = "/tmp/home-assistant.stderr.log";
+      WorkingDirectory = "/Users/camen/Projects/home-assistant";
+      EnvironmentVariables = {
+        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+      };
+    };
+  };
+
+  # Convenience aliases for managing Home Assistant
+  environment.shellAliases = {
+    ha-stop = "launchctl unload ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
+    ha-start = "launchctl load ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
+    ha-restart = "launchctl unload ~/Library/LaunchAgents/org.nixos.home-assistant.plist && launchctl load ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
+    ha-log = "tail -f /tmp/home-assistant.stderr.log";
+  };
 }
