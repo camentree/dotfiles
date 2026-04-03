@@ -9,9 +9,6 @@ Applications and settings that need to be installed or configured manually after
 - **Claude** — https://claude.ai/download
 - **Google Chrome** — https://google.com/chrome
 - **Ghostty** — https://ghostty.org
-- **iTerm2** — https://iterm2.com
-  - After install, the setup script configures it to load prefs from the symlinked plist
-  - Set font to **MesloLGS NF** in Preferences > Profiles > Text
 - **Notion** — https://notion.so/desktop
 - **Podman Desktop** — https://podman-desktop.io
 - **Rectangle** — https://rectangleapp.com

@@ -209,25 +209,6 @@ else
 fi
 
 # ====================
-# iTerm2 config
-# ====================
-echo -e "\niTerm2 config"
-ITERM_PLIST="$HOME/com.googlecode.iterm2.plist"
-ITERM_SRC="$THIS_DIR/com.googlecode.iterm2.plist"
-if [[ -L "$ITERM_PLIST" ]] && [[ "$(readlink "$ITERM_PLIST")" == "$ITERM_SRC" ]]; then
-  echo "iTerm2 plist already symlinked"
-else
-  if [[ -L "$ITERM_PLIST" ]] || [[ -e "$ITERM_PLIST" ]]; then
-    mv "$ITERM_PLIST" "$ITERM_PLIST.bak"
-  fi
-  echo "Symlinking iTerm2 plist..."
-  ln -s "$ITERM_SRC" "$ITERM_PLIST"
-fi
-# Tell iTerm2 to load prefs from custom folder
-defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$HOME"
-defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
-
-# ====================
 # Symlink Dotfiles
 # ====================
 echo -e "\nDotfiles"
@@ -301,9 +282,6 @@ defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Toggle Sidebar" "@
 defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
 defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Show Calendar List" "@b"
 defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
-
-# iTerm2: remap Open Quickly
-defaults write com.googlecode.iterm2 NSUserKeyEquivalents -dict-add "Open Quickly..." '@^$9'
 
 # Keyboard modifier keys: Caps Lock → Control, Left Control → Left Command, Left Command → Left Option
 # Uses -array (not -array-add) to overwrite rather than append, making this idempotent
