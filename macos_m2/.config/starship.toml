@@ -2,32 +2,29 @@ format = """
 $directory\
 $git_branch\
 $git_status\
-$python\
-$nodejs\
-$java\
 $line_break\
 $character"""
 
 [directory]
-truncation_length = 3
-truncation_symbol = ".../"
+truncate_to_repo = true
+truncation_length = 1
+format = "[$path](#86c9c0) "
 
 [git_branch]
-format = " [$branch]($style) "
+format = " [$branch](#8a8a8a)"
 
 [git_status]
-format = '([$all_status$ahead_behind]($style) )'
+format = '[$all_status$ahead_behind](#86c9c0) '
 
 [character]
-success_symbol = "[)](bold green)"
-error_symbol = "[)](bold red)"
+success_symbol = "[❯](##f6f6f6)"
+error_symbol = "[❯](#e06c75)"
 
 [python]
-format = ' [${version}(\($virtualenv\))]($style)'
-detect_files = [".python-version", "pyproject.toml"]
+disabled = true
 
 [nodejs]
-format = ' [$version]($style)'
+disabled = true
 
 [java]
-format = ' [$version]($style)'
+disabled = true

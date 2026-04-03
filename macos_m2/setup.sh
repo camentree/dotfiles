@@ -209,11 +209,26 @@ else
 fi
 
 # ====================
+# Ghostty config
+# ====================
+echo -e "\nGhostty config"
+GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+if [[ -L "$GHOSTTY_CONFIG" ]] && [[ "$(readlink "$GHOSTTY_CONFIG")" == "$THIS_DIR/ghostty" ]]; then
+  echo "Ghostty config already symlinked"
+else
+  mkdir -p "$HOME/.config/ghostty"
+  if [[ -L "$GHOSTTY_CONFIG" ]] || [[ -e "$GHOSTTY_CONFIG" ]]; then
+    mv "$GHOSTTY_CONFIG" "$GHOSTTY_CONFIG.bak"
+  fi
+  echo "Symlinking Ghostty config..."
+  ln -s "$THIS_DIR/ghostty" "$GHOSTTY_CONFIG"
+fi
+
+# ====================
 # Symlink Dotfiles
 # ====================
 echo -e "\nDotfiles"
 dotfiles=(
-  .vimrc
   .zshrc
   .zshenv
   .gitignore_global
