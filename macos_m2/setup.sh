@@ -33,13 +33,13 @@ else
   echo "Already Installed"
 fi
 
-# Powerlevel10k theme
-P10K_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-if [[ ! -d "$P10K_DIR" ]]; then
-  echo "Installing Powerlevel10k..."
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"
+# Starship prompt
+echo -e "\nStarship prompt"
+if ! command -v starship &> /dev/null; then
+  echo "Installing Starship..."
+  brew install starship
 else
-  echo "Powerlevel10k already installed"
+  echo "Starship already installed"
 fi
 
 # ====================
@@ -68,6 +68,7 @@ packages=(
     postgresql@14
     podman
     sqlite
+    starship
     tmux
     uv
     yarn
@@ -77,22 +78,6 @@ for pkg in "${packages[@]}"; do
       brew install "$pkg"
   else
     echo "$pkg already installed"
-  fi
-done
-
-# ====================
-# Fonts (Powerlevel10k)
-# ====================
-echo -e "\nNerd Fonts"
-fonts=(
-    font-meslo-lg-nerd-font
-)
-brew tap homebrew/cask-fonts 2>/dev/null || true
-for font in "${fonts[@]}"; do
-  if ! brew ls --cask --versions "$font" > /dev/null 2>&1; then
-    brew install --cask "$font"
-  else
-    echo "$font already installed"
   fi
 done
 
@@ -173,6 +158,22 @@ else
 fi
 
 # ====================
+# Starship config
+# ====================
+echo -e "\nStarship config"
+STARSHIP_CONFIG="$HOME/.config/starship.toml"
+if [[ -L "$STARSHIP_CONFIG" ]] && [[ "$(readlink "$STARSHIP_CONFIG")" == "$THIS_DIR/.config/starship.toml" ]]; then
+  echo "Starship config already symlinked"
+else
+  mkdir -p "$HOME/.config"
+  if [[ -L "$STARSHIP_CONFIG" ]] || [[ -e "$STARSHIP_CONFIG" ]]; then
+    mv "$STARSHIP_CONFIG" "$STARSHIP_CONFIG.bak"
+  fi
+  echo "Symlinking starship config..."
+  ln -s "$THIS_DIR/.config/starship.toml" "$STARSHIP_CONFIG"
+fi
+
+# ====================
 # Neovim config
 # ====================
 echo -e "\nNeovim config"
@@ -237,7 +238,6 @@ dotfiles=(
   .gitignore_global
   .gitconfig
   .tmux.conf
-  .p10k.zsh
   agent-status.sh
   agent-windows.sh
 )
@@ -351,4 +351,3 @@ echo -e "\nAll done!"
 echo "Next steps:"
 echo "  1. Restart your terminal (or run: source ~/.zshenv && source ~/.zshrc)"
 echo "  2. Run 'tmux' and press prefix + I to install tmux plugins"
-echo "  3. Set iTerm2 font to MesloLGS NF in Preferences > Profiles > Text"

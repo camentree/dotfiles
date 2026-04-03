@@ -8,6 +8,7 @@ Applications and settings that need to be installed or configured manually after
   - Also install the Safari extension (1Password for Safari) from the App Store
 - **Claude** — https://claude.ai/download
 - **Google Chrome** — https://google.com/chrome
+- **Ghostty** — https://ghostty.org
 - **iTerm2** — https://iterm2.com
   - After install, the setup script configures it to load prefs from the symlinked plist
   - Set font to **MesloLGS NF** in Preferences > Profiles > Text
