@@ -28,3 +28,7 @@ palette = 15=#ccc6bc
 # Font
 font-family = JetBrainsMono Nerd Font
 font-size = 13
+
+# Behavior
+quit-after-last-window-closed = true
+confirm-close-surface = false
