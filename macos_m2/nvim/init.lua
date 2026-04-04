@@ -286,7 +286,23 @@ require('lazy').setup({
         topdelete = { text = '‾' }, ---@diagnostic disable-line: missing-fields
         changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
       },
+      current_line_blame = false,
+      current_line_blame_opts = {
+        delay = 300,
+      },
     },
+    config = function(_, opts)
+      require('gitsigns').setup(opts)
+      -- Show git blame only in visual mode
+      vim.api.nvim_create_autocmd('ModeChanged', {
+        pattern = '*:[vV\x16]*',
+        callback = function() require('gitsigns').toggle_current_line_blame(true) end,
+      })
+      vim.api.nvim_create_autocmd('ModeChanged', {
+        pattern = '[vV\x16]*:*',
+        callback = function() require('gitsigns').toggle_current_line_blame(false) end,
+      })
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -789,7 +805,18 @@ require('lazy').setup({
     },
   },
 
-  -- No colorscheme plugin — nvim inherits terminal colors
+  -- Colorscheme
+  {
+    'navarasu/onedark.nvim',
+    priority = 1000,
+    config = function()
+      require('onedark').setup {
+        style = 'dark',
+        transparent = true,
+      }
+      require('onedark').load()
+    end,
+  },
 
   -- Highlight todo, notes, etc in comments
   {
@@ -834,7 +861,7 @@ require('lazy').setup({
           active = function()
             local mode, mode_hl = statusline.section_mode { trunc_width = 120 }
             mode = mode:sub(1, 1)
-            local filename = statusline.section_filename { trunc_width = 140 }
+            local filename = vim.fn.expand '%:~:.'
             local filetype = vim.bo.filetype
             local location = '%2l:%-2v'
 
@@ -868,14 +895,13 @@ require('lazy').setup({
     lazy = false,
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'query', 'scala', 'vim', 'vimdoc' },
       auto_install = true,
       highlight = { enable = true },
       indent = { enable = true },
     },
     config = function(_, opts)
-      ---@diagnostic disable-next-line: missing-fields
-      require('nvim-treesitter.configs').setup(opts)
+      require('nvim-treesitter').setup(opts)
     end,
   },
 
@@ -894,6 +920,50 @@ require('lazy').setup({
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
+
+  -- Render markdown inline in the buffer
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    ft = { 'markdown' },
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+    opts = {
+      heading = {
+        icons = {},
+        sign = false,
+        backgrounds = {
+          'RenderMarkdownH1Bg',
+          'RenderMarkdownH2Bg',
+          'RenderMarkdownH3Bg',
+          'RenderMarkdownH4Bg',
+          'RenderMarkdownH5Bg',
+          'RenderMarkdownH6Bg',
+        },
+      },
+      code = {
+        sign = false,
+        style = 'full',
+        language_icon = false,
+        highlight = 'RenderMarkdownCode',
+      },
+      bullet = {
+        sign = false,
+        icons = { '⦁', '⦁', '⦁', '⦁' },
+      },
+    },
+    config = function(_, opts)
+      -- Heading styles: bold, no background
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH1Bg', { bold = true, fg = '#7ec8e3' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH2Bg', { bold = true, fg = '#86c9c0' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH3Bg', { bold = true, fg = '#c678dd' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH4Bg', { bold = true, fg = '#e5c07b' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH5Bg', { bold = true, fg = '#b0b0b0' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH6Bg', { bold = true, fg = '#808080' })
+      -- Inline code and code blocks
+      vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = '#2a2a35' })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = '#2a2a35' })
+      require('render-markdown').setup(opts)
+    end,
+  },
 
   -- Auto-save
   { 'okuuva/auto-save.nvim', lazy = false, opts = {} },
@@ -924,9 +994,7 @@ require('lazy').setup({
   },
 })
 
--- Make nvim background transparent so it uses the terminal background
-vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
-vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+-- NOTE: Background transparency is handled by onedark's `transparent = true` setting
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

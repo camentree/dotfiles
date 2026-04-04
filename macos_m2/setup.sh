@@ -63,13 +63,15 @@ packages=(
     gh
     git
     jq
-    neovim
     nvm
     postgresql@14
     podman
+    ripgrep
     sqlite
     starship
     tmux
+    tree-sitter
+    tree-sitter-cli
     uv
     yarn
 )
@@ -80,6 +82,24 @@ for pkg in "${packages[@]}"; do
     echo "$pkg already installed"
   fi
 done
+
+# ====================
+# Neovim
+# ====================
+NVIM_VERSION="0.12.0"
+echo -e "\nNeovim"
+if command -v nvim &> /dev/null && nvim --version | head -1 | grep -q "$NVIM_VERSION"; then
+  echo "Neovim $NVIM_VERSION already installed"
+else
+  echo "Installing Neovim $NVIM_VERSION..."
+  curl -LO "https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/nvim-macos-arm64.tar.gz"
+  tar xzf nvim-macos-arm64.tar.gz
+  mkdir -p "$HOME/.local"
+  rm -rf "$HOME/.local/nvim"
+  mv nvim-macos-arm64 "$HOME/.local/nvim"
+  ln -sf "$HOME/.local/nvim/bin/nvim" /opt/homebrew/bin/nvim
+  rm -f nvim-macos-arm64.tar.gz
+fi
 
 # ====================
 # Fonts
