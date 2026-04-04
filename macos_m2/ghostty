@@ -26,5 +26,5 @@ palette = 14=#86c9c0
 palette = 15=#ccc6bc
 
 # Font
-font-family = JetBrains Mono
+font-family = JetBrainsMono Nerd Font
 font-size = 13

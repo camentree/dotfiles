@@ -82,6 +82,17 @@ for pkg in "${packages[@]}"; do
 done
 
 # ====================
+# Fonts
+# ====================
+echo -e "\nFonts"
+if ! brew list --cask font-jetbrains-mono-nerd-font &> /dev/null; then
+  echo "Installing JetBrainsMono Nerd Font..."
+  brew install --cask font-jetbrains-mono-nerd-font
+else
+  echo "JetBrainsMono Nerd Font already installed"
+fi
+
+# ====================
 # mise (for JVM / sbt)
 # ====================
 echo -e "\nmise"
@@ -162,7 +173,7 @@ fi
 # ====================
 echo -e "\nStarship config"
 STARSHIP_CONFIG="$HOME/.config/starship.toml"
-if [[ -L "$STARSHIP_CONFIG" ]] && [[ "$(readlink "$STARSHIP_CONFIG")" == "$THIS_DIR/.config/starship.toml" ]]; then
+if [[ -L "$STARSHIP_CONFIG" ]] && [[ "$(readlink "$STARSHIP_CONFIG")" == "$THIS_DIR/starship.toml" ]]; then
   echo "Starship config already symlinked"
 else
   mkdir -p "$HOME/.config"
@@ -170,7 +181,7 @@ else
     mv "$STARSHIP_CONFIG" "$STARSHIP_CONFIG.bak"
   fi
   echo "Symlinking starship config..."
-  ln -s "$THIS_DIR/.config/starship.toml" "$STARSHIP_CONFIG"
+  ln -s "$THIS_DIR/starship.toml" "$STARSHIP_CONFIG"
 fi
 
 # ====================

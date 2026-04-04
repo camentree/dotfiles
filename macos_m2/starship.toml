@@ -15,6 +15,16 @@ format = " [$branch](#8a8a8a)"
 
 [git_status]
 format = '[$all_status$ahead_behind](#86c9c0) '
+# modified = '!'
+# staged = '+'
+# untracked = '?'
+# deleted = '✘'
+# renamed = '»'
+# stashed = '\$'
+# ahead = '⇡'
+# behind = '⇣'
+# diverged = '⇕'
+# conflicted = '='
 
 [character]
 success_symbol = "[❯](##f6f6f6)"

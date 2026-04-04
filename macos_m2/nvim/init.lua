@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -825,13 +825,38 @@ require('lazy').setup({
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup {
+        use_icons = vim.g.have_nerd_font,
+        -- You can configure sections in the statusline by overriding their
+        -- default behavior. For example, here we set the section for
+        -- cursor location to LINE:COLUMN
+        content = {
+          active = function()
+            local mode, mode_hl = statusline.section_mode { trunc_width = 120 }
+            mode = mode:sub(1, 1)
+            local filename = statusline.section_filename { trunc_width = 140 }
+            local filetype = vim.bo.filetype
+            local location = '%2l:%-2v'
 
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function() return '%2l:%-2v' end
+            return statusline.combine_groups {
+              { hl = mode_hl, strings = { mode } },
+              { hl = 'MiniStatuslineFilename', strings = { filename } },
+              '%=',
+              { hl = 'MiniStatuslineFileinfo', strings = { filetype } },
+              { hl = mode_hl, strings = { location } },
+            }
+          end,
+        },
+      }
+
+      -- Statusline colors: forest green mode sections, grey filepath, bold text
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#2e5a1e', fg = '#e0e0e0', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeInsert', { bg = '#7ec8e3', fg = '#1e1e1e', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeVisual', { bg = '#e5c07b', fg = '#1e1e1e', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeReplace', { bg = '#e06c75', fg = '#1e1e1e', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeCommand', { bg = '#c678dd', fg = '#1e1e1e', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = '#3a3a3a', fg = '#808080', bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = '#4a4a4a', fg = '#d0d0d0', bold = true })
 
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
@@ -898,6 +923,10 @@ require('lazy').setup({
     },
   },
 })
+
+-- Make nvim background transparent so it uses the terminal background
+vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
+vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
