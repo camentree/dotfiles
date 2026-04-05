@@ -533,14 +533,17 @@ require("lazy").setup({
 				showInferredType = true,
 				superMethodLensesEnabled = true,
 				scalafmtConfigPath = ".scalafmt.conf",
-				codeActionLiteralSupport = true,
-				scalafixRulesDependencies = {},
+				scalafixConfigPath = ".scalafix.conf",
+				autoImportBuild = "all",
 			}
+			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
 				statusBarProvider = "off",
 			}
 			metals_config.capabilities =
 				vim.lsp.protocol.make_client_capabilities()
+			-- Workaround for Neovim 0.12 glob parser bug with Metals file patterns
+			metals_config.capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
 			return metals_config
 		end,
 		config = function(self, metals_config)

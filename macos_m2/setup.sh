@@ -70,6 +70,7 @@ packages=(
     sqlite
     starship
     tmux
+    coursier/formulas/coursier
     tree-sitter
     tree-sitter-cli
     uv
