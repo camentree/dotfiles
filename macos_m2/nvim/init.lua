@@ -50,12 +50,12 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 vim.o.inccommand = "split"
-vim.o.cursorline = true
+vim.o.cursorline = false
 vim.o.scrolloff = 25 -- when scrolling how many lines to keep above/below cursor
 vim.o.confirm = true
 vim.o.keymodel = "startsel"
-vim.o.tabstop = 4
-vim.o.shiftwidth = 4
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 
@@ -107,7 +107,28 @@ vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
 vim.keymap.set("i", "<C-Right>", "<C-o>w", { desc = "Word forward" })
 vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
-vim.keymap.set("i", "<C-BS>", "<C-u>", { desc = "Delete to line start" })
+vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
+vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
+vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
+vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
+vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
+vim.keymap.set("i", "<D-S-z>", "<C-o><C-r>", { desc = "Redo" })
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "markdown",
+	callback = function(event)
+		vim.keymap.set("n", "<leader>x", function()
+			local line = vim.api.nvim_get_current_line()
+			local pre, text = line:match("^(%s*[%-%*%+] )(.*)")
+			if not pre then pre, text = "", line end
+			local unwrapped = text:match("^~~(.*)~~$")
+			if unwrapped then
+				vim.api.nvim_set_current_line(pre .. unwrapped)
+			else
+				vim.api.nvim_set_current_line(pre .. "~~" .. text .. "~~")
+			end
+		end, { buffer = event.buf, desc = "Stri[x]ethrough line" })
+	end,
+})
 
 -- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -373,6 +394,7 @@ require("lazy").setup({
 						"stylua",
 						"pyright",
 						"ruff",
+						"prettier",
 					},
 				},
 			},
@@ -590,6 +612,7 @@ require("lazy").setup({
 				lua = { "stylua" },
 				scala = { lsp_format = "prefer" },
 				python = { "ruff_organize_imports", "ruff_format" },
+				markdown = { "prettier" },
 			},
 		},
 	},
@@ -626,6 +649,9 @@ require("lazy").setup({
 			require("onedark").setup({
 				style = "dark",
 				transparent = true,
+				colors = {
+					fg = "#d5d0cb",
+				},
 			})
 			require("onedark").load()
 		end,
@@ -810,49 +836,43 @@ require("lazy").setup({
 			},
 			bullet = {
 				sign = false,
-				icons = { "⦁", "⦁", "⦁", "⦁" },
+				icons = { "–", "–", "–", "–" },
 			},
 		},
 		config = function(_, opts)
-			-- Heading styles: bold, no background
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH1Bg",
-				{ bold = true, fg = "#7ec8e3" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH2Bg",
-				{ bold = true, fg = "#86c9c0" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH3Bg",
-				{ bold = true, fg = "#c678dd" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH4Bg",
-				{ bold = true, fg = "#e5c07b" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH5Bg",
-				{ bold = true, fg = "#b0b0b0" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownH6Bg",
-				{ bold = true, fg = "#808080" }
-			)
+			-- Heading colors: defined once, applied to both render-markdown and treesitter
+			local heading_colors = {
+				"#7ec8e3", "#86c9c0", "#c678dd",
+				"#e5c07b", "#b0b0b0", "#808080",
+			}
+			for i, color in ipairs(heading_colors) do
+				local hl = { bold = true, fg = color }
+				vim.api.nvim_set_hl(0, "RenderMarkdownH" .. i .. "Bg", hl)
+				vim.api.nvim_set_hl(0, "@markup.heading." .. i .. ".markdown", hl)
+			end
 			vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#2a2a35" })
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownCodeInline",
-				{ bg = "#2a2a35" }
-			)
+			vim.api.nvim_set_hl(0, "RenderMarkdownCodeInline", { bg = "#2a2a35" })
 			require("render-markdown").setup(opts)
 		end,
+	},
+	-- uga-rosa/ccc.nvim
+	{
+		"uga-rosa/ccc.nvim",
+		event = "BufReadPre",
+		cmd = { "CccPick", "CccHighlighter", "CccConvert" },
+		keys = {
+			{ "<leader>cp", "<cmd>CccPick<cr>", desc = "[C]olor [P]icker" },
+			{
+				"<leader>ch",
+				"<cmd>CccHighlighter<cr>",
+				desc = "[C]olor [H]ighlighter toggle",
+			},
+		},
+		opts = {
+			highlighter = {
+				auto_enable = true,
+			},
+		},
 	},
 	-- okuuva/auto-save.nvim
 	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },

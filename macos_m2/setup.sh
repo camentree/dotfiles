@@ -265,6 +265,7 @@ dotfiles=(
   .zshenv
   .gitignore_global
   .gitconfig
+  .prettierrc
   .tmux.conf
   agent-status.sh
   agent-windows.sh
