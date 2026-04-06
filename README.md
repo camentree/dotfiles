@@ -145,3 +145,35 @@ Pre-Nix configs are preserved in the repo for reference:
 - `macos_m1/` — M1 MacBook
 - `macos_m2/` — M4 MacBook (most recent pre-Nix)
 - `aws_linux/`, `debian/`, `ubuntu/` — Linux configs
+
+## Wallpaper
+
+The Sombrero Galaxy (Messier 104) is around 30 million light-years away in the Virgo constellation. Tilted nearly edge-on from Earth we see it as a broad-brimmed hat. It contains 100 billion stars — similar to the Milky Way — and a supermassive black hole at its center about 9 billion times the mass of our sun. The bright white glow is the galaxy's dense core of billions of older stars. Around that is an orbiting dustring of carbon and silicon mixed with hydrogen and helium gas, where new stars are still forming. Over billions of years, the galaxy will exhaust its gas and dust, star formation will cease, and its stars will slowly burn out one by one, leaving it a dim, reddening ghost. The source image is a Hubble Space Telescope mosaic from 2003, reprocessed in 2025 for Hubble's 35th anniversary.
+
+[original](esahubble.org/images/heic2506a)
+
+```bash
+convert ~/Downloads/sombrero_2025_hubble.tif \
+  -level 55%,100% \
+  -gravity center \
+  -crop 16:9 +repage \
+  -resize 7680x4320 \
+  ~/Downloads/sombrero_2025_55p.png
+```
+
+- `-level {black_point%} {white_point%}`
+  - black point: take everything X% brightness and lower and crush it to pure black. Take the remaining X% to 100% and stretch it to 0 to 100%.
+  - white point: similar but on the hight end
+- `-gravity center` set the anchor point
+- `crop 16:9` crop to a particular ratio
+- `+repage` retain metadata about the original image
+- `-resize` re-scale the image respecting aspect ratio if set
+- infers the output file type from the output path and respects it
+- other ones I could care about
+  - `-gamma` darkens midtones instead of the lowtones (kind of the opposite of level)
+  - `-quality` if jpeg or some other lossy file type, affects quality
+  - `-strip` strip metadata
+  - `-colorspace` change the colorspace (most often want `sRGB`)
+  - `-extent` pads instead of crops the image. pads with a color
+  - `-modulate {brightness} {saturation} {hue}`
+
