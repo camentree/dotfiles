@@ -1,4 +1,5 @@
 --[[
+--
 
  TODO:  
 - :Tutor
@@ -101,14 +102,21 @@ vim.keymap.set(
 	vim.diagnostic.setloclist,
 	{ desc = "Open diagnostic [Q]uickfix list" }
 )
+vim.keymap.set("n", "j", function()
+	return vim.v.count == 0 and "gj" or "j"
+end, { expr = true, desc = "Down by display line" })
+vim.keymap.set("n", "k", function()
+	return vim.v.count == 0 and "gk" or "k"
+end, { expr = true, desc = "Up by display line" })
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
-vim.keymap.set("i", "<C-Right>", "<C-o>w", { desc = "Word forward" })
+vim.keymap.set("i", "<C-Right>", "<C-o>e<Right>", { desc = "Word forward" })
 vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
+vim.keymap.set("i", "<S-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
 vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
@@ -119,7 +127,9 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.keymap.set("n", "<leader>x", function()
 			local line = vim.api.nvim_get_current_line()
 			local pre, text = line:match("^(%s*[%-%*%+] )(.*)")
-			if not pre then pre, text = "", line end
+			if not pre then
+				pre, text = "", line
+			end
 			local unwrapped = text:match("^~~(.*)~~$")
 			if unwrapped then
 				vim.api.nvim_set_current_line(pre .. unwrapped)
@@ -565,7 +575,8 @@ require("lazy").setup({
 			metals_config.capabilities =
 				vim.lsp.protocol.make_client_capabilities()
 			-- Workaround for Neovim 0.12 glob parser bug with Metals file patterns
-			metals_config.capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+			metals_config.capabilities.workspace.didChangeWatchedFiles.dynamicRegistration =
+				false
 			return metals_config
 		end,
 		config = function(self, metals_config)
@@ -842,16 +853,28 @@ require("lazy").setup({
 		config = function(_, opts)
 			-- Heading colors: defined once, applied to both render-markdown and treesitter
 			local heading_colors = {
-				"#7ec8e3", "#86c9c0", "#c678dd",
-				"#e5c07b", "#b0b0b0", "#808080",
+				"#7ec8e3",
+				"#86c9c0",
+				"#c678dd",
+				"#e5c07b",
+				"#b0b0b0",
+				"#808080",
 			}
 			for i, color in ipairs(heading_colors) do
 				local hl = { bold = true, fg = color }
 				vim.api.nvim_set_hl(0, "RenderMarkdownH" .. i .. "Bg", hl)
-				vim.api.nvim_set_hl(0, "@markup.heading." .. i .. ".markdown", hl)
+				vim.api.nvim_set_hl(
+					0,
+					"@markup.heading." .. i .. ".markdown",
+					hl
+				)
 			end
 			vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#2a2a35" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownCodeInline", { bg = "#2a2a35" })
+			vim.api.nvim_set_hl(
+				0,
+				"RenderMarkdownCodeInline",
+				{ bg = "#2a2a35" }
+			)
 			require("render-markdown").setup(opts)
 		end,
 	},
