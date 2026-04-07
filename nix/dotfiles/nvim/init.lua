@@ -409,11 +409,11 @@ require("lazy").setup({
 				},
 			},
 			{
-			"j-hui/fidget.nvim",
-			opts = {
-				notification = { override_vim_notify = true },
+				"j-hui/fidget.nvim",
+				opts = {
+					notification = { override_vim_notify = true },
+				},
 			},
-		},
 		},
 		config = function()
 			vim.api.nvim_create_autocmd("LspAttach", {
@@ -506,7 +506,13 @@ require("lazy").setup({
 			---@type table<string, vim.lsp.Config>
 			local servers = {
 				pyright = {},
-				ruff = {},
+				ruff = {
+					capabilities = {
+						general = {
+							positionEncodings = { "utf-16" },
+						},
+					},
+				},
 				lua_ls = {
 					on_init = function(client)
 						if client.workspace_folders then
