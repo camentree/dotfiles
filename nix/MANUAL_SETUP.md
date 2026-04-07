@@ -1,6 +1,22 @@
 # Manual Setup
 
-Applications and settings that need to be installed or configured manually after running `setup.sh`.
+Steps and applications that need manual installation or configuration after running `setup.sh`.
+
+## Prerequisites
+
+Before running `setup.sh`:
+
+1. **Xcode Command Line Tools** — `xcode-select --install` (follow the dialog)
+2. **Clone dotfiles** — `git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles`
+
+## First-time setup
+
+```bash
+cd ~/Projects/dotfiles/nix
+bash setup.sh mac-arm-work
+```
+
+After setup completes, restart your terminal. Use `nix-rebuild mac-arm-work` for future config changes.
 
 ## Applications to Install
 
