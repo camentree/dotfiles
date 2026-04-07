@@ -24,7 +24,6 @@
     "**/.vscode": true,
     "**/*.egg-info": true,
     "**/*.pyc": true,
-    "**/.worktrees": true,
     "**/CVS": true,
     "**/.pytest_cache": true,
     "**/.coverage*": true,

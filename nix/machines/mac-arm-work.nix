@@ -8,6 +8,9 @@
 
   # Work packages
   environment.systemPackages = with pkgs; [
-    # add work-only packages here
+    buf
+    podman
+    postgresql
+    yarn
   ];
 }

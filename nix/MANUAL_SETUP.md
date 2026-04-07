@@ -1,7 +1,35 @@
 # Manual Setup
 
-1. Install 1Password
-   a. unset `cmd + \` shortcut (Settings -> General -> Keyboard Shorcuts -> Autofill)
-2. Install VSCode
-3. Install Claude
-4. Set up datascience python env `uv venv --python 3.13 ~/.venvs/datasci && source ~/.venvs/datasci/bin/activate && uv pip install ipython pandas numpy matplotlib seaborn ipywidgets tqdm`
+Applications and settings that need to be installed or configured manually after running `setup.sh`.
+
+## Applications to Install
+
+- **1Password** — https://1password.com/downloads
+  - Also install the Safari extension (1Password for Safari) from the App Store
+- **Claude** — https://claude.ai/download
+- **Google Chrome** — https://google.com/chrome
+- **Ghostty** — https://ghostty.org
+- **Notion** — https://notion.so/desktop
+- **Podman Desktop** — https://podman-desktop.io
+- **Rectangle** — https://rectangleapp.com
+- **Slack** — https://slack.com/downloads/mac
+- **Spotify** — https://spotify.com/download
+- **Tadama** — App Store
+- **Tuple** — https://tuple.app/downloads
+- **Visual Studio Code** — https://code.visualstudio.com
+- **Zoom** — https://zoom.us/download
+
+## Manual Settings
+
+- **Rectangle** — Open and grant accessibility permissions, configure preferred shortcuts, set meta key to cmd+ctrl
+- **1Password** — Sign in, enable Safari extension, unset `cmd + \` autofill shortcut
+- **Slack** — Sign into workspaces
+- **Claude Code** — Run `claude` in terminal to authenticate
+- **GitHub CLI** — Run `gh auth login` to authenticate
+- **AWS CLI** — Run `aws configure` or set up SSO in `~/.aws/config`
+- **SSH key** — Add `~/.ssh/id_ed25519.pub` to GitHub at https://github.com/settings/keys
+- **Podman** — Run `podman machine init && podman machine start`
+- **Mail** — Add keyboard shortcuts via System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts > Mail.app:
+  - "Mailbox Search" → `Cmd+\`
+  - "Send" → `Ctrl+Cmd+Return`
+- **macOS** — Set desktop background

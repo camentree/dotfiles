@@ -1,24 +1,24 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
-# Nix store paths (powerlevel10k, oh-my-zsh, etc.)
+# Nix store paths (oh-my-zsh, etc.)
 [[ -f ~/.nix-paths.sh ]] && source ~/.nix-paths.sh
 
 # Oh-my-zsh
-ZSH_THEME=""  # we use powerlevel10k sourced below
+ZSH_THEME=""
 plugins=(history)
 source $ZSH/oh-my-zsh.sh
 
-# Powerlevel10k
-[[ -n "$NIX_P10K" ]] && source "$NIX_P10K/share/zsh-powerlevel10k/powerlevel10k.zsh-theme"
+# Starship prompt
+eval "$(starship init zsh)"
 
 # Aliases
 alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias cov-clean="rm .coverage.*"
 alias git-open="open \`git config --get remote.origin.url\`"
+alias vim="nvim"
 alias vd="deactivate"
+alias g="git"
+alias gaa="git add --all"
+alias gc="git commit -m"
+alias gco="git checkout"
 
 
 # Functions
@@ -102,17 +102,10 @@ function vdd () {
   rm -rf .venv
   echo "Removed .venv"
 }
-function datasci () { source ~/.venvs/datasci/bin/activate && ipython; }
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
-
-# Add hostname to prompt
-PROMPT="%{$fg[green]%}%m%{$reset_color%} ${PROMPT}"
-
-# Load p10k config
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Remove . from word characters so Option+Delete stops at periods
 WORDCHARS=${WORDCHARS//.}
