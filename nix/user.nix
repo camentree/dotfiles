@@ -85,7 +85,7 @@
     # Starship prompt
     ".config/starship.toml" = { source = ./dotfiles/starship.toml; force = true; };
 
-    # Neovim
+    # Neovim (lazy-lock.json is symlinked via activation script — it must be writable)
     ".config/nvim/init.lua"       = { source = ./dotfiles/nvim/init.lua;       force = true; };
     ".config/nvim/.stylua.toml"   = { source = ./dotfiles/nvim/.stylua.toml;   force = true; };
 
@@ -123,4 +123,13 @@
       force = false;
     };
   };
+
+  # ============================================================
+  # Activation scripts — for files that need to be writable
+  # ============================================================
+  home.activation.neovimLazyLock = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
+      ${config.home.homeDirectory}/Projects/dotfiles/nix/dotfiles/nvim/lazy-lock.json \
+      ${config.home.homeDirectory}/.config/nvim/lazy-lock.json
+  '';
 }
