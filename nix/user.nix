@@ -88,7 +88,6 @@
     # Neovim
     ".config/nvim/init.lua"       = { source = ./dotfiles/nvim/init.lua;       force = true; };
     ".config/nvim/.stylua.toml"   = { source = ./dotfiles/nvim/.stylua.toml;   force = true; };
-    ".config/nvim/lazy-lock.json" = { source = ./dotfiles/nvim/lazy-lock.json; force = true; };
 
     # Ghostty terminal
     ".config/ghostty/config" = { source = ./dotfiles/ghostty; force = true; };
