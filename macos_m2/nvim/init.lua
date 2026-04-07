@@ -121,6 +121,11 @@ vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
 vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
 vim.keymap.set("i", "<D-S-z>", "<C-o><C-r>", { desc = "Redo" })
+vim.keymap.set("v", "Y", function()
+	vim.cmd('normal! "+y')
+	vim.fn.setreg("+", vim.fn.system("pandoc -t plain --wrap=none", vim.fn.getreg("+")))
+end, { desc = "Yank selection as rendered markdown" })
+
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)

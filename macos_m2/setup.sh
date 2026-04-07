@@ -64,6 +64,7 @@ packages=(
     git
     jq
     nvm
+    pandoc
     postgresql@14
     podman
     ripgrep
@@ -268,7 +269,6 @@ dotfiles=(
   .prettierrc
   .tmux.conf
   agent-status.sh
-  agent-windows.sh
 )
 
 for filename in "${dotfiles[@]}" ; do

@@ -30,6 +30,7 @@ font-family = JetBrainsMonoNL Nerd Font Mono
 font-size = 15
 
 # Behavior
+shell-integration-features = no-title
 quit-after-last-window-closed = true
 unfocused-split-opacity = 1
 confirm-close-surface = false
