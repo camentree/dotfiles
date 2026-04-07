@@ -103,6 +103,10 @@ function vdd () {
   echo "Removed .venv"
 }
 
+# Tab title (directory name)
+function set_terminal_title() { print -Pn '\e]0;%1~\a' }
+precmd_functions+=(set_terminal_title)
+
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
