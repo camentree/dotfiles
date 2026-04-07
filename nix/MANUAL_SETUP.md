@@ -16,7 +16,14 @@ cd ~/Projects/dotfiles/nix
 bash setup.sh mac-arm-work
 ```
 
-After setup completes, restart your terminal. Use `nix-rebuild mac-arm-work` for future config changes.
+After setup completes, restart your terminal. For future config changes:
+
+```bash
+cd ~/Projects/dotfiles/nix
+sudo darwin-rebuild switch --flake ".#mac-arm-work"
+```
+
+Once your shell is set up, you can use the `nix-rebuild mac-arm-work` alias instead.
 
 ## Applications to Install
 
