@@ -16,5 +16,7 @@ build/
 *.pyc
 local.sbt
 CLAUDE.local*
+.claude-scratch
 .zshenv.local
+.prettierignore
 .worktrees/

@@ -1,0 +1,40 @@
+format = """
+$directory\
+$git_branch\
+$git_status\
+$line_break\
+$character"""
+
+[directory]
+truncate_to_repo = true
+truncation_length = 1
+format = "[$path](#86c9c0) "
+
+[git_branch]
+format = " [$branch](#8a8a8a)"
+
+[git_status]
+format = '[$all_status$ahead_behind](#86c9c0) '
+# modified = '!'
+# staged = '+'
+# untracked = '?'
+# deleted = '✘'
+# renamed = '»'
+# stashed = '\$'
+# ahead = '⇡'
+# behind = '⇣'
+# diverged = '⇕'
+# conflicted = '='
+
+[character]
+success_symbol = "[❯](##f6f6f6)"
+error_symbol = "[❯](#e06c75)"
+
+[python]
+disabled = true
+
+[nodejs]
+disabled = true
+
+[java]
+disabled = true

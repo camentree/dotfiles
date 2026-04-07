@@ -8,6 +8,7 @@
 
   # Personal packages
   environment.systemPackages = with pkgs; [
-    # add personal-only packages here
+    coursier
+    postgresql
   ];
 }

@@ -1,0 +1,35 @@
+# Window
+macos-titlebar-style = tabs
+window-padding-x = 8
+window-padding-y = 4
+
+# Colors
+background = #1c1a1e
+foreground = #d5d0cb 
+selection-background = #3d3535
+selection-foreground = #d4cfc9
+palette = 0=#302a2a
+palette = 1=#e06c75
+palette = 2=#98c379
+palette = 3=#e5c07b
+palette = 4=#7ec8e3
+palette = 5=#c678dd
+palette = 6=#86c9c0
+palette = 7=#b0aaa0
+palette = 8=#545050
+palette = 9=#e06c75
+palette = 10=#98c379
+palette = 11=#e5c07b
+palette = 12=#7ec8e3
+palette = 13=#c678dd
+palette = 14=#86c9c0
+palette = 15=#ccc6bc
+
+# Font
+font-family = JetBrainsMonoNL Nerd Font Mono
+font-size = 15
+
+# Behavior
+quit-after-last-window-closed = true
+unfocused-split-opacity = 1
+confirm-close-surface = false
