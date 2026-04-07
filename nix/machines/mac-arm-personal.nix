@@ -8,7 +8,6 @@
 
   # Personal packages
   environment.systemPackages = with pkgs; [
-    coursier
     postgresql
   ];
 }

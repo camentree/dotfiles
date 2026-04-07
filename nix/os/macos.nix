@@ -29,7 +29,9 @@
   # ============================================================
   environment.systemPackages = with pkgs; [
     claude-code
+    coursier
     curl
+    fd
     gh
     git
     htop

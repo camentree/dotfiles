@@ -408,7 +408,12 @@ require("lazy").setup({
 					},
 				},
 			},
-			{ "j-hui/fidget.nvim", opts = {} },
+			{
+			"j-hui/fidget.nvim",
+			opts = {
+				notification = { override_vim_notify = true },
+			},
+		},
 		},
 		config = function()
 			vim.api.nvim_create_autocmd("LspAttach", {
