@@ -9,6 +9,9 @@
   # Work packages
   environment.systemPackages = with pkgs; [
     buf
+    docker
+    docker-compose
+    imagemagick
     podman
     postgresql
     yarn
