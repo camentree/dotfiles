@@ -14,8 +14,7 @@ export JAVA_HOME="$HOME/.local/share/mise/installs/java/temurin-17.0.16+8"
 unset DIRHELPER_USER_DIR_SUFFIX
 
 # Base python virtual environment
-export VIRTUAL_ENV="$HOME/.venvs/base3.13"
-export PATH="$VIRTUAL_ENV/bin:$PATH"
+[[ -d "$HOME/.venvs/base3.13" ]] && source "$HOME/.venvs/base3.13/bin/activate"
 
 # Machine-specific overrides and secrets (not tracked in git)
 [[ -f ~/.zshenv.local ]] && source ~/.zshenv.local
