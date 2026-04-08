@@ -688,6 +688,9 @@ require("lazy").setup({
 				},
 			})
 			require("onedark").load()
+			vim.api.nvim_set_hl(0, "@markup.strikethrough", { strikethrough = true })
+			vim.api.nvim_set_hl(0, "@markup.bold", { bold = true })
+			vim.api.nvim_set_hl(0, "@markup.italic", { italic = true })
 		end,
 	},
 	-- folke/todo-comments.nvim
