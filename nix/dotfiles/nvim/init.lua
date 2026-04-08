@@ -174,7 +174,7 @@ local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
 require("lazy").setup({
-	rocks = { enabled = false },
+	rocks = { enabled = false, hererocks = false },
 	-- NMAC427/guess-indent.nvim
 	{ "NMAC427/guess-indent.nvim", opts = {} },
 	-- lewis6991/gitsigns.nvim
