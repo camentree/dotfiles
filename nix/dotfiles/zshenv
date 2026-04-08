@@ -2,6 +2,8 @@
 # Keep this file lightweight. Interactive-only config belongs in .zshrc.
 
 export PATH="$HOME/.local/bin:$PATH"
+export EDITOR="nvim"
+export VISUAL="nvim"
 
 # mise (manages node, java, sbt, etc.)
 if command -v mise &> /dev/null; then
