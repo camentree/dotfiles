@@ -77,7 +77,7 @@ vim.keymap.set(
 	"n",
 	"z0",
 	"<cmd>set foldlevel=0<CR>",
-	{ desc = "Fold to level 0 (close all)" }
+	{ desc = "Fold to level 0 (close all)", nowait = true }
 )
 vim.keymap.set(
 	"n",
@@ -130,7 +130,10 @@ vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
 vim.keymap.set("i", "<D-S-z>", "<C-o><C-r>", { desc = "Redo" })
 vim.keymap.set("v", "Y", function()
 	vim.cmd('normal! "+y')
-	vim.fn.setreg("+", vim.fn.system("pandoc -t plain --wrap=none", vim.fn.getreg("+")))
+	vim.fn.setreg(
+		"+",
+		vim.fn.system("pandoc -t plain --wrap=none", vim.fn.getreg("+"))
+	)
 end, { desc = "Yank selection as rendered markdown" })
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -689,7 +692,11 @@ require("lazy").setup({
 				},
 			})
 			require("onedark").load()
-			vim.api.nvim_set_hl(0, "@markup.strikethrough", { strikethrough = true })
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.strikethrough",
+				{ strikethrough = true }
+			)
 			vim.api.nvim_set_hl(0, "@markup.bold", { bold = true })
 			vim.api.nvim_set_hl(0, "@markup.italic", { italic = true })
 		end,
