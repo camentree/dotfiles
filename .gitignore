@@ -5,8 +5,10 @@ result
 # macOS
 .DS_Store
 
-# Secrets — never commit
+# Secrets
 .zshenv.local
+
+.claude
 
 # Old emacs stuff
 *.elc

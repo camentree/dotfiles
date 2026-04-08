@@ -67,7 +67,7 @@ vim.diagnostic.config({
 	float = { border = "rounded", source = "if_many" },
 	underline = { severity = { min = vim.diagnostic.severity.WARN } },
 	virtual_text = true,
-	jump = { float = true },
+	jump = { on_jump = "float" },
 })
 
 -- [[ BASIC KEYMAPS ]]
@@ -185,6 +185,7 @@ local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
 require("lazy").setup({
+	rocks = { enabled = false, hererocks = false },
 	-- NMAC427/guess-indent.nvim
 	{ "NMAC427/guess-indent.nvim", opts = {} },
 	-- lewis6991/gitsigns.nvim
@@ -637,7 +638,7 @@ require("lazy").setup({
 			notify_on_error = false,
 			format_on_save = function(bufnr)
 				return {
-					timeout_ms = 500,
+					timeout_ms = 3000,
 					lsp_format = "fallback",
 				}
 			end,
@@ -670,7 +671,7 @@ require("lazy").setup({
 			sources = {
 				default = { "lsp", "path" },
 			},
-			fuzzy = { implementation = "lua" },
+			fuzzy = { implementation = "prefer_rust" },
 			signature = { enabled = true },
 		},
 	},
@@ -788,6 +789,7 @@ require("lazy").setup({
 				"scala",
 				"vim",
 				"vimdoc",
+				"yaml",
 			},
 			auto_install = true,
 			highlight = { enable = true },
@@ -868,9 +870,9 @@ require("lazy").setup({
 				highlight = "RenderMarkdownCode",
 			},
 			bullet = {
-				sign = false,
 				icons = { "–", "–", "–", "–" },
 			},
+			latex = { enabled = false },
 		},
 		config = function(_, opts)
 			-- Heading colors: defined once, applied to both render-markdown and treesitter

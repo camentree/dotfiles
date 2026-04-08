@@ -79,6 +79,7 @@
     ".zshenv"            = { source = ./dotfiles/zshenv;            force = true; };
     ".vimrc"             = { source = ./dotfiles/vimrc; };
     ".gitignore_global"  = { source = ./dotfiles/gitignore_global;  force = true; };
+    ".prettierrc"        = { source = ./dotfiles/prettierrc;       force = true; };
     "agent-status.sh"    = { source = ./dotfiles/agent-status.sh; };
     ".ipython/profile_default/startup/00-imports.py" = { source = ./dotfiles/ipython_startup_imports.py; };
 
