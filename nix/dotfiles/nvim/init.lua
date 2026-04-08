@@ -74,6 +74,12 @@ vim.diagnostic.config({
 --vim.keymap.set(mode, key, function, metadata)
 vim.keymap.set(
 	"n",
+	"z0",
+	"<cmd>set foldlevel=0<CR>",
+	{ desc = "Fold to level 0 (close all)" }
+)
+vim.keymap.set(
+	"n",
 	"z1",
 	"<cmd>set foldlevel=1<CR>",
 	{ desc = "Fold to level 1" }
