@@ -28,6 +28,7 @@
   # Packages — installed on every machine
   # ============================================================
   environment.systemPackages = with pkgs; [
+    awscli2
     claude-code
     coursier
     curl
@@ -39,6 +40,7 @@
     mise
     neovim
     nodejs_24
+    pandoc
     python3
     ripgrep
     sqlite

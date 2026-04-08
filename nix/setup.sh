@@ -23,7 +23,7 @@ echo "=============================="
 # ----------------------------------------------------------
 # Step 1: Install Nix (if not already installed)
 # ----------------------------------------------------------
-echo -e "\n[1/8] Nix"
+echo -e "\n[1/6] Nix"
 if command -v nix &> /dev/null; then
   echo "Already installed: $(nix --version)"
 else
@@ -38,7 +38,7 @@ fi
 # ----------------------------------------------------------
 # Step 2: Move conflicting /etc files (nix-darwin needs these)
 # ----------------------------------------------------------
-echo -e "\n[2/8] Preparing /etc files for nix-darwin"
+echo -e "\n[2/6] Preparing /etc files for nix-darwin"
 for f in /etc/bashrc /etc/zshrc; do
   if [ -f "$f" ] && ! grep -q "nix-darwin" "$f" 2>/dev/null; then
     echo "Moving $f to ${f}.before-nix-darwin"
@@ -49,7 +49,7 @@ done
 # ----------------------------------------------------------
 # Step 3: SSH key (if not already set up)
 # ----------------------------------------------------------
-echo -e "\n[3/8] SSH key"
+echo -e "\n[3/6] SSH key"
 if [ -f "$HOME/.ssh/id_ed25519" ]; then
   echo "Already exists"
 else
@@ -66,7 +66,7 @@ fi
 # ----------------------------------------------------------
 # Step 4: Build and activate
 # ----------------------------------------------------------
-echo -e "\n[4/8] Building nix-darwin config ($HOST)"
+echo -e "\n[4/6] Building nix-darwin config ($HOST)"
 cd "$THIS_DIR"
 sudo "$(which nix 2>/dev/null || echo /nix/var/nix/profiles/default/bin/nix)" \
   --extra-experimental-features "nix-command flakes" \
@@ -78,7 +78,7 @@ export PATH="/run/current-system/sw/bin:$HOME/.nix-profile/bin:$PATH"
 # ----------------------------------------------------------
 # Step 5: Install runtimes via mise (node, java, sbt)
 # ----------------------------------------------------------
-echo -e "\n[5/8] Runtimes via mise"
+echo -e "\n[5/6] Runtimes via mise"
 if command -v mise &> /dev/null; then
   echo "Installing Node LTS..."
   mise use --global node@lts
@@ -91,38 +91,9 @@ if command -v mise &> /dev/null; then
 fi
 
 # ----------------------------------------------------------
-# Step 6: Global npm packages
+# Step 6: Claude Code machine-specific settings (env vars for Java/sbt)
 # ----------------------------------------------------------
-echo -e "\n[6/8] Global npm packages"
-if command -v mise &> /dev/null; then
-  eval "$(mise activate bash)"
-  for pkg in typescript eslint; do
-    if ! npm list -g --depth=0 "$pkg" &> /dev/null 2>&1; then
-      echo "Installing $pkg..."
-      npm install -g "$pkg"
-    else
-      echo "$pkg already installed globally"
-    fi
-  done
-fi
-
-# ----------------------------------------------------------
-# Step 7: Base Python virtual environment
-# ----------------------------------------------------------
-echo -e "\n[7/8] Base Python virtual environment"
-VENV_DIR="$HOME/.venvs/base3.13"
-if [[ ! -d "$VENV_DIR" ]]; then
-  echo "Creating base venv at $VENV_DIR..."
-  mkdir -p "$HOME/.venvs"
-  uv venv --python 3.13 "$VENV_DIR"
-else
-  echo "Base venv already exists"
-fi
-
-# ----------------------------------------------------------
-# Step 8: Claude Code machine-specific settings
-# ----------------------------------------------------------
-echo -e "\n[8/8] Claude Code machine settings"
+echo -e "\n[6/6] Claude Code machine settings"
 CLAUDE_LOCAL="$HOME/.claude/settings.local.json"
 if [[ ! -f "$CLAUDE_LOCAL" ]]; then
   echo "Creating $CLAUDE_LOCAL..."
@@ -147,6 +118,5 @@ echo "=============================="
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal"
-echo "  2. Type 'nix-rebuild $HOST' after any config change"
-echo "  3. See NIX_GUIDE.md for how everything works"
-echo "  4. See MANUAL_SETUP.md for what still needs manual setup"
+echo "  2. See MANUAL_SETUP.md for what still needs manual setup"
+echo "  3. Use 'nix-rebuild $HOST' after any config change"
