@@ -98,6 +98,7 @@ vim.keymap.set("i", "<C-Right>", "<C-o>e<Right>", { desc = "Word forward" })
 vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
+vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
@@ -692,7 +693,6 @@ require("lazy").setup({
 		"nvim-mini/mini.nvim",
 		config = function()
 			require("mini.ai").setup({ n_lines = 500 })
-			require("mini.pairs").setup()
 			require("mini.surround").setup()
 			local statusline = require("mini.statusline")
 			statusline.setup({
