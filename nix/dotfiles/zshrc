@@ -17,7 +17,7 @@ alias vim="nvim"
 alias vd="deactivate"
 alias g="git"
 alias gaa="git add --all"
-alias gc="git commit -m"
+alias gcm="git commit -m"
 alias gco="git checkout"
 
 
