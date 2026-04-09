@@ -75,30 +75,6 @@ vim.diagnostic.config({
 --vim.keymap.set(mode, key, function, metadata)
 vim.keymap.set(
 	"n",
-	"z0",
-	"<cmd>set foldlevel=0<CR>",
-	{ desc = "Fold to level 0 (close all)", nowait = true }
-)
-vim.keymap.set(
-	"n",
-	"z1",
-	"<cmd>set foldlevel=1<CR>",
-	{ desc = "Fold to level 1" }
-)
-vim.keymap.set(
-	"n",
-	"z2",
-	"<cmd>set foldlevel=2<CR>",
-	{ desc = "Fold to level 2" }
-)
-vim.keymap.set(
-	"n",
-	"z3",
-	"<cmd>set foldlevel=3<CR>",
-	{ desc = "Fold to level 3" }
-)
-vim.keymap.set(
-	"n",
 	"<Esc>",
 	"<cmd>nohlsearch<CR>",
 	{ desc = "Escape to unhighlight search returns" }
@@ -839,18 +815,13 @@ require("lazy").setup({
 		},
 		config = function(_, opts)
 			require("ufo").setup(opts)
-			vim.keymap.set(
-				"n",
-				"zR",
-				require("ufo").openAllFolds,
-				{ desc = "Open all folds" }
-			)
-			vim.keymap.set(
-				"n",
-				"zM",
-				require("ufo").closeAllFolds,
-				{ desc = "Close all folds" }
-			)
+			local ufo = require("ufo")
+			vim.keymap.set("n", "zR", ufo.openAllFolds, { desc = "Open all folds" })
+			vim.keymap.set("n", "zM", ufo.closeAllFolds, { desc = "Close all folds" })
+			vim.keymap.set("n", "z0", ufo.closeAllFolds, { desc = "Fold to level 0 (close all)", nowait = true })
+			vim.keymap.set("n", "z1", function() ufo.closeFoldsWith(1) end, { desc = "Fold to level 1" })
+			vim.keymap.set("n", "z2", function() ufo.closeFoldsWith(2) end, { desc = "Fold to level 2" })
+			vim.keymap.set("n", "z3", function() ufo.closeFoldsWith(3) end, { desc = "Fold to level 3" })
 		end,
 	},
 	-- MeanderingProgrammer/render-markdown.nvim
