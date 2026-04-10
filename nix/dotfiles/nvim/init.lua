@@ -911,6 +911,40 @@ require("lazy").setup({
 			},
 		},
 	},
+	-- akinsho/toggleterm.nvim
+	{
+		"akinsho/toggleterm.nvim",
+		version = "*",
+		keys = {
+			{
+				"<leader>tt",
+				function()
+					require("toggleterm").toggle(1, nil, nil, "horizontal")
+				end,
+				desc = "[T]oggle [T]erminal",
+			},
+			{
+				"<leader>tc",
+				function()
+					local term = require("toggleterm.terminal").Terminal
+					if not vim.g._claude_term then
+						vim.g._claude_term = term:new({
+							cmd = "claude",
+							count = 9,
+							direction = "horizontal",
+						})
+					end
+					vim.g._claude_term:toggle()
+				end,
+				desc = "[T]oggle [C]laude Code",
+			},
+		},
+		opts = {
+			size = 20,
+			shade_terminals = false,
+			start_in_insert = true,
+		},
+	},
 	-- okuuva/auto-save.nvim
 	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },
 })
