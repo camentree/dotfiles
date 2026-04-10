@@ -98,8 +98,7 @@
     "Library/Application Support/Code/User/keybindings.json" = { source = ./dotfiles/vscode/keybindings.json; force = true; };
 
     # Claude Code
-    ".claude/settings.json" = { source = ./claude/settings.json; force = true; };
-    ".claude/CLAUDE.md"     = { source = ./claude/CLAUDE.md;     force = true; };
+    ".claude" = { source = ./claude; recursive = true; force = true; };
 
     # SSH
     ".ssh/config" = {
