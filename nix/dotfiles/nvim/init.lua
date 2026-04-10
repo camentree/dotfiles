@@ -932,9 +932,6 @@ require("lazy").setup({
 							cmd = "claude",
 							count = 9,
 							direction = "vertical",
-							size = function()
-								return math.floor(vim.o.columns * 0.4)
-							end,
 						})
 					end
 					_G._claude_term:toggle()
@@ -943,7 +940,12 @@ require("lazy").setup({
 			},
 		},
 		opts = {
-			size = 20,
+			size = function(term)
+				if term.direction == "vertical" then
+					return math.floor(vim.o.columns * 0.4)
+				end
+				return 20
+			end,
 			shade_terminals = false,
 			start_in_insert = true,
 			on_open = function(term)
