@@ -241,6 +241,14 @@ require("lazy").setup({
 		},
 		config = function()
 			require("telescope").setup({
+				defaults = {
+					layout_strategy = "horizontal",
+					layout_config = {
+						width = 0.9,
+						preview_width = 0.5,
+					},
+					path_display = { "filename_first" },
+				},
 				extensions = {
 					["ui-select"] = {
 						require("telescope.themes").get_dropdown(),
