@@ -1,7 +1,7 @@
 --[[
 --
 
- TODO:  
+ TODO:
 - :Tutor
 - :help
 - "<space>sh" to search help documentation
@@ -926,15 +926,18 @@ require("lazy").setup({
 			{
 				"<leader>tc",
 				function()
-					local term = require("toggleterm.terminal").Terminal
-					if not vim.g._claude_term then
-						vim.g._claude_term = term:new({
+					local Terminal = require("toggleterm.terminal").Terminal
+					if not _G._claude_term then
+						_G._claude_term = Terminal:new({
 							cmd = "claude",
 							count = 9,
-							direction = "horizontal",
+							direction = "vertical",
+							size = function()
+								return math.floor(vim.o.columns * 0.4)
+							end,
 						})
 					end
-					vim.g._claude_term:toggle()
+					_G._claude_term:toggle()
 				end,
 				desc = "[T]oggle [C]laude Code",
 			},
@@ -943,6 +946,9 @@ require("lazy").setup({
 			size = 20,
 			shade_terminals = false,
 			start_in_insert = true,
+			on_open = function(term)
+				vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { buffer = term.bufnr, desc = "Exit terminal mode" })
+			end,
 		},
 	},
 	-- okuuva/auto-save.nvim
