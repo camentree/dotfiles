@@ -37,11 +37,15 @@
   # ============================================================
   # Home Assistant
   # ============================================================
+  # Launched via a signed .app bundle so macOS grants Local Network
+  # access (mDNS/multicast). Without this, the HomeKit bridge can't
+  # advertise via Bonjour — macOS blocks multicast for unsigned
+  # processes spawned by LaunchAgents.
   launchd.user.agents.home-assistant = {
-    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/bin/start && exec /Users/camen/Projects/home-assistant/bin/start'";
+    command = "/usr/bin/open -W -a /Users/camen/Projects/home-assistant/HomeAssistant.app";
     serviceConfig = {
       KeepAlive.PathState = {
-        "/Users/camen/Projects/home-assistant/bin/start" = true;
+        "/Users/camen/Projects/home-assistant/HomeAssistant.app" = true;
       };
       RunAtLoad = true;
       StandardOutPath = "/tmp/home-assistant.stdout.log";
