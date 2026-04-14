@@ -113,8 +113,12 @@ vim.keymap.set("v", "Y", function()
 	)
 end, { desc = "Yank selection as rendered markdown" })
 vim.keymap.set("n", "<leader>tn", function()
-	local path =
-		vim.fn.fnamemodify(vim.fn.expand("~/Documents/notes/Notebook.md"), ":p")
+	local raw = vim.env.NOTEBOOK_PATH
+	if not raw or raw == "" then
+		vim.notify("NOTEBOOK_PATH is not set", vim.log.levels.WARN)
+		return
+	end
+	local path = vim.fn.fnamemodify(vim.fn.expand(raw), ":p")
 	for _, win in ipairs(vim.api.nvim_list_wins()) do
 		local buf = vim.api.nvim_win_get_buf(win)
 		if vim.api.nvim_buf_get_name(buf) == path then
