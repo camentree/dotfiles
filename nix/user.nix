@@ -113,15 +113,6 @@
           UseKeychain yes
       '';
     };
-
-    # Local env file template (won't overwrite existing)
-    ".zshenv.local" = {
-      text = ''
-        # Machine-specific environment variables and secrets
-        # This file is gitignored and not tracked in dotfiles
-      '';
-      force = false;
-    };
   };
 
   # ============================================================
