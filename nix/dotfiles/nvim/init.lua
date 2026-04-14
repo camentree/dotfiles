@@ -112,7 +112,25 @@ vim.keymap.set("v", "Y", function()
 		vim.fn.system("pandoc -t plain --wrap=none", vim.fn.getreg("+"))
 	)
 end, { desc = "Yank selection as rendered markdown" })
+vim.keymap.set("n", "<leader>tn", function()
+	local raw = vim.env.NOTEBOOK_PATH
+	if not raw or raw == "" then
+		vim.notify("NOTEBOOK_PATH is not set", vim.log.levels.WARN)
+		return
+	end
+	local path = vim.fn.fnamemodify(vim.fn.expand(raw), ":p")
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.api.nvim_buf_get_name(buf) == path then
+			vim.api.nvim_win_close(win, false)
+			return
+		end
+	end
+	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
+	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
+end, { desc = "[T]oggle [N]otebook" })
 
+-- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)
@@ -131,8 +149,6 @@ vim.api.nvim_create_autocmd("FileType", {
 		end, { buffer = event.buf, desc = "Stri[x]ethrough line" })
 	end,
 })
-
--- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
 	group = vim.api.nvim_create_augroup(
@@ -824,12 +840,33 @@ require("lazy").setup({
 		config = function(_, opts)
 			require("ufo").setup(opts)
 			local ufo = require("ufo")
-			vim.keymap.set("n", "zR", ufo.openAllFolds, { desc = "Open all folds" })
-			vim.keymap.set("n", "zM", ufo.closeAllFolds, { desc = "Close all folds" })
-			vim.keymap.set("n", "z0", ufo.closeAllFolds, { desc = "Fold to level 0 (close all)", nowait = true })
-			vim.keymap.set("n", "z1", function() ufo.closeFoldsWith(1) end, { desc = "Fold to level 1" })
-			vim.keymap.set("n", "z2", function() ufo.closeFoldsWith(2) end, { desc = "Fold to level 2" })
-			vim.keymap.set("n", "z3", function() ufo.closeFoldsWith(3) end, { desc = "Fold to level 3" })
+			vim.keymap.set(
+				"n",
+				"zR",
+				ufo.openAllFolds,
+				{ desc = "Open all folds" }
+			)
+			vim.keymap.set(
+				"n",
+				"zM",
+				ufo.closeAllFolds,
+				{ desc = "Close all folds" }
+			)
+			vim.keymap.set(
+				"n",
+				"z0",
+				ufo.closeAllFolds,
+				{ desc = "Fold to level 0 (close all)", nowait = true }
+			)
+			vim.keymap.set("n", "z1", function()
+				ufo.closeFoldsWith(1)
+			end, { desc = "Fold to level 1" })
+			vim.keymap.set("n", "z2", function()
+				ufo.closeFoldsWith(2)
+			end, { desc = "Fold to level 2" })
+			vim.keymap.set("n", "z3", function()
+				ufo.closeFoldsWith(3)
+			end, { desc = "Fold to level 3" })
 		end,
 	},
 	-- MeanderingProgrammer/render-markdown.nvim
@@ -949,11 +986,17 @@ require("lazy").setup({
 			shade_terminals = false,
 			start_in_insert = true,
 			on_open = function(term)
-				vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]], { buffer = term.bufnr, desc = "Exit terminal mode" })
+				vim.keymap.set(
+					"t",
+					"<Esc><Esc>",
+					[[<C-\><C-n>]],
+					{ buffer = term.bufnr, desc = "Exit terminal mode" }
+				)
 			end,
 		},
 	},
 	-- okuuva/auto-save.nvim
 	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },
 })
+
 vim.api.nvim_set_hl(0, "Folded", { bg = "#2a2a35", fg = "#808080" })
