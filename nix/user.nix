@@ -116,17 +116,18 @@
       '';
     };
 
-    # Authorized SSH keys (for inbound SSH to this machine)
-    ".ssh/authorized_keys" = {
-      text = ''
-        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW
-      '';
-    };
   };
 
   # ============================================================
   # Activation scripts — for files that need to be writable
   # ============================================================
+  home.activation.sshAuthorizedKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.ssh
+    $DRY_RUN_CMD install -m 600 /dev/stdin ${config.home.homeDirectory}/.ssh/authorized_keys <<'KEYS'
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW
+    KEYS
+  '';
+
   home.activation.neovimLazyLock = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${config.home.homeDirectory}/Projects/dotfiles/nix/dotfiles/nvim/lazy-lock.json \
