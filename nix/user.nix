@@ -104,13 +104,21 @@
     ".ssh/config" = {
       text = ''
         Host github.com
-          AddKeysToAgent yes
-          UseKeychain yes
-          IdentityFile ~/.ssh/id_ed25519
+          IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+        Host mac-intel-server
+          HostName mac-intel-server.local
+          User camen
 
         Host *
-          AddKeysToAgent yes
-          UseKeychain yes
+          IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+      '';
+    };
+
+    # Authorized SSH keys (for inbound SSH to this machine)
+    ".ssh/authorized_keys" = {
+      text = ''
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW
       '';
     };
   };

@@ -6,6 +6,9 @@
 {
   nixpkgs.hostPlatform = "x86_64-darwin";
 
+  networking.hostName = "mac-intel-server";
+  networking.computerName = "mac-intel-server";
+
   # Server packages
   environment.systemPackages = with pkgs; [
     nginx
