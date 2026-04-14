@@ -37,15 +37,14 @@
   # ============================================================
   # Home Assistant
   # ============================================================
-  # Launched via a signed .app bundle so macOS grants Local Network
-  # access (mDNS/multicast). Without this, the HomeKit bridge can't
-  # advertise via Bonjour — macOS blocks multicast for unsigned
-  # processes spawned by LaunchAgents.
-  launchd.user.agents.home-assistant = {
-    command = "/usr/bin/open -W -a /Users/camen/Projects/home-assistant/HomeAssistant.app";
+  # Runs as a LaunchDaemon (root) to bypass macOS Local Network Privacy,
+  # which silently blocks mDNS multicast for LaunchAgent processes.
+  # bin/start drops to user camen via sudo before launching hass.
+  launchd.daemons.home-assistant = {
+    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/bin/start && exec /Users/camen/Projects/home-assistant/bin/start'";
     serviceConfig = {
       KeepAlive.PathState = {
-        "/Users/camen/Projects/home-assistant/HomeAssistant.app" = true;
+        "/Users/camen/Projects/home-assistant/bin/start" = true;
       };
       RunAtLoad = true;
       StandardOutPath = "/tmp/home-assistant.stdout.log";
@@ -53,15 +52,16 @@
       WorkingDirectory = "/Users/camen/Projects/home-assistant";
       EnvironmentVariables = {
         PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+        HOME = "/Users/camen";
       };
     };
   };
 
   # Convenience aliases for managing Home Assistant
   environment.shellAliases = {
-    ha-stop = "launchctl unload ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
-    ha-start = "launchctl load ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
-    ha-restart = "launchctl unload ~/Library/LaunchAgents/org.nixos.home-assistant.plist && launchctl load ~/Library/LaunchAgents/org.nixos.home-assistant.plist";
+    ha-stop = "sudo launchctl bootout system/org.nixos.home-assistant";
+    ha-start = "sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
+    ha-restart = "sudo launchctl bootout system/org.nixos.home-assistant && sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
     ha-log = "tail -f /tmp/home-assistant.stderr.log";
   };
 }
