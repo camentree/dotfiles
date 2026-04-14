@@ -18,6 +18,14 @@
   ];
 
   # ============================================================
+  # SSH — key-only authentication
+  # ============================================================
+  environment.etc."ssh/sshd_config.d/200-no-password.conf".text = ''
+    PasswordAuthentication no
+    KbdInteractiveAuthentication no
+  '';
+
+  # ============================================================
   # Keep the Mac awake (server mode)
   # ============================================================
   power = {
