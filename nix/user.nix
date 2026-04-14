@@ -109,6 +109,7 @@
         Host mac-intel-server
           HostName mac-intel-server.local
           User camen
+          SetEnv TERM=xterm-256color
 
         Host *
           IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
