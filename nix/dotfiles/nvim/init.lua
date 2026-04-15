@@ -60,6 +60,10 @@ vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.termguicolors = true
+vim.o.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+	command = "checktime",
+})
 
 -- [[ DIAGNOSTICS ]]
 vim.diagnostic.config({
@@ -95,12 +99,21 @@ vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
 vim.keymap.set("i", "<C-Right>", "<C-o>e<Right>", { desc = "Word forward" })
-vim.keymap.set("i", "<A-Left>", "<C-o>b", { desc = "Word back (Option)" })
-vim.keymap.set("i", "<A-Right>", "<C-o>e<Right>", { desc = "Word forward (Option)" })
+vim.keymap.set("i", "<M-b>", "<C-o>b", { desc = "Word back (Option+Left)" })
+vim.keymap.set(
+	"i",
+	"<M-f>",
+	"<C-o>e<Right>",
+	{ desc = "Word forward (Option+Right)" }
+)
 vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
-vim.keymap.set("i", "<D-Up>", "<C-o>gg", { desc = "Top of file" })
-vim.keymap.set("i", "<D-Down>", "<C-o>G", { desc = "End of file" })
+vim.keymap.set("i", "<C-Home>", "<C-o>gg", { desc = "Top of file (Cmd+Up)" })
+vim.keymap.set("i", "<C-End>", "<C-o>G", { desc = "End of file (Cmd+Down)" })
+vim.keymap.set("t", "<D-v>", function()
+	local text = vim.fn.getreg("+")
+	vim.api.nvim_chan_send(vim.b.terminal_job_id, "\27[200~" .. text .. "\27[201~")
+end, { desc = "Paste into terminal (bracketed)" })
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
@@ -210,6 +223,15 @@ require("lazy").setup({
 		},
 		config = function(_, opts)
 			require("gitsigns").setup(opts)
+			-- Hunk staging keymaps
+			vim.keymap.set("n", "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", { desc = "Git stage hunk" })
+			vim.keymap.set("v", "<leader>gs", ":Gitsigns stage_hunk<CR>", { desc = "Git stage lines" })
+			vim.keymap.set("n", "<leader>gr", "<cmd>Gitsigns reset_hunk<CR>", { desc = "Git reset hunk" })
+			vim.keymap.set("v", "<leader>gr", ":Gitsigns reset_hunk<CR>", { desc = "Git reset lines" })
+			vim.keymap.set("n", "<leader>gu", "<cmd>Gitsigns undo_stage_hunk<CR>", { desc = "Git undo stage hunk" })
+			vim.keymap.set("n", "<leader>gp", "<cmd>Gitsigns preview_hunk<CR>", { desc = "Git preview hunk" })
+			vim.keymap.set("n", "]h", "<cmd>Gitsigns next_hunk<CR>", { desc = "Next git hunk" })
+			vim.keymap.set("n", "[h", "<cmd>Gitsigns prev_hunk<CR>", { desc = "Prev git hunk" })
 			-- Show git blame only in visual mode
 			vim.api.nvim_create_autocmd("ModeChanged", {
 				pattern = "*:[vV\x16]*",

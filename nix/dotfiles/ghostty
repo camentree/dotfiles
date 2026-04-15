@@ -35,3 +35,7 @@ macos-option-as-alt = left
 quit-after-last-window-closed = true
 unfocused-split-opacity = 1
 confirm-close-surface = false
+
+# Forward Cmd+Up/Down as Ctrl+Home/End
+keybind = cmd+up=text:\x1b[1;5H
+keybind = cmd+down=text:\x1b[1;5F
