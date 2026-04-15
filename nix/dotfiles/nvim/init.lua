@@ -987,21 +987,6 @@ require("lazy").setup({
 				end,
 				desc = "[T]oggle [T]erminal",
 			},
-			{
-				"<leader>tc",
-				function()
-					local Terminal = require("toggleterm.terminal").Terminal
-					if not _G._claude_term then
-						_G._claude_term = Terminal:new({
-							cmd = "claude",
-							count = 9,
-							direction = "vertical",
-						})
-					end
-					_G._claude_term:toggle()
-				end,
-				desc = "[T]oggle [C]laude Code",
-			},
 		},
 		opts = {
 			size = function(term)
@@ -1024,6 +1009,21 @@ require("lazy").setup({
 	},
 	-- okuuva/auto-save.nvim
 	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },
+	-- coder/claudecode.nvim
+	{
+		"coder/claudecode.nvim",
+		dependencies = { "folke/snacks.nvim" },
+		config = true,
+		keys = {
+			{ "<leader>tc", "<cmd>ClaudeCode<cr>", desc = "[T]oggle [C]laude Code" },
+			{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "[A]I [F]ocus Claude" },
+			{ "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "[A]I [S]end selection" },
+			{ "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "[A]I [A]ccept diff" },
+			{ "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "[A]I [D]eny diff" },
+		},
+	},
+	-- folke/snacks.nvim (dependency for claudecode.nvim)
+	{ "folke/snacks.nvim", lazy = true, opts = {} },
 })
 
 vim.api.nvim_set_hl(0, "Folded", { bg = "#2a2a35", fg = "#808080" })
