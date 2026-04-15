@@ -51,6 +51,7 @@ vim.o.updatetime = 250
 vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
+
 vim.o.inccommand = "split"
 vim.o.cursorline = false
 vim.o.scrolloff = 25 -- when scrolling how many lines to keep above/below cursor
@@ -1022,7 +1023,7 @@ require("lazy").setup({
 			diff_opts = { layout = "vertical" },
 		},
 		keys = {
-			{ "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Toggle [C]laude [C]ode" },
+			{ "<C-,>", "<cmd>ClaudeCode<cr>", mode = { "n", "t" }, desc = "Toggle Claude Code" },
 			{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "[A]I [F]ocus Claude" },
 			{ "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "[A]I [S]end selection" },
 			{ "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "[A]I [A]ccept diff" },
