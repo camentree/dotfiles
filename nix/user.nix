@@ -104,20 +104,30 @@
     ".ssh/config" = {
       text = ''
         Host github.com
-          AddKeysToAgent yes
-          UseKeychain yes
-          IdentityFile ~/.ssh/id_ed25519
+          IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+        Host mac-intel-server
+          HostName mac-intel-server.local
+          User camen
+          SetEnv TERM=xterm-256color
 
         Host *
-          AddKeysToAgent yes
-          UseKeychain yes
+          IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
       '';
     };
+
   };
 
   # ============================================================
   # Activation scripts — for files that need to be writable
   # ============================================================
+  home.activation.sshAuthorizedKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.ssh
+    $DRY_RUN_CMD chmod 700 ${config.home.homeDirectory}/.ssh
+    echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW' > ${config.home.homeDirectory}/.ssh/authorized_keys
+    $DRY_RUN_CMD chmod 600 ${config.home.homeDirectory}/.ssh/authorized_keys
+  '';
+
   home.activation.neovimLazyLock = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${config.home.homeDirectory}/Projects/dotfiles/nix/dotfiles/nvim/lazy-lock.json \

@@ -3,7 +3,12 @@ $directory\
 $git_branch\
 $git_status\
 $line_break\
+$hostname\
 $character"""
+
+[hostname]
+ssh_only = true
+format = "[$hostname](#8a8a8a) "
 
 [directory]
 truncate_to_repo = true
@@ -11,7 +16,7 @@ truncation_length = 1
 format = "[$path](#86c9c0) "
 
 [git_branch]
-format = " [$branch](#8a8a8a)"
+format = " [$branch](#8a8a8a) "
 
 [git_status]
 format = '[$all_status$ahead_behind](#86c9c0) '

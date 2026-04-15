@@ -56,11 +56,18 @@ nix-rebuild mac-arm-work
 - **Claude Code** — Run `claude` in terminal to authenticate
 - **GitHub CLI** — Run `gh auth login` to authenticate
 - **AWS CLI** — Run `aws configure` or set up SSO in `~/.aws/config`
-- **SSH key** — Add `~/.ssh/id_ed25519.pub` to GitHub at
-  https://github.com/settings/keys
+- **1Password SSH Agent** — 1Password → Settings → Developer → enable
+  "SSH Agent". Set display to "key names".
+- **SSH key** — In 1Password, create an SSH Key item (Ed25519) if one doesn't
+  exist
 - **Podman** — Run `podman machine init && podman machine start`
 - **Mail** — Add keyboard shortcuts via System Settings > Keyboard > Keyboard
   Shortcuts > App Shortcuts > Mail.app:
   - "Mailbox Search" → `Cmd+\`
   - "Send" → `Ctrl+Cmd+Return`
 - **macOS** — Set desktop background
+
+## Server-specific (mac-intel-server)
+
+- **Remote Login** — Enable SSH access: System Settings → General → Sharing →
+  Remote Login
