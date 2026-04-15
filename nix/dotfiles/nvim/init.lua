@@ -281,6 +281,7 @@ require("lazy").setup({
 			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
 		},
 		config = function()
+			local actions = require("telescope.actions")
 			require("telescope").setup({
 				defaults = {
 					layout_strategy = "horizontal",
@@ -289,6 +290,10 @@ require("lazy").setup({
 						preview_width = 0.5,
 					},
 					path_display = { "filename_first" },
+					mappings = {
+						i = { ["<D-CR>"] = actions.select_vertical },
+						n = { ["<D-CR>"] = actions.select_vertical },
+					},
 				},
 				extensions = {
 					["ui-select"] = {

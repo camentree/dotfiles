@@ -39,3 +39,6 @@ confirm-close-surface = false
 # Forward Cmd+Up/Down as Ctrl+Home/End
 keybind = cmd+up=text:\x1b[1;5H
 keybind = cmd+down=text:\x1b[1;5F
+
+# Disable default toggle_fullscreen
+keybind = cmd+enter=unbind
