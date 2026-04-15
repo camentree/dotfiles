@@ -28,6 +28,7 @@
 - grn           rename variable under cursor
  
 --]]
+--
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.g.have_nerd_font = true
@@ -1008,20 +1009,15 @@ require("lazy").setup({
 	-- coder/claudecode.nvim
 	{
 		"coder/claudecode.nvim",
-		dependencies = { "folke/snacks.nvim" },
 		opts = {
 			auto_start = true,
 			focus_after_send = true,
 			track_selection = true,
 			terminal = {
+				provider = "native",
 				split_side = "right",
 				split_width_percentage = 0.4,
 				auto_close = true,
-				snacks_win_opts = {
-					wo = {
-						winhighlight = "Normal:Normal,NormalFloat:Normal,FloatBorder:Normal",
-					},
-				},
 			},
 			diff_opts = { layout = "vertical" },
 		},
@@ -1033,8 +1029,6 @@ require("lazy").setup({
 			{ "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "[A]I [D]eny diff" },
 		},
 	},
-	-- folke/snacks.nvim (dependency for claudecode.nvim)
-	{ "folke/snacks.nvim", lazy = true, opts = {} },
 })
 
 vim.api.nvim_set_hl(0, "Folded", { bg = "#2a2a35", fg = "#808080" })
