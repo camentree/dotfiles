@@ -1026,7 +1026,7 @@ require("lazy").setup({
 			diff_opts = { layout = "vertical" },
 		},
 		keys = {
-			{ "<leader>tc", "<cmd>ClaudeCode<cr>", desc = "[T]oggle [C]laude Code" },
+			{ "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Toggle [C]laude [C]ode" },
 			{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "[A]I [F]ocus Claude" },
 			{ "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "[A]I [S]end selection" },
 			{ "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "[A]I [A]ccept diff" },
