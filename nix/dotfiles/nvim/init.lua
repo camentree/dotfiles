@@ -1013,7 +1013,22 @@ require("lazy").setup({
 	{
 		"coder/claudecode.nvim",
 		dependencies = { "folke/snacks.nvim" },
-		config = true,
+		opts = {
+			auto_start = true,
+			focus_after_send = true,
+			track_selection = true,
+			terminal = {
+				split_side = "right",
+				split_width_percentage = 0.4,
+				auto_close = true,
+				snacks_win_opts = {
+					wo = {
+						winhighlight = "Normal:Normal,NormalFloat:Normal,FloatBorder:Normal",
+					},
+				},
+			},
+			diff_opts = { layout = "vertical" },
+		},
 		keys = {
 			{ "<leader>tc", "<cmd>ClaudeCode<cr>", desc = "[T]oggle [C]laude Code" },
 			{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "[A]I [F]ocus Claude" },
