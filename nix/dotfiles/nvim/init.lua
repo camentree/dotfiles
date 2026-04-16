@@ -54,7 +54,7 @@ vim.o.splitbelow = true
 
 vim.o.inccommand = "split"
 vim.o.cursorline = false
-vim.o.scrolloff = 25 -- when scrolling how many lines to keep above/below cursor
+vim.o.scrolloff = 0 -- when scrolling how many lines to keep above/below cursor
 vim.o.confirm = true
 vim.o.keymodel = "startsel"
 vim.o.tabstop = 2
@@ -65,6 +65,21 @@ vim.o.termguicolors = true
 vim.o.autoread = true
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
+})
+
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
+	callback = function()
+		if vim.bo.buftype == "terminal" then
+			vim.cmd.startinsert()
+		end
+	end,
+})
+
+vim.api.nvim_create_autocmd("TermOpen", {
+	callback = function()
+		vim.wo.wrap = true
+		vim.wo.sidescrolloff = 0
+	end,
 })
 
 -- [[ DIAGNOSTICS ]]
@@ -112,7 +127,12 @@ vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<C-Home>", "<C-o>gg", { desc = "Top of file (Cmd+Up)" })
 vim.keymap.set("i", "<C-End>", "<C-o>G", { desc = "End of file (Cmd+Down)" })
-vim.keymap.set("t", "<A-v>", [[<C-\><C-n>"+pi]], { desc = "Paste into terminal (Option+V)" })
+vim.keymap.set(
+	"t",
+	"<A-v>",
+	[[<C-\><C-n>"+pi]],
+	{ desc = "Paste into terminal (Option+V)" }
+)
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
@@ -223,14 +243,54 @@ require("lazy").setup({
 		config = function(_, opts)
 			require("gitsigns").setup(opts)
 			-- Hunk staging keymaps
-			vim.keymap.set("n", "<leader>gs", "<cmd>Gitsigns stage_hunk<CR>", { desc = "Git stage hunk" })
-			vim.keymap.set("v", "<leader>gs", ":Gitsigns stage_hunk<CR>", { desc = "Git stage lines" })
-			vim.keymap.set("n", "<leader>gr", "<cmd>Gitsigns reset_hunk<CR>", { desc = "Git reset hunk" })
-			vim.keymap.set("v", "<leader>gr", ":Gitsigns reset_hunk<CR>", { desc = "Git reset lines" })
-			vim.keymap.set("n", "<leader>gu", "<cmd>Gitsigns undo_stage_hunk<CR>", { desc = "Git undo stage hunk" })
-			vim.keymap.set("n", "<leader>gp", "<cmd>Gitsigns preview_hunk<CR>", { desc = "Git preview hunk" })
-			vim.keymap.set("n", "]h", "<cmd>Gitsigns next_hunk<CR>", { desc = "Next git hunk" })
-			vim.keymap.set("n", "[h", "<cmd>Gitsigns prev_hunk<CR>", { desc = "Prev git hunk" })
+			vim.keymap.set(
+				"n",
+				"<leader>gs",
+				"<cmd>Gitsigns stage_hunk<CR>",
+				{ desc = "Git stage hunk" }
+			)
+			vim.keymap.set(
+				"v",
+				"<leader>gs",
+				":Gitsigns stage_hunk<CR>",
+				{ desc = "Git stage lines" }
+			)
+			vim.keymap.set(
+				"n",
+				"<leader>gr",
+				"<cmd>Gitsigns reset_hunk<CR>",
+				{ desc = "Git reset hunk" }
+			)
+			vim.keymap.set(
+				"v",
+				"<leader>gr",
+				":Gitsigns reset_hunk<CR>",
+				{ desc = "Git reset lines" }
+			)
+			vim.keymap.set(
+				"n",
+				"<leader>gu",
+				"<cmd>Gitsigns undo_stage_hunk<CR>",
+				{ desc = "Git undo stage hunk" }
+			)
+			vim.keymap.set(
+				"n",
+				"<leader>gp",
+				"<cmd>Gitsigns preview_hunk<CR>",
+				{ desc = "Git preview hunk" }
+			)
+			vim.keymap.set(
+				"n",
+				"]h",
+				"<cmd>Gitsigns next_hunk<CR>",
+				{ desc = "Next git hunk" }
+			)
+			vim.keymap.set(
+				"n",
+				"[h",
+				"<cmd>Gitsigns prev_hunk<CR>",
+				{ desc = "Prev git hunk" }
+			)
 			-- Show git blame only in visual mode
 			vim.api.nvim_create_autocmd("ModeChanged", {
 				pattern = "*:[vV\x16]*",
@@ -696,18 +756,33 @@ require("lazy").setup({
 		opts = {
 			keymap = {
 				preset = "default",
+				["<CR>"] = { "accept", "fallback" },
+				["<Tab>"] = { "accept", "fallback" },
+				["<Esc>"] = { "cancel", "fallback" },
 			},
 			appearance = {
 				nerd_font_variant = "mono",
 			},
 			completion = {
-				documentation = { auto_show = false, auto_show_delay_ms = 500 },
+				menu = {
+					border = "rounded",
+					scrollbar = false,
+					draw = {
+						padding = { 1, 1 },
+						gap = 1,
+					},
+				},
+				documentation = {
+					auto_show = false,
+					auto_show_delay_ms = 500,
+					window = { border = "rounded" },
+				},
 			},
+			signature = { enabled = true, window = { border = "rounded" } },
 			sources = {
 				default = { "lsp", "path" },
 			},
 			fuzzy = { implementation = "prefer_rust" },
-			signature = { enabled = true },
 		},
 	},
 	-- navarasu/onedark.nvim
@@ -730,6 +805,17 @@ require("lazy").setup({
 			)
 			vim.api.nvim_set_hl(0, "@markup.bold", { bold = true })
 			vim.api.nvim_set_hl(0, "@markup.italic", { italic = true })
+			vim.api.nvim_set_hl(0, "BlinkCmpMenu", { bg = "#1e1e1e" })
+			vim.api.nvim_set_hl(
+				0,
+				"BlinkCmpMenuSelection",
+				{ bg = "#3a3a3a", bold = true }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"BlinkCmpLabelMatch",
+				{ fg = "#e5c07b", bold = true }
+			)
 		end,
 	},
 	-- folke/todo-comments.nvim
@@ -1028,11 +1114,33 @@ require("lazy").setup({
 			diff_opts = { layout = "vertical" },
 		},
 		keys = {
-			{ "<C-,>", "<cmd>ClaudeCode<cr>", mode = { "n", "t" }, desc = "Toggle Claude Code" },
-			{ "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "[A]I [F]ocus Claude" },
-			{ "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "[A]I [S]end selection" },
-			{ "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "[A]I [A]ccept diff" },
-			{ "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "[A]I [D]eny diff" },
+			{
+				"<C-,>",
+				"<cmd>ClaudeCode<cr>",
+				mode = { "n", "t" },
+				desc = "Toggle Claude Code",
+			},
+			{
+				"<leader>af",
+				"<cmd>ClaudeCodeFocus<cr>",
+				desc = "[A]I [F]ocus Claude",
+			},
+			{
+				"<leader>as",
+				"<cmd>ClaudeCodeSend<cr>",
+				mode = "v",
+				desc = "[A]I [S]end selection",
+			},
+			{
+				"<leader>aa",
+				"<cmd>ClaudeCodeDiffAccept<cr>",
+				desc = "[A]I [A]ccept diff",
+			},
+			{
+				"<leader>ad",
+				"<cmd>ClaudeCodeDiffDeny<cr>",
+				desc = "[A]I [D]eny diff",
+			},
 		},
 	},
 })
