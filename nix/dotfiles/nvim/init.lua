@@ -70,7 +70,11 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
 	callback = function()
 		if vim.bo.buftype == "terminal" then
-			vim.cmd.startinsert()
+			vim.schedule(function()
+				if vim.bo.buftype == "terminal" then
+					vim.cmd.startinsert()
+				end
+			end)
 		end
 	end,
 })
