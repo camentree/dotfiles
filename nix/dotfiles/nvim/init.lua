@@ -38,7 +38,6 @@ vim.schedule(function()
 	-- schedule settings after `UIEnter` to decrease startup time
 	vim.o.clipboard = "unnamedplus"
 end)
-
 vim.o.number = true
 vim.o.mouse = "a"
 vim.o.showmode = false
@@ -1090,6 +1089,7 @@ require("lazy").setup({
 			end,
 			shade_terminals = false,
 			start_in_insert = true,
+			persist_mode = false,
 			on_open = function(term)
 				vim.keymap.set(
 					"t",
