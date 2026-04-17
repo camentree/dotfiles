@@ -151,6 +151,18 @@ vim.keymap.set("v", "Y", function()
 		vim.fn.system("pandoc -t plain --wrap=none", vim.fn.getreg("+"))
 	)
 end, { desc = "Yank selection as rendered markdown" })
+vim.keymap.set(
+	"n",
+	"<leader>fr",
+	[[:%s/\<<C-r><C-w>\>//g<Left><Left>]],
+	{ desc = "[F]ind and [R]eplace word under cursor" }
+)
+vim.keymap.set(
+	"v",
+	"<leader>fr",
+	[["zy:%s/\V<C-r>=escape(@z,'/\')<CR>//g<Left><Left>]],
+	{ desc = "[F]ind and [R]eplace selection" }
+)
 vim.keymap.set("n", "<leader>tn", function()
 	local raw = vim.env.NOTEBOOK_PATH
 	if not raw or raw == "" then
@@ -321,6 +333,7 @@ require("lazy").setup({
 			icons = { mappings = vim.g.have_nerd_font },
 			spec = {
 				{ "<leader>s", group = "[S]earch", mode = { "n", "v" } },
+				{ "<leader>f", group = "[F]ind (buffer)", mode = { "n", "v" } },
 				{ "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
 				{ "gr", group = "LSP Actions", mode = { "n" } },
@@ -484,6 +497,24 @@ require("lazy").setup({
 					})
 				)
 			end, { desc = "[/] Fuzzily search in current buffer" })
+			vim.keymap.set("n", "<leader>ff", function()
+				builtin.current_buffer_fuzzy_find(
+					require("telescope.themes").get_dropdown({
+						winblend = 10,
+						previewer = false,
+					})
+				)
+			end, { desc = "[F]ind in buffer ([F]uzzy)" })
+			vim.keymap.set("v", "<leader>ff", function()
+				vim.cmd('normal! "zy')
+				builtin.current_buffer_fuzzy_find(
+					require("telescope.themes").get_dropdown({
+						winblend = 10,
+						previewer = false,
+						default_text = vim.fn.getreg("z"),
+					})
+				)
+			end, { desc = "[F]ind selection in buffer" })
 			vim.keymap.set("n", "<leader>s/", function()
 				builtin.live_grep({
 					grep_open_files = true,
@@ -719,7 +750,7 @@ require("lazy").setup({
 		cmd = { "ConformInfo" },
 		keys = {
 			{
-				"<leader>f",
+				"<leader>F",
 				function()
 					require("conform").format({
 						async = true,
@@ -806,8 +837,16 @@ require("lazy").setup({
 				"@markup.strikethrough",
 				{ strikethrough = true }
 			)
-			vim.api.nvim_set_hl(0, "@markup.bold", { bold = true })
-			vim.api.nvim_set_hl(0, "@markup.italic", { italic = true })
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.bold",
+				{ bold = true, fg = "#d19a66" }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.italic",
+				{ italic = true, fg = "#98c379" }
+			)
 			vim.api.nvim_set_hl(0, "BlinkCmpMenu", { bg = "#1e1e1e" })
 			vim.api.nvim_set_hl(
 				0,
