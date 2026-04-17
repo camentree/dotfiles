@@ -140,6 +140,7 @@ vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>O", { desc = "New line above" })
+vim.keymap.set("i", "<D-CR>", "<C-o>o", { desc = "New line below" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
 vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
@@ -944,10 +945,11 @@ require("lazy").setup({
 	-- nvim-treesitter/nvim-treesitter
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
 		lazy = false,
 		build = ":TSUpdate",
-		opts = {
-			ensure_installed = {
+		config = function()
+			local parsers = {
 				"bash",
 				"html",
 				"lua",
@@ -956,16 +958,29 @@ require("lazy").setup({
 				"markdown_inline",
 				"python",
 				"scala",
+				"sql",
 				"vim",
 				"vimdoc",
 				"yaml",
-			},
-			auto_install = true,
-			highlight = { enable = true },
-			indent = { enable = true },
-		},
-		config = function(_, opts)
-			require("nvim-treesitter").setup(opts)
+			}
+			require("nvim-treesitter").install(parsers)
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = {
+					"bash",
+					"html",
+					"lua",
+					"markdown",
+					"python",
+					"scala",
+					"sql",
+					"vim",
+					"help",
+					"yaml",
+				},
+				callback = function()
+					pcall(vim.treesitter.start)
+				end,
+			})
 		end,
 	},
 	-- kevinhwang91/nvim-ufo
@@ -1078,11 +1093,11 @@ require("lazy").setup({
 					hl
 				)
 			end
-			vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#2a2a35" })
+			vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#1e1e28" })
 			vim.api.nvim_set_hl(
 				0,
 				"RenderMarkdownCodeInline",
-				{ bg = "#2a2a35" }
+				{ bg = "#1e1e28" }
 			)
 			require("render-markdown").setup(opts)
 		end,
@@ -1188,4 +1203,4 @@ require("lazy").setup({
 	},
 })
 
-vim.api.nvim_set_hl(0, "Folded", { bg = "#2a2a35", fg = "#808080" })
+vim.api.nvim_set_hl(0, "Folded", { bg = "#1e1e28", fg = "#808080" })
