@@ -181,7 +181,7 @@ vim.keymap.set(
 	[["zy:%s/\V<C-r>=escape(@z,'/\')<CR>//g<Left><Left>]],
 	{ desc = "[F]ind and [R]eplace selection" }
 )
-vim.keymap.set("n", "<leader>tn", function()
+vim.keymap.set({ "n", "i", "t" }, "<C-/>", function()
 	local raw = vim.env.NOTEBOOK_PATH
 	if not raw or raw == "" then
 		vim.notify("NOTEBOOK_PATH is not set", vim.log.levels.WARN)
@@ -197,7 +197,7 @@ vim.keymap.set("n", "<leader>tn", function()
 	end
 	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
 	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
-end, { desc = "[T]oggle [N]otebook" })
+end, { desc = "Toggle Notebook" })
 
 -- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("FileType", {
@@ -1144,11 +1144,12 @@ require("lazy").setup({
 		version = "*",
 		keys = {
 			{
-				"<leader>tt",
+				"<C-`>",
 				function()
 					require("toggleterm").toggle(1, nil, nil, "horizontal")
 				end,
-				desc = "[T]oggle [T]erminal",
+				mode = { "n", "i", "t" },
+				desc = "Toggle Terminal",
 			},
 		},
 		opts = {

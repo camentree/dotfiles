@@ -20,7 +20,6 @@ alias gaa="git add --all"
 alias gcm="git commit -m"
 alias gco="git checkout"
 
-
 # Functions
 function _is-repo () { git rev-parse --git-dir &>/dev/null; }
 function _is-branch () { git show-ref --verify --quiet "refs/heads/$1"; }
