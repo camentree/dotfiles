@@ -877,6 +877,13 @@ require("lazy").setup({
 		config = function()
 			require("mini.ai").setup({ n_lines = 500 })
 			require("mini.surround").setup()
+			require("mini.files").setup()
+			vim.keymap.set("n", "<C-b>", function()
+				local mf = require("mini.files")
+				if not mf.close() then
+					mf.open(vim.api.nvim_buf_get_name(0), true)
+				end
+			end, { desc = "Toggle file tree" })
 			local statusline = require("mini.statusline")
 			statusline.setup({
 				use_icons = vim.g.have_nerd_font,
