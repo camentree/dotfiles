@@ -198,6 +198,18 @@ vim.keymap.set({ "n", "i", "t" }, "<C-/>", function()
 	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
 	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
 end, { desc = "Toggle Notebook" })
+vim.keymap.set({ "n", "i", "t" }, "<C-.>", function()
+	local path = vim.fn.fnamemodify(vim.fn.expand("~/Documents/notes/ToDo.md"), ":p")
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.api.nvim_buf_get_name(buf) == path then
+			vim.api.nvim_win_close(win, false)
+			return
+		end
+	end
+	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
+	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
+end, { desc = "Toggle ToDo" })
 
 -- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("FileType", {
