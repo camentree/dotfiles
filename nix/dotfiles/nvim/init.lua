@@ -1169,7 +1169,12 @@ require("lazy").setup({
 		keys = {
 			{
 				"<C-b>",
-				"<cmd>Neotree toggle reveal<cr>",
+				function()
+					require("neo-tree.command").execute({
+						toggle = true,
+						reveal = true,
+					})
+				end,
 				desc = "Toggle file tree",
 			},
 		},
