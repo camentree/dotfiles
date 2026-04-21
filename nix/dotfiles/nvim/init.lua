@@ -85,6 +85,10 @@ vim.api.nvim_create_autocmd("TermOpen", {
 	end,
 })
 
+vim.api.nvim_create_autocmd("VimResized", {
+	command = "wincmd =",
+})
+
 -- [[ DIAGNOSTICS ]]
 vim.diagnostic.config({
 	update_in_insert = false,
