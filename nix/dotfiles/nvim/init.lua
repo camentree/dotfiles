@@ -1170,10 +1170,14 @@ require("lazy").setup({
 			{
 				"<C-b>",
 				function()
-					require("neo-tree.command").execute({
-						toggle = true,
-						reveal = true,
-					})
+					if vim.bo.filetype == "neo-tree" then
+						require("neo-tree.command").execute({ action = "close" })
+					else
+						require("neo-tree.command").execute({
+							toggle = true,
+							reveal = true,
+						})
+					end
 				end,
 				desc = "Toggle file tree",
 			},
