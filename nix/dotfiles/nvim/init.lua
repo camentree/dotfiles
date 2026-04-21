@@ -877,13 +877,6 @@ require("lazy").setup({
 		config = function()
 			require("mini.ai").setup({ n_lines = 500 })
 			require("mini.surround").setup()
-			require("mini.files").setup()
-			vim.keymap.set("n", "<C-b>", function()
-				local mf = require("mini.files")
-				if not mf.close() then
-					mf.open(vim.api.nvim_buf_get_name(0), true)
-				end
-			end, { desc = "Toggle file tree" })
 			local statusline = require("mini.statusline")
 			statusline.setup({
 				use_icons = vim.g.have_nerd_font,
@@ -1163,6 +1156,58 @@ require("lazy").setup({
 	},
 	-- okuuva/auto-save.nvim
 	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },
+	-- nvim-neo-tree/neo-tree.nvim
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		branch = "v3.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-tree/nvim-web-devicons",
+			"MunifTanjim/nui.nvim",
+		},
+		cmd = "Neotree",
+		keys = {
+			{
+				"<C-b>",
+				"<cmd>Neotree toggle reveal<cr>",
+				desc = "Toggle file tree",
+			},
+		},
+		opts = {
+			close_if_last_window = true,
+			filesystem = {
+				follow_current_file = { enabled = true },
+				use_libuv_file_watcher = true,
+				filtered_items = {
+					visible = true,
+					hide_dotfiles = false,
+					hide_gitignored = true,
+				},
+			},
+			window = {
+				width = 35,
+				mappings = {
+					["<space>"] = "none",
+				},
+			},
+			default_component_configs = {
+				indent = { with_markers = true },
+				git_status = {
+					symbols = {
+						added = "+",
+						modified = "~",
+						deleted = "-",
+						renamed = "→",
+						untracked = "?",
+						ignored = "◌",
+						unstaged = "▲",
+						staged = "●",
+						conflict = "!",
+					},
+				},
+			},
+		},
+	},
 	-- coder/claudecode.nvim
 	{
 		"coder/claudecode.nvim",
