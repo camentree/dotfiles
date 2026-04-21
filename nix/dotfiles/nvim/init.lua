@@ -1210,6 +1210,7 @@ require("lazy").setup({
 				width = 35,
 				mappings = {
 					["<space>"] = "none",
+					["<C-b>"] = "close_window",
 				},
 			},
 			default_component_configs = {
