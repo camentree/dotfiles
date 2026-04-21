@@ -91,8 +91,20 @@ vim.diagnostic.config({
 	severity_sort = true,
 	float = { border = "rounded", source = "if_many" },
 	underline = { severity = { min = vim.diagnostic.severity.WARN } },
-	virtual_text = true,
+	virtual_text = false,
+	-- Full-text diagnostics on their own lines below the code (Neovim 0.11+).
+	-- Swap in `{ current_line = true }` to limit to the cursor's line only.
+	virtual_lines = true,
+	-- virtual_lines = { current_line = true },
 	jump = { on_jump = "float" },
+})
+
+-- Pop a float with the full diagnostic message after the cursor sits still.
+vim.opt.updatetime = 250
+vim.api.nvim_create_autocmd("CursorHold", {
+	callback = function()
+		vim.diagnostic.open_float(nil, { focus = false })
+	end,
 })
 
 -- [[ BASIC KEYMAPS ]]
@@ -103,12 +115,13 @@ vim.keymap.set(
 	"<cmd>nohlsearch<CR>",
 	{ desc = "Escape to unhighlight search returns" }
 )
-vim.keymap.set(
-	"n",
-	"<leader>q",
-	vim.diagnostic.setloclist,
-	{ desc = "Open diagnostic [Q]uickfix list" }
-)
+vim.keymap.set("n", "<leader>q", function()
+	if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
+		vim.cmd("lclose")
+	else
+		vim.diagnostic.setloclist()
+	end
+end, { desc = "Toggle diagnostic [Q]uickfix list" })
 vim.keymap.set("n", "j", function()
 	return vim.v.count == 0 and "gj" or "j"
 end, { expr = true, desc = "Down by display line" })
