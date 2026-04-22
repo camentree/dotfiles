@@ -1293,6 +1293,17 @@ require("lazy").setup({
 			},
 		},
 	},
+	-- sindrets/diffview.nvim
+	{
+		"sindrets/diffview.nvim",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
+		keys = {
+			{ "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
+			{ "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
+			{ "<leader>gh", "<cmd>DiffviewFileHistory<cr>", desc = "Diffview file history" },
+		},
+	},
 })
 
 vim.api.nvim_set_hl(0, "Folded", { bg = "#1e1e28", fg = "#808080" })
