@@ -1,151 +1,105 @@
 Declarative system config for my Macs using [Nix](https://nixos.org/), [nix-darwin](https://github.com/LnL7/nix-darwin), and [home-manager](https://github.com/nix-community/home-manager).
 
-## Quick Start (new machine)
-
-```bash
-# 1. Clone
-git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles
-
-# 2. Run setup (installs Nix, builds config)
-cd ~/Projects/dotfiles/nix && bash setup.sh        # defaults to "server"
-cd ~/Projects/dotfiles/nix && bash setup.sh work    # for work machine
-
-# 3. Restart terminal
-
-# 4. After any config change
-rebuild
-```
-
-## File Structure
+## Layout
 
 ```
-nix/
-  flake.nix              ← Entry point. Only touch when adding a new machine.
-  macos.nix              ← macOS settings shared across ALL machines.
-  shell.nix              ← User config shared across ALL machines.
-  hosts/
-    server.nix           ← Intel server: nginx, postgres, always-on power.
-  dotfiles/              ← Raw config files. Edit directly, then `rebuild`.
-    tmux.conf
-    vimrc
-    p10k.zsh
-    gitignore_global
-    agent-status.sh      ← Colors tmux tabs by Claude Code state.
-    agent-windows.sh     ← Agent workflow: tmux + git worktrees.
-    iterm2.plist
-    vscode/
-      settings.json
-      keybindings.json
-  claude/
-    settings.json        ← Claude Code permissions and preferences.
-    CLAUDE.md            ← User-level instructions for Claude.
+flake.nix           ← Entry point. Touch when adding a new machine.
+user.nix            ← home-manager user config: git, tmux, symlinked dotfiles.
+os/macos.nix        ← macOS system settings and packages shared across all machines.
+machines/           ← Per-machine modules (hostname, packages, machine-only config).
+home/               ← Plain dotfiles. Edit directly, then rebuild.
+claude/             ← Claude Code settings and instructions (symlinked into ~/.claude/).
+setup.sh            ← First-time bootstrap for a new Mac.
 ```
 
-### What goes where?
+### What goes where
 
-| I want to change... | Edit this file |
+| To change... | Edit this |
 | --- | --- |
-| Zsh aliases or functions | `nix/shell.nix` |
-| Git config | `nix/shell.nix` |
-| Add/remove a tmux plugin | `nix/shell.nix` |
-| Tmux keybindings or theme | `nix/dotfiles/tmux.conf` |
-| Vim settings | `nix/dotfiles/vimrc` |
-| VSCode settings | `nix/dotfiles/vscode/settings.json` |
-| VSCode keybindings | `nix/dotfiles/vscode/keybindings.json` |
-| Dock, keyboard, Finder, trackpad | `nix/macos.nix` |
-| Add a package to ALL machines | `nix/macos.nix` |
-| Add a server-only package | `nix/hosts/server.nix` |
-| Powerlevel10k prompt | `nix/dotfiles/p10k.zsh` |
-| iTerm2 settings | `nix/dotfiles/iterm2.plist` |
-| Claude Code settings | `nix/claude/settings.json` |
-| Claude instructions | `nix/claude/CLAUDE.md` |
-| Agent tmux coloring | `nix/dotfiles/agent-status.sh` |
-| Agent workflow functions | `nix/dotfiles/agent-windows.sh` |
+| Zsh aliases / functions | `home/zshrc` |
+| Git config | `user.nix` (`programs.git.settings`) |
+| Tmux plugins | `user.nix` (`programs.tmux.plugins`) |
+| Tmux keybindings | `home/tmux.conf` |
+| Neovim | `home/nvim/init.lua` |
+| VSCode settings / keybindings | `home/vscode/` |
+| Ghostty | `home/ghostty` |
+| Starship prompt | `home/starship.toml` |
+| macOS defaults (dock, finder, keyboard) | `os/macos.nix` |
+| Packages on every machine | `os/macos.nix` (`environment.systemPackages`) |
+| Packages on one machine | `machines/<name>.nix` |
+| Claude Code settings | `claude/settings.json` |
+| Claude user-level instructions | `claude/CLAUDE.md` |
 
-## What Nix Manages
+## First-time setup (new Mac)
 
-### Packages
+Prereqs:
+1. **Xcode Command Line Tools** — `xcode-select --install`
+2. **Clone** — `git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles`
 
-git, gh, jq, tmux, vim, uv, mise, htop, curl, wget (all machines) nginx, postgresql, sqlite, yarn (server only)
+Bootstrap:
+```bash
+cd ~/Projects/dotfiles
+bash setup.sh mac-arm-work    # or mac-arm-personal, mac-intel-server
+```
 
-### Dotfiles (symlinked into ~/)
+Restart the terminal. From then on, after any config change:
+```bash
+nix-rebuild mac-arm-work
+```
 
-.zshrc, .zshenv, .vimrc, .tmux.conf, .p10k.zsh, .gitignore_global, .gitconfig (via ~/.config/git/config), .ssh/config, VSCode settings.json + keybindings.json, iTerm2 plist
+## Applications to install manually
 
-### macOS Settings
+Nix manages configs but not GUI apps (no Homebrew casks).
 
-- Dock: autohide, small icons, no recents
-- Keyboard: fast repeat (KeyRepeat=2, InitialKeyRepeat=15)
-- Keyboard modifier keys: Caps Lock→Control, LCtrl→LCmd, LCmd→LOpt
-- Keyboard shortcuts: Cmd+B for sidebar toggle
-- Finder: show extensions, list view, path bar, status bar, folders first
-- Trackpad: tap to click, two-finger right click
-- Screen saver: require password immediately, 5 min idle
-- Login: no guest account
-- Screenshots: PNG to Desktop
-- Server power: never sleep, wake on network, auto-restart after power failure
+### All machines
 
-### Shell Setup
+- [1Password](https://1password.com/downloads) (+ Safari extension from App Store)
+- [Claude](https://claude.ai/download)
+- [Google Chrome](https://google.com/chrome)
+- [Ghostty](https://ghostty.org)
+- [Notion](https://notion.so/desktop)
+- [Rectangle](https://rectangleapp.com)
+- [Slack](https://slack.com/downloads/mac)
+- Tadama (App Store)
+- [VS Code](https://code.visualstudio.com)
+- [Zoom](https://zoom.us/download)
 
-- Oh-my-zsh + Powerlevel10k (with MesloLGS NF font)
-- Tmux with plugins (sensible, resurrect, continuum, yank, etc.)
-- Node.js via mise (not nvm)
-- Python via uv
-- Java/sbt via mise
+### `mac-arm-work` only
 
-## What Nix Does NOT Manage
+- [Podman Desktop](https://podman-desktop.io)
+- [Tuple](https://tuple.app/downloads)
 
-These need manual install/configuration:
+## Manual configuration
 
-### Applications (download manually)
+### All machines
 
-- **1Password** — https://1password.com/downloads
-- **Claude** — https://claude.ai/download
-- **Google Chrome** — https://google.com/chrome
-- **iTerm2** — https://iterm2.com (config is managed, app is not)
-- **Rectangle** — https://rectangleapp.com
-- **Slack** — https://slack.com/downloads/mac
-- **Spotify** — https://spotify.com/download
-- **Visual Studio Code** — https://code.visualstudio.com (config is managed, app is not)
+- **Rectangle** — grant accessibility permissions; set meta key to `cmd+ctrl`
+- **1Password** — sign in; enable Safari extension; unset `cmd+\` autofill shortcut
+- **1Password SSH Agent** — Settings → Developer → enable "SSH Agent", set display to "key names"
+- **SSH key** — in 1Password, create an Ed25519 SSH Key item if one doesn't exist
+- **Slack** — sign into workspaces
+- **Claude Code** — run `claude` to authenticate
+- **GitHub CLI** — `gh auth login`
+- **Base Python venv** — `mkdir -p ~/.venvs && uv venv --python 3.13 ~/.venvs/base3.13`
+- **Mail shortcuts** — System Settings → Keyboard → App Shortcuts → Mail:
+  - "Mailbox Search" → `Cmd+\`
+  - "Send" → `Ctrl+Cmd+Return`
+- **Desktop wallpaper** — set to `sombrero_2025_45p.png`
 
-### Manual Configuration
+### `mac-arm-work` only
 
-- **Rectangle** — Open, grant accessibility permissions, set meta key to cmd+ctrl
-- **1Password** — Sign in, enable Safari extension
-- **Slack** — Sign into workspaces
-- **Claude Code** — Run `claude` in terminal to authenticate
-- **GitHub CLI** — Run `gh auth login`
-- **iTerm2** — Set font to **MesloLGS NF** in Preferences > Profiles > Text
+- **AWS CLI** — `aws configure` or set up SSO in `~/.aws/config`
+- **Podman** — `podman machine init && podman machine start`
 
-### Settings NOT in Nix (set manually in System Settings)
+### `mac-intel-server` only
 
-- Desktop wallpaper
-- Display resolution / scaling
-- Wi-Fi / network config
-- Notification preferences per app
-- Default browser
-- iCloud settings
-- Sound / input-output devices
-- Login items (which apps open at startup)
+- **Remote Login** — System Settings → General → Sharing → Remote Login
 
-### Tools Managed Outside Nix
+## Tools managed outside Nix
 
-- **Node.js versions** — `mise use --global node@lts` (mise, not Nix)
-- **Python versions** — `uv venv --python 3.13 .venv` (uv, not Nix)
-- **Java/sbt** — `mise use --global java@temurin-17` (mise, not Nix)
-
-## Claude Code Settings
-
-Managed by Nix. Settings and CLAUDE.md are symlinked into `~/.claude/` automatically on rebuild. Edit `nix/claude/settings.json` and `nix/claude/CLAUDE.md`.
-
-## Old Machine Configs
-
-Pre-Nix configs are preserved in the repo for reference:
-
-- `macos/` — original Intel MacBook
-- `macos_m1/` — M1 MacBook
-- `macos_m2/` — M4 MacBook (most recent pre-Nix)
-- `aws_linux/`, `debian/`, `ubuntu/` — Linux configs
+- Node.js — `mise use --global node@lts`
+- Java / sbt — `mise use --global java@temurin-17`
+- Python venvs — `uv venv --python 3.13 .venv`
 
 ## Wallpaper
 
@@ -164,7 +118,7 @@ convert ~/Downloads/sombrero_2025_hubble.tif \
 
 - `-level {black_point%} {white_point%}`
   - black point: take everything X% brightness and lower and crush it to pure black. Take the remaining X% to 100% and stretch it to 0 to 100%.
-  - white point: similar but on the hight end
+  - white point: similar but on the high end
 - `-gravity center` set the anchor point
 - `crop 16:9` crop to a particular ratio
 - `+repage` retain metadata about the original image

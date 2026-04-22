@@ -6,11 +6,11 @@ set -e
 #
 # Usage:
 #   1. Clone this repo:  git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles
-#   2. Run:              cd ~/Projects/dotfiles/nix && bash setup.sh <machine-name>
+#   2. Run:              cd ~/Projects/dotfiles && bash setup.sh <machine-name>
 #   3. Restart terminal
-#   4. Run:              rebuild
+#   4. Run:              nix-rebuild <machine-name>
 #
-# After that, just use `rebuild` whenever you change config.
+# After that, just use `nix-rebuild <machine-name>` whenever you change config.
 # ============================================================
 
 THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"

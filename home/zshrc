@@ -30,7 +30,7 @@ function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branc
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 function touch2 () { mkdir -p "$(dirname "$1")" && touch "$1" ; }
 
-function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles/nix#${1:?Usage: nix-rebuild <machine-name>}" ; }
+function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#${1:?Usage: nix-rebuild <machine-name>}" ; }
 function nix-current () { readlink /run/current-system ; }
 function nix-ls () { darwin-rebuild --list-generations ; }
 

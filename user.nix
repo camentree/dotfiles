@@ -55,7 +55,7 @@
   # ============================================================
   programs.tmux = {
     enable = true;
-    extraConfig = builtins.readFile ./dotfiles/tmux.conf;
+    extraConfig = builtins.readFile ./home/tmux.conf;
     plugins = with pkgs.tmuxPlugins; [
       sensible
       resurrect
@@ -76,27 +76,27 @@
   # Edit these directly, then run `rebuild`.
   # ============================================================
   home.file = {
-    ".zshrc"             = { source = ./dotfiles/zshrc;             force = true; };
-    ".zshenv"            = { source = ./dotfiles/zshenv;            force = true; };
-    ".vimrc"             = { source = ./dotfiles/vimrc; };
-    ".gitignore_global"  = { source = ./dotfiles/gitignore_global;  force = true; };
-    ".prettierrc"        = { source = ./dotfiles/prettierrc;       force = true; };
-    "agent-status.sh"    = { source = ./dotfiles/agent-status.sh; };
-    ".ipython/profile_default/startup/00-imports.py" = { source = ./dotfiles/ipython_startup_imports.py; };
+    ".zshrc"             = { source = ./home/zshrc;             force = true; };
+    ".zshenv"            = { source = ./home/zshenv;            force = true; };
+    ".vimrc"             = { source = ./home/vimrc; };
+    ".gitignore_global"  = { source = ./home/gitignore_global;  force = true; };
+    ".prettierrc"        = { source = ./home/prettierrc;       force = true; };
+    "agent-status.sh"    = { source = ./home/agent-status.sh; };
+    ".ipython/profile_default/startup/00-imports.py" = { source = ./home/ipython_startup_imports.py; };
 
     # Starship prompt
-    ".config/starship.toml" = { source = ./dotfiles/starship.toml; force = true; };
+    ".config/starship.toml" = { source = ./home/starship.toml; force = true; };
 
     # Neovim (lazy-lock.json is symlinked via activation script — it must be writable)
-    ".config/nvim/init.lua"       = { source = ./dotfiles/nvim/init.lua;       force = true; };
-    ".config/nvim/.stylua.toml"   = { source = ./dotfiles/nvim/.stylua.toml;   force = true; };
+    ".config/nvim/init.lua"       = { source = ./home/nvim/init.lua;       force = true; };
+    ".config/nvim/.stylua.toml"   = { source = ./home/nvim/.stylua.toml;   force = true; };
 
     # Ghostty terminal
-    ".config/ghostty/config" = { source = ./dotfiles/ghostty; force = true; };
+    ".config/ghostty/config" = { source = ./home/ghostty; force = true; };
 
     # VSCode
-    "Library/Application Support/Code/User/settings.json"    = { source = ./dotfiles/vscode/settings.json;    force = true; };
-    "Library/Application Support/Code/User/keybindings.json" = { source = ./dotfiles/vscode/keybindings.json; force = true; };
+    "Library/Application Support/Code/User/settings.json"    = { source = ./home/vscode/settings.json;    force = true; };
+    "Library/Application Support/Code/User/keybindings.json" = { source = ./home/vscode/keybindings.json; force = true; };
 
     # Claude Code
     ".claude" = { source = ./claude; recursive = true; force = true; };
@@ -131,7 +131,7 @@
 
   home.activation.neovimLazyLock = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
-      ${config.home.homeDirectory}/Projects/dotfiles/nix/dotfiles/nvim/lazy-lock.json \
+      ${config.home.homeDirectory}/Projects/dotfiles/home/nvim/lazy-lock.json \
       ${config.home.homeDirectory}/.config/nvim/lazy-lock.json
   '';
 }
