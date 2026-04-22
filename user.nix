@@ -40,7 +40,6 @@
       core.excludesfile = "${config.home.homeDirectory}/.gitignore_global";
       pull.rebase = false;
       push.autoSetupRemote = true;
-      merge.tool = "nvimdiff";
       alias = {
         cm = "commit";
         co = "checkout";
