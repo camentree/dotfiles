@@ -16,6 +16,8 @@ export JAVA_HOME="$HOME/.local/share/mise/installs/java/temurin-17.0.16+8"
 unset DIRHELPER_USER_DIR_SUFFIX
 
 # Base python virtual environment
+# Suppress the (base3.13) PS1 prefix — Starship shows the venv via its python module
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 [[ -d "$HOME/.venvs/base3.13" ]] && source "$HOME/.venvs/base3.13/bin/activate"
 
 # Machine-specific overrides and secrets (not tracked in git)

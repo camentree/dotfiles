@@ -85,6 +85,18 @@ vim.api.nvim_create_autocmd("TermOpen", {
 	end,
 })
 
+-- Terminal-mode paste: forward clipboard to the child PTY wrapped in bracketed-paste
+-- sequences. nvim's :terminal otherwise strips them, which breaks Claude Code's
+-- multi-line paste detection. Bound to Alt+V to avoid colliding with Ctrl+V
+-- (Claude Code's image-paste shortcut) and Cmd+V (Ghostty's own paste).
+vim.keymap.set("t", "<M-v>", function()
+	local text = vim.fn.getreg("+")
+	local chan = vim.bo.channel
+	if chan ~= 0 then
+		vim.api.nvim_chan_send(chan, "\27[200~" .. text .. "\27[201~")
+	end
+end, { desc = "Paste clipboard with bracketed paste" })
+
 vim.api.nvim_create_autocmd("VimResized", {
 	command = "wincmd =",
 })

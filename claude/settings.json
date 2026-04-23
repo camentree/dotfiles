@@ -37,6 +37,7 @@
       "WebFetch",
       "Read",
       "Bash(mise where:*)",
+      "Bash(npx difit *)",
       "Skill(keybindings-help)"
     ],
     "defaultMode": "default",
@@ -51,5 +52,9 @@
   },
   "effortLevel": "medium",
   "promptSuggestionEnabled": false,
-  "autoDreamEnabled": true
+  "autoDreamEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
 }
