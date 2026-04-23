@@ -97,6 +97,32 @@ vim.keymap.set("t", "<M-v>", function()
 	end
 end, { desc = "Paste clipboard with bracketed paste" })
 
+local original_path = vim.env.PATH
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "python",
+	callback = function(args)
+		local file = vim.api.nvim_buf_get_name(args.buf)
+		if file == "" then
+			return
+		end
+		local found = vim.fs.find(".venv", {
+			upward = true,
+			type = "directory",
+			path = vim.fs.dirname(file),
+			stop = vim.env.HOME,
+		})
+		if #found == 0 then
+			return
+		end
+		local venv = found[1]
+		if vim.env.VIRTUAL_ENV == venv then
+			return
+		end
+		vim.env.VIRTUAL_ENV = venv
+		vim.env.PATH = venv .. "/bin:" .. original_path
+	end,
+})
+
 vim.api.nvim_create_autocmd("VimResized", {
 	command = "wincmd =",
 })
@@ -110,7 +136,7 @@ vim.diagnostic.config({
 	virtual_text = false,
 	-- Full-text diagnostics on their own lines below the code (Neovim 0.11+).
 	-- Swap in `{ current_line = true }` to limit to the cursor's line only.
-	virtual_lines = true,
+	virtual_lines = false,
 	-- virtual_lines = { current_line = true },
 	jump = { on_jump = "float" },
 })
@@ -211,7 +237,8 @@ vim.keymap.set({ "n", "i", "t" }, "<C-/>", function()
 	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
 end, { desc = "Toggle Notebook" })
 vim.keymap.set({ "n", "i", "t" }, "<C-.>", function()
-	local path = vim.fn.fnamemodify(vim.fn.expand("~/Documents/notes/ToDo.md"), ":p")
+	local path =
+		vim.fn.fnamemodify(vim.fn.expand("~/Documents/notes/ToDo.md"), ":p")
 	for _, win in ipairs(vim.api.nvim_list_wins()) do
 		local buf = vim.api.nvim_win_get_buf(win)
 		if vim.api.nvim_buf_get_name(buf) == path then
@@ -405,12 +432,20 @@ require("lazy").setup({
 					layout_strategy = "horizontal",
 					layout_config = {
 						width = 0.9,
-						preview_width = 0.5,
+						horizontal = { preview_width = 0.5 },
 					},
 					path_display = { "filename_first" },
 					mappings = {
 						i = { ["<D-CR>"] = actions.select_vertical },
 						n = { ["<D-CR>"] = actions.select_vertical },
+					},
+				},
+				pickers = {
+					buffers = {
+						mappings = {
+							i = { ["<C-d>"] = actions.delete_buffer },
+							n = { ["d"] = actions.delete_buffer },
+						},
 					},
 				},
 				extensions = {
@@ -1313,7 +1348,11 @@ require("lazy").setup({
 		keys = {
 			{ "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
 			{ "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
-			{ "<leader>gh", "<cmd>DiffviewFileHistory<cr>", desc = "Diffview file history" },
+			{
+				"<leader>gh",
+				"<cmd>DiffviewFileHistory<cr>",
+				desc = "Diffview file history",
+			},
 		},
 	},
 })
