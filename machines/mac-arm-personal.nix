@@ -8,6 +8,5 @@
 
   # Personal packages
   environment.systemPackages = with pkgs; [
-    (postgresql.withPackages (p: [ p.pgvector ]))
   ];
 }

@@ -7,9 +7,11 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    parallax.url = "path:/Users/camen/Projects/parallax";
+    parallax.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, parallax, ... }:
     let
       homeManagerModule = {
         home-manager.useGlobalPkgs = true;
@@ -24,13 +26,13 @@
         # Intel MacBook Pro — home server
         "mac-intel-server" = nix-darwin.lib.darwinSystem {
           system = "x86_64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix parallax.darwinModules.default darwinModules homeManagerModule ];
         };
 
         # Apple Silicon — personal laptop
         "mac-arm-personal" = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix parallax.darwinModules.default darwinModules homeManagerModule ];
         };
 
         # Apple Silicon — work laptop
