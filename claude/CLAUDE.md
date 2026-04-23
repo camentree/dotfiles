@@ -20,6 +20,7 @@
 
 - **Readable over clever.** No single-letter variable names. Legibility beats performance micro-optimization by default.
 - **Preserve existing comments.** Don't remove them when editing, even during restructuring.
+- **Don't add new comments.** Nearly every comment you reach for is unhelpful to me. Well-named identifiers already explain *what*; the code already shows *how*. Skip narration ("-- Auto-activate venv", "-- Terminal-mode paste", "-- ANSI 24-bit color helpers"), skip titling a block, skip restating the diff you just made. Write a comment **only** for genuinely non-obvious *why*: a hidden constraint, an upstream bug you're working around, an ordering dependency that would look wrong without context. If in doubt, leave it out — I'll ask if I want the reasoning. "Preserve existing comments" is about my comments; it is *not* a license to add your own.
 - **Custom colors, not pre-made themes.** Use hex notation (`#86c9c0`), not color names or ANSI numbers. Keep theming consistent across Ghostty, Starship, and nvim.
 
 ## Permissions
