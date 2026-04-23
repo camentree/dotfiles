@@ -41,13 +41,13 @@ ctx_str=$(fmt_pct "$ctx_pct")
 line2=""
 if [ -n "$fivehr_pct" ]; then
   reset_t=$(date -r "$fivehr_reset" "+%-I:%M %p" 2>/dev/null)
-  line2="${gray}5h $(fmt_pct "$fivehr_pct") (resets at ${reset_t})${reset}"
+  line2="${gray}5h: $(fmt_pct "$fivehr_pct") (${reset_t})${reset}"
 fi
 if [ -n "$sevenday_pct" ]; then
   reset_t=$(date -r "$sevenday_reset" "+%b %d" 2>/dev/null)
-  seg="${gray}7d $(fmt_pct "$sevenday_pct") (resets at ${reset_t})${reset}"
+  seg="${gray}7d: $(fmt_pct "$sevenday_pct") (${reset_t})${reset}"
   if [ -n "$line2" ]; then
-    line2="${line2}${gray}, ${reset}${seg}"
+    line2="${line2} ${gray}| ${reset}${seg}"
   else
     line2="$seg"
   fi

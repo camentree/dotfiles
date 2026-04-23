@@ -12,7 +12,7 @@
   # Server packages
   environment.systemPackages = with pkgs; [
     nginx
-    postgresql
+    (postgresql.withPackages (p: [ p.pgvector ]))
     sqlite
     yarn
   ];
