@@ -25,7 +25,7 @@ function _is-repo () { git rev-parse --git-dir &>/dev/null; }
 function _is-branch () { git show-ref --verify --quiet "refs/heads/$1"; }
 function _is-session () { tmux has-session -t "$1" &>/dev/null; }
 
-function loadenv () { set -o allexport; source "${1:-.env}"; set +o allexport ; }
+function loadenv () { set -o allexport; source "${1:-.}/.env"; set +o allexport ; }
 function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branch -D ; }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 function touch2 () { mkdir -p "$(dirname "$1")" && touch "$1" ; }
@@ -112,3 +112,4 @@ bindkey "^X^_" redo
 
 # Remove . from word characters so Option+Delete stops at periods
 WORDCHARS=${WORDCHARS//.}
+
