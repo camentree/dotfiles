@@ -18,9 +18,14 @@
 
 ## Code style
 
-- **Readable over clever.** No single-letter variable names. Legibility beats performance micro-optimization by default.
+- **Readable over clever.** Legibility beats performance micro-optimization by default.
+- **No abbreviations in variable names.** Spell things out: `markdown_client` not `md`, `postgres_connection` not `conn`, `episodic_markdown_client` not `episodic_md`. No single-letter variables. If a name feels too long, that's a signal something else is wrong (too many parameters, misnamed scope, missing class) — don't shorten to compensate.
 - **Preserve existing comments.** Don't remove them when editing, even during restructuring.
 - **Don't add new comments.** Nearly every comment you reach for is unhelpful to me. Well-named identifiers already explain *what*; the code already shows *how*. Skip narration ("-- Auto-activate venv", "-- Terminal-mode paste", "-- ANSI 24-bit color helpers"), skip titling a block, skip restating the diff you just made. Write a comment **only** for genuinely non-obvious *why*: a hidden constraint, an upstream bug you're working around, an ordering dependency that would look wrong without context. If in doubt, leave it out — I'll ask if I want the reasoning. "Preserve existing comments" is about my comments; it is *not* a license to add your own.
+- **No section-divider comments.** No `# ── Tool definitions ──` style block headers. If a file is so long it needs visual separators to navigate, the file should be split.
+- **No `*,` keyword-only marker in function signatures.** Keep parameters positional-or-keyword. Force keyword-style at the call site instead, by always passing kwargs.
+- **Use keyword arguments when calling functions.** `foo(content=content, markdown_client=client)` not `foo(content, client)`. Positional is fine for one or two args where the meaning is obvious (`Path(path)`, `len(items)`); past that, name them.
+- **Type-hint every parameter,** including external clients (`postgres_connection: psycopg.Connection`, `markdown_client: markdown.Client`). Untyped parameters force readers to grep for callers.
 - **Custom colors, not pre-made themes.** Use hex notation (`#86c9c0`), not color names or ANSI numbers. Keep theming consistent across Ghostty, Starship, and nvim.
 
 ## Permissions
