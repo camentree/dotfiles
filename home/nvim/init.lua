@@ -1124,7 +1124,7 @@ require("lazy").setup({
 		},
 		opts = {
 			heading = {
-				icons = {},
+				icons = { "▎ ", "▎ ", "▎ ", "▎ ", "▎ ", "▎ " },
 				sign = false,
 				backgrounds = {
 					"RenderMarkdownH1Bg",
@@ -1140,21 +1140,25 @@ require("lazy").setup({
 				style = "full",
 				language_icon = false,
 				highlight = "RenderMarkdownCode",
+				inline_pad = 1,
 			},
 			bullet = {
 				icons = { "–", "–", "–", "–" },
 			},
 			latex = { enabled = false },
+			html = {
+				comment = { conceal = false },
+			},
 		},
 		config = function(_, opts)
 			-- Heading colors: defined once, applied to both render-markdown and treesitter
 			local heading_colors = {
-				"#7ec8e3",
 				"#86c9c0",
+				"#e06c75",
 				"#c678dd",
+				"#7ec8e3",
+				"#98c379",
 				"#e5c07b",
-				"#b0b0b0",
-				"#808080",
 			}
 			for i, color in ipairs(heading_colors) do
 				local hl = { bold = true, fg = color }
@@ -1169,7 +1173,22 @@ require("lazy").setup({
 			vim.api.nvim_set_hl(
 				0,
 				"RenderMarkdownCodeInline",
-				{ bg = "#1e1e28" }
+				{ bg = "#1e1e28", fg = "#8e82ce" }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.raw.markdown_inline",
+				{ bg = "#1e1e28", fg = "#8e82ce" }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.strong.markdown_inline",
+				{ bold = true, fg = "#e06c75" }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"@markup.italic.markdown_inline",
+				{ italic = true, fg = "#98c379" }
 			)
 			require("render-markdown").setup(opts)
 		end,

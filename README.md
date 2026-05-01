@@ -30,6 +30,20 @@ setup.sh            ← First-time bootstrap for a new Mac.
 | Claude Code settings | `claude/settings.json` |
 | Claude user-level instructions | `claude/CLAUDE.md` |
 
+## Color palette
+
+| Hex | Role |
+| --- | --- |
+| `#1c1a1e` | background |
+| `#d5d0cb` | foreground (body text) |
+| `#e06c75` | red / coral |
+| `#98c379` | green |
+| `#e5c07b` | yellow |
+| `#7ec8e3` | blue |
+| `#c678dd` | purple |
+| `#86c9c0` | teal |
+| `#b0aaa0` | light grey |
+
 ## First-time setup (new Mac)
 
 Prereqs:
