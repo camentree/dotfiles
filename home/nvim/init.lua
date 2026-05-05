@@ -931,6 +931,18 @@ require("lazy").setup({
 				"BlinkCmpLabelMatch",
 				{ fg = "#e5c07b", bold = true }
 			)
+			vim.api.nvim_set_hl(0, "DiffAdd", { bg = "#1e3a2a" })
+			vim.api.nvim_set_hl(
+				0,
+				"DiffDelete",
+				{ bg = "#3a1e22", fg = "#5a3a3e" }
+			)
+			vim.api.nvim_set_hl(0, "DiffChange", { bg = "#2a2e3a" })
+			vim.api.nvim_set_hl(
+				0,
+				"DiffText",
+				{ bg = "#3a4a6a", bold = true }
+			)
 		end,
 	},
 	-- folke/todo-comments.nvim
@@ -1247,7 +1259,18 @@ require("lazy").setup({
 		},
 	},
 	-- okuuva/auto-save.nvim
-	{ "okuuva/auto-save.nvim", lazy = false, opts = {} },
+	{
+		"okuuva/auto-save.nvim",
+		lazy = false,
+		opts = {
+			condition = function(buf)
+				for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+					return not vim.wo[win].diff
+				end
+				return true
+			end,
+		},
+	},
 	-- nvim-neo-tree/neo-tree.nvim
 	{
 		"nvim-neo-tree/neo-tree.nvim",
@@ -1323,7 +1346,11 @@ require("lazy").setup({
 				split_width_percentage = 0.4,
 				auto_close = true,
 			},
-			diff_opts = { layout = "vertical" },
+			diff_opts = {
+				layout = "vertical",
+				open_in_new_tab = true,
+				hide_terminal_in_new_tab = true,
+			},
 		},
 		keys = {
 			{
