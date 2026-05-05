@@ -971,6 +971,7 @@ require("lazy").setup({
 						if is_terminal then
 							local name = vim.api.nvim_buf_get_name(0)
 							local cmd = name:match(":([^:]+)$") or name
+							cmd = cmd:gsub(";.*$", "")
 							label = vim.fn.fnamemodify(cmd, ":t")
 						else
 							label = vim.bo.filetype
