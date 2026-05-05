@@ -992,32 +992,37 @@ require("lazy").setup({
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineModeNormal",
-				{ bg = "#2e5a1e", fg = "#e0e0e0", bold = true }
+				{ bg = "#7ec8e3", fg = "#1c1a1e", bold = true }
 			)
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineModeInsert",
-				{ bg = "#7ec8e3", fg = "#1e1e1e", bold = true }
+				{ bg = "#98c379", fg = "#1c1a1e", bold = true }
 			)
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineModeVisual",
-				{ bg = "#e5c07b", fg = "#1e1e1e", bold = true }
+				{ bg = "#e5c07b", fg = "#1c1a1e", bold = true }
 			)
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineModeReplace",
-				{ bg = "#e06c75", fg = "#1e1e1e", bold = true }
+				{ bg = "#e06c75", fg = "#1c1a1e", bold = true }
 			)
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineModeCommand",
-				{ bg = "#c678dd", fg = "#1e1e1e", bold = true }
+				{ bg = "#c678dd", fg = "#1c1a1e", bold = true }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"MiniStatuslineModeOther",
+				{ bg = "#98c379", fg = "#1c1a1e", bold = true }
 			)
 			vim.api.nvim_set_hl(
 				0,
 				"MiniStatuslineFilename",
-				{ bg = "#3a3a3a", fg = "#808080", bold = true }
+				{ bg = "#1c1a1e", fg = "#b0aaa0", bold = true }
 			)
 		end,
 	},
