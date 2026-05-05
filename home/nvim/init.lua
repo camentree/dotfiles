@@ -50,6 +50,7 @@ vim.o.updatetime = 250
 vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
+vim.o.laststatus = 3 -- global statusline
 
 vim.o.inccommand = "split"
 vim.o.cursorline = false
@@ -97,6 +98,15 @@ vim.keymap.set("t", "<M-v>", function()
 	end
 end, { desc = "Paste clipboard with bracketed paste" })
 
+-- Single Esc exits terminal mode. To send a literal Esc to the running program,
+-- use <C-V><Esc>.
+vim.keymap.set(
+	"t",
+	"<Esc>",
+	[[<C-\><C-n>]],
+	{ desc = "Exit terminal mode" }
+)
+
 local original_path = vim.env.PATH
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "python",
@@ -142,7 +152,6 @@ vim.diagnostic.config({
 })
 
 -- Pop a float with the full diagnostic message after the cursor sits still.
-vim.opt.updatetime = 250
 vim.api.nvim_create_autocmd("CursorHold", {
 	callback = function()
 		vim.diagnostic.open_float(nil, { focus = false })
@@ -156,6 +165,13 @@ vim.keymap.set(
 	"<Esc>",
 	"<cmd>nohlsearch<CR>",
 	{ desc = "Escape to unhighlight search returns" }
+)
+vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "[W]rite file" })
+vim.keymap.set(
+	{ "n", "i", "t" },
+	"<C-;>",
+	"<cmd>only<CR>",
+	{ desc = "Zen mode (close other windows)" }
 )
 vim.keymap.set("n", "<leader>q", function()
 	if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
@@ -185,12 +201,6 @@ vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<C-Home>", "<C-o>gg", { desc = "Top of file (Cmd+Up)" })
 vim.keymap.set("i", "<C-End>", "<C-o>G", { desc = "End of file (Cmd+Down)" })
-vim.keymap.set(
-	"t",
-	"<A-v>",
-	[[<C-\><C-n>"+pi]],
-	{ desc = "Paste into terminal (Option+V)" }
-)
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
@@ -219,40 +229,27 @@ vim.keymap.set(
 	[["zy:%s/\V<C-r>=escape(@z,'/\')<CR>//g<Left><Left>]],
 	{ desc = "[F]ind and [R]eplace selection" }
 )
-vim.keymap.set({ "n", "i", "t" }, "<C-/>", function()
-	local raw = vim.env.NOTEBOOK_PATH
-	if not raw or raw == "" then
-		vim.notify("NOTEBOOK_PATH is not set", vim.log.levels.WARN)
-		return
-	end
-	local path = vim.fn.fnamemodify(vim.fn.expand(raw), ":p")
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local buf = vim.api.nvim_win_get_buf(win)
-		if vim.api.nvim_buf_get_name(buf) == path then
-			vim.api.nvim_win_close(win, false)
+local function create_sidebar_mapping(keys, env_var, description)
+	vim.keymap.set({ "n", "i", "t" }, keys, function()
+		local raw = vim.env[env_var]
+		if not raw or raw == "" then
+			vim.notify(env_var .. " is not set", vim.log.levels.WARN)
 			return
 		end
-	end
-	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
-	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
-end, { desc = "Toggle Notebook" })
-vim.keymap.set({ "n", "i", "t" }, "<C-.>", function()
-	local raw = vim.env.TODO_PATH
-	if not raw or raw == "" then
-		vim.notify("TODO_PATH is not set", vim.log.levels.WARN)
-		return
-	end
-	local path = vim.fn.fnamemodify(vim.fn.expand(raw), ":p")
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local buf = vim.api.nvim_win_get_buf(win)
-		if vim.api.nvim_buf_get_name(buf) == path then
-			vim.api.nvim_win_close(win, false)
-			return
+		local path = vim.fn.fnamemodify(vim.fn.expand(raw), ":p")
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			local buf = vim.api.nvim_win_get_buf(win)
+			if vim.api.nvim_buf_get_name(buf) == path then
+				vim.api.nvim_win_close(win, false)
+				return
+			end
 		end
-	end
-	vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
-	vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
-end, { desc = "Toggle ToDo" })
+		vim.cmd("botright vsplit " .. vim.fn.fnameescape(path))
+		vim.api.nvim_win_set_width(0, math.floor(vim.o.columns * 0.4))
+	end, { desc = description })
+end
+create_sidebar_mapping("<C-/>", "NOTEBOOK_PATH", "Toggle Notebook")
+create_sidebar_mapping("<C-.>", "TODO_PATH", "Toggle ToDo")
 
 -- [[ AUTOCOMMANDS ]]
 vim.api.nvim_create_autocmd("FileType", {
@@ -440,7 +437,10 @@ require("lazy").setup({
 					},
 					path_display = { "filename_first" },
 					mappings = {
-						i = { ["<D-CR>"] = actions.select_vertical },
+						i = {
+							["<D-CR>"] = actions.select_vertical,
+							["<Esc>"] = actions.close,
+						},
 						n = { ["<D-CR>"] = actions.select_vertical },
 					},
 				},
@@ -938,11 +938,7 @@ require("lazy").setup({
 				{ bg = "#3a1e22", fg = "#5a3a3e" }
 			)
 			vim.api.nvim_set_hl(0, "DiffChange", { bg = "#2a2e3a" })
-			vim.api.nvim_set_hl(
-				0,
-				"DiffText",
-				{ bg = "#3a4a6a", bold = true }
-			)
+			vim.api.nvim_set_hl(0, "DiffText", { bg = "#3a4a6a", bold = true })
 		end,
 	},
 	-- folke/todo-comments.nvim
@@ -968,10 +964,17 @@ require("lazy").setup({
 					active = function()
 						local mode, mode_hl =
 							statusline.section_mode({ trunc_width = 120 })
-						mode = mode:sub(1, 1)
-						local filename = vim.fn.expand("%:~:.")
-						local filetype = vim.bo.filetype
-						local location = "%2l:%-2v"
+						local is_terminal = vim.bo.buftype == "terminal"
+						local filename = is_terminal and ""
+							or vim.fn.expand("%:~:.")
+						local label
+						if is_terminal then
+							local name = vim.api.nvim_buf_get_name(0)
+							local cmd = name:match(":([^:]+)$") or name
+							label = vim.fn.fnamemodify(cmd, ":t")
+						else
+							label = vim.bo.filetype
+						end
 
 						return statusline.combine_groups({
 							{ hl = mode_hl, strings = { mode } },
@@ -980,11 +983,7 @@ require("lazy").setup({
 								strings = { filename },
 							},
 							"%=",
-							{
-								hl = "MiniStatuslineFileinfo",
-								strings = { filetype },
-							},
-							{ hl = mode_hl, strings = { location } },
+							{ hl = mode_hl, strings = { label } },
 						})
 					end,
 				},
@@ -1018,11 +1017,6 @@ require("lazy").setup({
 				0,
 				"MiniStatuslineFilename",
 				{ bg = "#3a3a3a", fg = "#808080", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineFileinfo",
-				{ bg = "#4a4a4a", fg = "#d0d0d0", bold = true }
 			)
 		end,
 	},
@@ -1248,14 +1242,6 @@ require("lazy").setup({
 			shade_terminals = false,
 			start_in_insert = true,
 			persist_mode = false,
-			on_open = function(term)
-				vim.keymap.set(
-					"t",
-					"<Esc><Esc>",
-					[[<C-\><C-n>]],
-					{ buffer = term.bufnr, desc = "Exit terminal mode" }
-				)
-			end,
 		},
 	},
 	-- okuuva/auto-save.nvim
@@ -1294,6 +1280,7 @@ require("lazy").setup({
 						})
 					end
 				end,
+				mode = { "n", "i", "t" },
 				desc = "Toggle file tree",
 			},
 		},
