@@ -40,6 +40,7 @@
       core.excludesfile = "${config.home.homeDirectory}/.gitignore_global";
       pull.rebase = false;
       push.autoSetupRemote = true;
+      rerere.enabled = true;
       alias = {
         cm = "commit";
         co = "checkout";

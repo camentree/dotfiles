@@ -44,11 +44,7 @@
     "additionalDirectories": ["~/", "/tmp"]
   },
   "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true,
-    "august-team@august-marketplace": true,
-    "august-fix-flaky-test@august-marketplace": true,
-    "august-review-comments@august-marketplace": true,
-    "august-review-pr@august-marketplace": true
+    "frontend-design@claude-plugins-official": true
   },
   "effortLevel": "medium",
   "promptSuggestionEnabled": false,

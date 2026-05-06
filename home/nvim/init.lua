@@ -63,6 +63,7 @@ vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.termguicolors = true
 vim.o.autoread = true
+vim.o.guicursor = "n-v-c-sm:block,i-ci-ve-t:ver25,r-cr-o:hor20"
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
 })

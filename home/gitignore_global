@@ -21,3 +21,4 @@ CLAUDE.local*
 .prettierignore
 .worktrees/
 .claude/settings.local.json
+.claude/worktrees/
