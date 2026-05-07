@@ -63,6 +63,8 @@ vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.termguicolors = true
 vim.o.autoread = true
+vim.o.title = true
+vim.o.titlestring = "%{fnamemodify(getcwd(), ':t')}"
 vim.o.guicursor = "n-v-c-sm:block,i-ci-ve-t:ver25,r-cr-o:hor20"
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
@@ -1388,6 +1390,16 @@ require("lazy").setup({
 				"<leader>gh",
 				"<cmd>DiffviewFileHistory<cr>",
 				desc = "Diffview file history",
+			},
+		},
+		opts = {
+			hooks = {
+				diff_buf_read = function(bufnr)
+					vim.api.nvim_buf_call(bufnr, function()
+						vim.opt_local.foldenable = false
+						vim.opt_local.foldlevel = 99
+					end)
+				end,
 			},
 		},
 	},
