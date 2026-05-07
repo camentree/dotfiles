@@ -1,0 +1,56 @@
+{
+  "env": {
+    "DIRHELPER_USER_DIR_SUFFIX": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(git branch *)",
+      "Bash(git diff *)",
+      "Bash(git fetch *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+      "Bash(git status *)",
+      "Bash(cat *)",
+      "Bash(sysctl *)",
+      "Bash(lsof *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(grep *)",
+      "Bash(sbt *)",
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Bash(env *)",
+      "Bash(defaults *)",
+      "Bash(mdfind *)",
+      "Bash(npm run compile *)",
+      "Bash(curl -X GET *)",
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Bash(mise where:*)",
+      "Bash(npx difit *)",
+      "Skill(keybindings-help)"
+    ],
+    "defaultMode": "default",
+    "additionalDirectories": ["~/", "/tmp"]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
+  },
+  "effortLevel": "medium",
+  "promptSuggestionEnabled": false,
+  "autoDreamEnabled": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
+}
