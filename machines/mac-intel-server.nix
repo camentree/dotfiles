@@ -28,20 +28,29 @@
   # Keep the Mac awake (server mode)
   # ============================================================
   power = {
-    sleep.display = 15;              # display sleeps after 15 min
+    sleep.display = "never";         # avoid WindowServer state transitions
     sleep.computer = "never";        # never sleep the computer
     sleep.harddisk = "never";        # never spin down disks
+    restartAfterFreeze = true;       # auto-reboot on kernel panic
+    # restartAfterPowerFailure: not supported on laptop hardware (battery)
   };
 
   system.activationScripts.postActivation.text = ''
-    # Prevent sleep when lid is closed (clamshell mode)
+    # Force integrated GPU only.
+    # The AMD Radeon Pro dGPU on the 16,1 is the most common cause of
+    # WindowServer hangs (which trigger watchdog kernel panics) and runs
+    # hot/power-hungry. Headless server has no use for it.
+    sudo pmset -a gpuswitch 0
+    # Allow lid-closed operation without an external display attached.
+    # Without this, closing the lid sleeps regardless of `sleep = never`.
+    sudo pmset -a disablesleep 1
+    # Wake on lid open / AC plug-in (no-ops with disablesleep but harmless)
     sudo pmset -a lidwake 1
     sudo pmset -a acwake 1
-    # Wake on network access (for remote SSH)
+    # Wake on network packet (in case sleep ever happens)
     sudo pmset -a womp 1
-    # Restart after power failure
-    sudo pmset -a autorestart 1
-
+    # Disable Power Nap (background work during sleep — irrelevant for a server)
+    sudo pmset -a powernap 0
   '';
 
   # ============================================================
