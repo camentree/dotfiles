@@ -1,6 +1,6 @@
 ---
 name: execute-pr
-description: Execute one PR slice that has already been planned via /plan-pr. Reads the PR plan from the feature doc, writes the code layer-by-layer, runs the project's verification commands, opens difit without stealing focus, and updates the doc with branch and PR info.
+description: Execute one PR slice that has already been planned via /plan-pr. Reads the PR plan from the feature doc, writes the code layer-by-layer, runs the project's verification commands, and opens difit without stealing focus. Hands off to the user for commit and push. Use /open-pr after pushing.
 ---
 
 # Execute a PR slice
@@ -23,7 +23,9 @@ If the PR Slice's **Plan:** field is still `_(filled in during /plan-pr)_`, stop
 
 ### 1. Branch
 
-Create and check out the branch. Update the doc's **Branch:** field.
+Work on the current branch. Don't create one. If the user is on master / main, stop and tell them to check out a feature branch first (via `wk -b <branch>` or `git checkout -b <branch>`).
+
+Record the current branch in the doc's **Branch:** field.
 
 ### 2. Write the code, dependency-order
 
@@ -46,17 +48,16 @@ When everything passes:
 - Run `git status` and `git diff --stat` to summarize what changed.
 - **Start difit without stealing focus.** `difit --no-open`. Print the URL for the user to click when ready.
 - Send a macOS notification: `osascript -e 'display notification "PR N ready for review" with title "Claude"'`.
-- Do not commit. Do not push. The user reviews via difit, makes any last edits, and commits themselves.
+- Do not commit. Do not push. Do not open the PR — that's `/open-pr`.
 
-### 5. After the user commits and pushes
-
-If the user reports the PR is opened, update the doc's **PR:** field with the GitHub PR URL. End the session.
+The user reviews via difit, makes any last edits, commits, and pushes themselves. Then they run `/open-pr` to open the PR. End this session after the handoff.
 
 ## Constraints
 
 - **One slice per session.** Don't drift into PR N+1.
 - **Don't re-plan.** The plan is the contract. If you find a mistake in it, stop and tell the user — they decide whether to amend or restart with `/plan-pr`.
 - **Don't commit or push.** The user does that after self-review.
+- **Don't open the PR.** That's `/open-pr`, in a fresh session.
 - **Don't open the browser.** difit runs headless or backgrounded; URL goes to stdout.
 - **Project style is canon.** If you violate documented style, stop and fix.
 
