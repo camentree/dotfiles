@@ -12,9 +12,21 @@
   # Server packages
   environment.systemPackages = with pkgs; [
     nginx
+    postgresql
     sqlite
     yarn
   ];
+
+  # Data dir lives at ~/.postgres; bootstrap runs initdb on first launch.
+  launchd.user.agents.postgresql = {
+    command = "/bin/bash -c 'PGDATA=/Users/camen/.postgres; [ -f \"$PGDATA/PG_VERSION\" ] || ${pkgs.postgresql}/bin/initdb -D \"$PGDATA\"; exec ${pkgs.postgresql}/bin/postgres -D \"$PGDATA\"'";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/postgresql.stdout.log";
+      StandardErrorPath = "/tmp/postgresql.stderr.log";
+    };
+  };
 
   # ============================================================
   # SSH — key-only authentication
