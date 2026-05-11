@@ -34,59 +34,55 @@ function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Pro
 function nix-current () { readlink /run/current-system ; }
 function nix-ls () { darwin-rebuild --list-generations ; }
 
-function _worktree-path () { echo "$(git rev-parse --path-format=absolute --git-common-dir | sed 's/\/.git$//')/.worktrees/$1" }
-function worktree () {
+# wk: worktrees as hidden sibling directory with .env / CLAUDE.local.md auto-symlinked.
+# Worktrees live at <repo-parent>/.<repo-name>-worktrees/<branch-slug>/.
+function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's/\/\.git$//'; }
+function _wk-slug () { echo "$1" | sed 's|/|-|g'; }
+function _wk-path () {
+  local root=$(_wk-repo-root) || return 1
+  local parent=$(dirname "$root")
+  local name=$(basename "$root")
+  echo "$parent/.${name}-worktrees/$(_wk-slug "$1")"
+}
+function _wk-link () {
+  local source="$1" target="$2"
+  [ -e "$source" ] && [ ! -e "$target" ] && ln -s "$source" "$target"
+}
+function wk () {
+  local create_new_branch=false
+  if [[ "$1" == "-b" ]]; then create_new_branch=true; shift; fi
   local branch="$1"
-  local change_directory="${2:-true}"
-
-  [ -z "$branch" ] && { echo "Usage: worktree <branch> [cd=true|false]"; return 1; }
+  [ -z "$branch" ] && { echo "Usage: wk [-b] <branch>"; return 1; }
   _is-repo || { echo "Not in a git repo"; return 1; }
 
-  local worktree_path=$(_worktree-path "$branch")
-  if [ ! -d "$worktree_path" ]; then
-    local flag=$( _is-branch "$branch" && echo "" || echo "-b" )
-    git worktree add "$worktree_path" $flag "$branch" >&2 || return 1
+  local root=$(_wk-repo-root)
+  local path=$(_wk-path "$branch")
+
+  if [ -d "$path" ]; then
+    cd "$path"
+    return 0
   fi
-  if [[ "$change_directory" == "true" ]]; then
-    cd "$worktree_path"
+
+  if $create_new_branch; then
+    git worktree add -b "$branch" "$path" >&2 || return 1
+  elif _is-branch "$branch"; then
+    git worktree add "$path" "$branch" >&2 || return 1
   else
-    echo "$worktree_path"
+    echo "Branch '$branch' doesn't exist. Use 'wk -b $branch' to create."; return 1
   fi
+
+  _wk-link "$root/.env" "$path/.env"
+  _wk-link "$root/loquat/CLAUDE.local.md" "$path/loquat/CLAUDE.local.md"
+  cd "$path"
 }
-function worktree-rm () {
+function wkls () { git worktree list 2>/dev/null || echo "Not in a git repo"; }
+function wkrm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
-  [ -z "$branch" ] && { echo "Usage: worktree-rm [branch]"; return 1; }
-  local root=$(git rev-parse --path-format=absolute --git-common-dir | sed 's/\/.git$//')
+  [ -z "$branch" ] && { echo "Usage: wkrm [branch]"; return 1; }
+  local path=$(_wk-path "$branch")
+  local root=$(_wk-repo-root)
   cd "$root"
-  git worktree remove "$(_worktree-path "$branch")" --force 2>/dev/null && echo "Removed: $branch"
-}
-function worktree-ls () { git worktree list 2>/dev/null || echo "Not in a git repo"; }
-
-_AGENT_TMUX_SESSION="agents"
-function agent () {
-  local branch="$1"
-  [ -z "$branch" ] && { echo "Usage: agent <branch>"; return 1; }
-
-  local worktree_path=$(worktree "$branch" false) || return 1
-
-  if _is-session "$_AGENT_TMUX_SESSION"; then
-    tmux new-window -t "$_AGENT_TMUX_SESSION" -n "$branch" -c "$worktree_path"
-  else
-    tmux new-session -d -s "$_AGENT_TMUX_SESSION" -n "$branch" -c "$worktree_path"
-  fi
-  tmux send-keys -t "${_AGENT_TMUX_SESSION}:${branch}" 'claude' Enter
-
-  echo "Agent: $branch → $worktree_path"
-  [ -z "$TMUX" ] && tmux attach -t "$_AGENT_TMUX_SESSION"
-}
-function agent-rm () {
-  local branch="$1"
-  [ -z "$branch" ] && { echo "Usage: agent-rm <branch>"; return 1; }
-  tmux kill-window -t "${_AGENT_TMUX_SESSION}:${branch}" 2>/dev/null
-  worktree-rm "$branch"
-}
-function agent-ls () {
-  tmux list-windows -t "$_AGENT_TMUX_SESSION" -F '  #{window_name} (#{window_index}) #{pane_current_command}' 2>/dev/null || echo "No agent session"
+  git worktree remove "$path" --force 2>/dev/null && echo "Removed: $branch ($path)"
 }
 
 function va () { source .venv/bin/activate ; }

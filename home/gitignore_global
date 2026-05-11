@@ -20,5 +20,5 @@ CLAUDE.local*
 .zshenv.local
 .prettierignore
 .worktrees/
-.claude/settings.local.json
-.claude/worktrees/
+**/.claude/settings.local.json
+**/.claude/worktrees/
