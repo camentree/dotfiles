@@ -27,6 +27,7 @@
       core.excludesfile = "${config.home.homeDirectory}/.gitignore_global";
       pull.rebase = false;
       push.autoSetupRemote = true;
+      push.default = "current";
       rerere.enabled = true;
       alias = {
         cm = "commit";

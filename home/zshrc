@@ -51,7 +51,7 @@ function wk () {
       ;;
     new-from-master)
       git fetch origin master --quiet 2>/dev/null
-      git worktree add -b "$branch" "$worktree_path" origin/master || return 1
+      git worktree add -b "$branch" --no-track "$worktree_path" origin/master || return 1
       ;;
     new-from-here) git worktree add -b "$branch" "$worktree_path" || return 1 ;;
   esac
