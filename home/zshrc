@@ -21,68 +21,61 @@ alias gcm="git commit -m"
 alias gco="git checkout"
 
 # Functions
-function _is-repo () { git rev-parse --git-dir &>/dev/null; }
-function _is-branch () { git show-ref --verify --quiet "refs/heads/$1"; }
-function _is-session () { tmux has-session -t "$1" &>/dev/null; }
-
 function loadenv () { set -o allexport; source "${1:-.}/.env"; set +o allexport ; }
 function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branch -D ; }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
-function touch2 () { mkdir -p "$(dirname "$1")" && touch "$1" ; }
 
 function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#${1:?Usage: nix-rebuild <machine-name>}" ; }
-function nix-current () { readlink /run/current-system ; }
-function nix-ls () { darwin-rebuild --list-generations ; }
 
-# wk: worktrees as hidden sibling directory with .env / CLAUDE.local.md auto-symlinked.
-# Worktrees live at <repo-parent>/.<repo-name>-worktrees/<branch-slug>/.
-function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's/\/\.git$//'; }
-function _wk-slug () { echo "$1" | sed 's|/|-|g'; }
-function _wk-path () {
-  local root=$(_wk-repo-root) || return 1
-  local parent=$(dirname "$root")
-  local name=$(basename "$root")
-  echo "$parent/.${name}-worktrees/$(_wk-slug "$1")"
-}
-function _wk-link () {
-  local source="$1" target="$2"
-  [ -e "$source" ] && [ ! -e "$target" ] && ln -s "$source" "$target"
-}
+function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
 function wk () {
-  local create_new_branch=false
-  if [[ "$1" == "-b" ]]; then create_new_branch=true; shift; fi
+  local mode=switch
+  case "$1" in
+    -b) mode=new-from-master; shift ;;
+    -h) mode=new-from-here;   shift ;;
+  esac
   local branch="$1"
-  [ -z "$branch" ] && { echo "Usage: wk [-b] <branch>"; return 1; }
-  _is-repo || { echo "Not in a git repo"; return 1; }
+  [ -z "$branch" ] && { echo "Usage: wk [-b|-h] <branch>"; return 1; }
 
-  local root=$(_wk-repo-root)
-  local path=$(_wk-path "$branch")
+  local repo_root=$(_wk-repo-root)
+  [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
+  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
 
-  if [ -d "$path" ]; then
-    cd "$path"
-    return 0
+  case "$mode" in
+    switch)
+      local existing=$(git worktree list --porcelain | awk -v b="refs/heads/$branch" '
+        $1=="worktree" { p=$2 }
+        $1=="branch" && $2==b { print p; exit }')
+      if [ -n "$existing" ]; then cd "$existing"; return 0; fi
+      git worktree add "$worktree_path" "$branch" || return 1
+      ;;
+    new-from-master)
+      git fetch origin master --quiet 2>/dev/null
+      git worktree add -b "$branch" "$worktree_path" origin/master || return 1
+      ;;
+    new-from-here) git worktree add -b "$branch" "$worktree_path" || return 1 ;;
+  esac
+
+  if [ -f "$repo_root/.wk-share" ]; then
+    while IFS= read -r share_path; do
+      [[ -z "$share_path" || "$share_path" == \#* ]] && continue
+      [ -e "$repo_root/$share_path" ] && ln -sf "$repo_root/$share_path" "$worktree_path/$share_path"
+    done < "$repo_root/.wk-share"
   fi
 
-  if $create_new_branch; then
-    git worktree add -b "$branch" "$path" >&2 || return 1
-  elif _is-branch "$branch"; then
-    git worktree add "$path" "$branch" >&2 || return 1
-  else
-    echo "Branch '$branch' doesn't exist. Use 'wk -b $branch' to create."; return 1
-  fi
-
-  _wk-link "$root/.env" "$path/.env"
-  _wk-link "$root/loquat/CLAUDE.local.md" "$path/loquat/CLAUDE.local.md"
-  cd "$path"
+  local rel="${PWD#$repo_root/}"
+  cd "$worktree_path/$rel" 2>/dev/null || cd "$worktree_path"
 }
-function wkls () { git worktree list 2>/dev/null || echo "Not in a git repo"; }
+function wkls () { git worktree list; }
 function wkrm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   [ -z "$branch" ] && { echo "Usage: wkrm [branch]"; return 1; }
-  local path=$(_wk-path "$branch")
-  local root=$(_wk-repo-root)
-  cd "$root"
-  git worktree remove "$path" --force 2>/dev/null && echo "Removed: $branch ($path)"
+  local repo_root=$(_wk-repo-root)
+  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
+  [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
+  git worktree remove "$worktree_path" --force 2>/dev/null
+  git branch -D "$branch" 2>/dev/null
+  echo "Removed: $branch"
 }
 
 function va () { source .venv/bin/activate ; }
