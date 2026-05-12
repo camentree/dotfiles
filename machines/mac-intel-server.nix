@@ -21,55 +21,6 @@ in
     yarn
   ];
 
-  # ============================================================
-  # Parallax services
-  # ============================================================
-  # Each runs from the ~/Projects/parallax checkout. Deploy = git pull + uv sync.
-  launchd.user.agents.parallax-mcp = {
-    command = "/Users/camen/Projects/parallax/.venv/bin/parallax serve mcp";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/parallax-mcp.stdout.log";
-      StandardErrorPath = "/tmp/parallax-mcp.stderr.log";
-      WorkingDirectory = "/Users/camen/Projects/parallax";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  launchd.user.agents.parallax-http = {
-    command = "/Users/camen/Projects/parallax/.venv/bin/parallax serve http";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/parallax-http.stdout.log";
-      StandardErrorPath = "/tmp/parallax-http.stderr.log";
-      WorkingDirectory = "/Users/camen/Projects/parallax";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  launchd.user.agents.parallax-ntfy = {
-    command = "/Users/camen/Projects/parallax/.venv/bin/parallax serve ntfy";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/parallax-ntfy.stdout.log";
-      StandardErrorPath = "/tmp/parallax-ntfy.stderr.log";
-      WorkingDirectory = "/Users/camen/Projects/parallax";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
   # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
   launchd.user.agents.cloudflared = {
     command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config /Users/camen/.cloudflared/config.yml run parallax";
