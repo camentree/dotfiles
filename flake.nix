@@ -26,7 +26,11 @@
         # Intel MacBook Pro — home server
         "mac-intel-server" = nix-darwin.lib.darwinSystem {
           system = "x86_64-darwin";
+<<<<<<< HEAD
           modules = [ ./os/macos.nix ./machines/mac-intel-server.nix parallax.darwinModules.default darwinModules homeManagerModule ];
+=======
+          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix darwinModules homeManagerModule parallax.darwinModules.default ];
+>>>>>>> 91cc80d58066950fbe91edb07488eae741c84e01
         };
 
         # Apple Silicon — personal laptop
