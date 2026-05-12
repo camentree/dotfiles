@@ -189,6 +189,14 @@ end, { expr = true, desc = "Down by display line" })
 vim.keymap.set("n", "k", function()
 	return vim.v.count == 0 and "gk" or "k"
 end, { expr = true, desc = "Up by display line" })
+vim.keymap.set({ "n", "x" }, "gx", function()
+	local target = vim.fn.expand("<cfile>")
+	if target:match("^%w+://") then
+		vim.ui.open(target)
+	else
+		vim.cmd.edit(target)
+	end
+end, { desc = "Open URL externally, file in nvim" })
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })

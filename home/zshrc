@@ -71,8 +71,7 @@ function wkrm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   [ -z "$branch" ] && { echo "Usage: wkrm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
-  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
-  [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
+  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"  [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
   git worktree remove "$worktree_path" --force 2>/dev/null
   git branch -D "$branch" 2>/dev/null
   echo "Removed: $branch"

@@ -98,8 +98,16 @@
     "Library/Application Support/Code/User/settings.json"    = { source = ./home/vscode/settings.json;    force = true; };
     "Library/Application Support/Code/User/keybindings.json" = { source = ./home/vscode/keybindings.json; force = true; };
 
-    # Claude Code
-    ".claude" = { source = ./claude; recursive = true; force = true; };
+  } // (
+    let claudeRoot = toString ./claude;
+    in builtins.listToAttrs (map (file:
+      let rel = lib.removePrefix "${claudeRoot}/" (toString file);
+      in {
+        name = ".claude/${rel}";
+        value = { source = file; force = true; };
+      }
+    ) (lib.filesystem.listFilesRecursive ./claude))
+  ) // {
 
     # SSH
     ".ssh/config" = {
