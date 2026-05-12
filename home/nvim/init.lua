@@ -37,6 +37,14 @@ vim.g.have_nerd_font = true
 vim.schedule(function()
 	-- schedule settings after `UIEnter` to decrease startup time
 	vim.o.clipboard = "unnamedplus"
+	if os.getenv("SSH_TTY") then
+		local osc52 = require("vim.ui.clipboard.osc52")
+		vim.g.clipboard = {
+			name = "OSC 52",
+			copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+			paste = { ["+"] = osc52.paste("+"), ["*"] = osc52.paste("*") },
+		}
+	end
 end)
 vim.o.number = true
 vim.o.mouse = "a"
