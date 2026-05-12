@@ -1,7 +1,7 @@
 # ============================================================
 # Intel MacBook Pro — home server
 # ============================================================
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
   postgres = pkgs.postgresql.withPackages (p: [ p.pgvector ]);
@@ -12,7 +12,7 @@ in
   networking.hostName = "mac-intel-server";
   networking.computerName = "mac-intel-server";
 
-  system.defaults.screensaver.askForPassword = false;
+  system.defaults.screensaver.askForPassword = lib.mkForce false;
 
   # Server packages
   environment.systemPackages = with pkgs; [
