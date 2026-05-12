@@ -65,8 +65,13 @@
         ]
       },
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1778626215,
         "narHash": "sha256-VvX15ZEaGVvpuQHke6DYrPoWFsN/tDhIB7qNUmBe6Ds=",
+=======
+        "lastModified": 1778569153,
+        "narHash": "sha256-NB1fqNC6VNtGHgXRLnI4OGiTdKvadz515ZLKI45IX0o=",
+>>>>>>> 66d8fff99a88b6b2cb64bf9d0a553b5f461d66dc
         "path": "/Users/camen/Projects/parallax",
         "type": "path"
       },
