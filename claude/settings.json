@@ -40,13 +40,10 @@
       "Bash(npx difit *)",
       "Skill(keybindings-help)"
     ],
-    "defaultMode": "default",
+    "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]
   },
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
-  },
-  "effortLevel": "medium",
+  "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true,
   "statusLine": {
