@@ -11,7 +11,6 @@
     buf
     docker
     docker-compose
-    gcalcli
     imagemagick
     podman
     postgresql
