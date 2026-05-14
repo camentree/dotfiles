@@ -78,6 +78,7 @@
     ".gitignore_global"  = { source = ./home/gitignore_global;  force = true; };
     ".prettierrc"        = { source = ./home/prettierrc;       force = true; };
     "agent-status.sh"    = { source = ./home/agent-status.sh; };
+    "life-backup.sh"     = { source = ./home/life-backup.sh; };
     ".ipython/profile_default/startup/00-imports.py" = { source = ./home/ipython_startup_imports.py; };
 
     # Starship prompt
