@@ -271,6 +271,30 @@ create_sidebar_mapping("<C-/>", "NOTEBOOK_PATH", "Toggle Notebook")
 create_sidebar_mapping("<C-.>", "TODO_PATH", "Toggle ToDo")
 
 -- [[ AUTOCOMMANDS ]]
+local indent_by_filetype = {
+	markdown = { width = 2, expandtab = true },
+	python = { width = 4, expandtab = true },
+	lua = { width = 2, expandtab = true },
+	nix = { width = 2, expandtab = true },
+	scala = { width = 2, expandtab = true },
+	typescript = { width = 2, expandtab = true },
+	typescriptreact = { width = 2, expandtab = true },
+	javascript = { width = 2, expandtab = true },
+	javascriptreact = { width = 2, expandtab = true },
+	json = { width = 2, expandtab = true },
+	yaml = { width = 2, expandtab = true },
+}
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = vim.tbl_keys(indent_by_filetype),
+	callback = function(event)
+		local cfg = indent_by_filetype[vim.bo[event.buf].filetype]
+		vim.bo[event.buf].expandtab = cfg.expandtab
+		vim.bo[event.buf].tabstop = cfg.width
+		vim.bo[event.buf].shiftwidth = cfg.width
+		vim.bo[event.buf].softtabstop = cfg.width
+	end,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)
