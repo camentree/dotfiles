@@ -32,6 +32,22 @@ in
     };
   };
 
+  # Hourly commit + push of ~/Documents/Life to the private github mirror.
+  # The script is a no-op when nothing has changed.
+  launchd.user.agents.life-backup = {
+    command = "/bin/bash /Users/camen/life-backup.sh";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 3600;
+      StandardOutPath = "/tmp/life-backup.stdout.log";
+      StandardErrorPath = "/tmp/life-backup.stderr.log";
+      EnvironmentVariables = {
+        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+        HOME = "/Users/camen";
+      };
+    };
+  };
+
   # Data dir lives at ~/.postgres; bootstrap runs initdb on first launch.
   launchd.user.agents.postgresql = {
     command = "/bin/bash -c 'PGDATA=/Users/camen/.postgres; [ -f \"$PGDATA/PG_VERSION\" ] || ${postgres}/bin/initdb -D \"$PGDATA\"; exec ${postgres}/bin/postgres -D \"$PGDATA\"'";
