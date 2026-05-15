@@ -13,6 +13,7 @@
     docker-compose
     imagemagick
     podman
+    krunkit
     postgresql
     yarn
   ];
