@@ -22,7 +22,11 @@ alias gco="git checkout"
 
 # Functions
 function loadenv () { set -o allexport; source "${1:-.}/.env"; set +o allexport ; }
-function git-clean () { git branch | grep -v "master\|main\|*" | xargs git branch -D ; }
+function git-clean () {
+  local default=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+  [ -z "$default" ] && { echo "Could not detect default branch (origin/HEAD not set)."; return 1; }
+  git branch | grep -v "$default\|*" | xargs git branch -D
+}
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 
 function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#${1:?Usage: nix-rebuild <machine-name>}" ; }
@@ -31,7 +35,7 @@ function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-di
 function wk () {
   local mode=switch
   case "$1" in
-    -b) mode=new-from-master; shift ;;
+    -b) mode=new-from-default; shift ;;
     -h) mode=new-from-here;   shift ;;
   esac
   local branch="$1"
@@ -49,12 +53,16 @@ function wk () {
       if [ -n "$existing" ]; then cd "$existing"; return 0; fi
       git worktree add "$worktree_path" "$branch" || return 1
       ;;
-    new-from-master)
-      git fetch origin master --quiet 2>/dev/null
-      git worktree add -b "$branch" --no-track "$worktree_path" origin/master || return 1
+    new-from-default)
+      local default=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+      [ -z "$default" ] && { echo "Could not detect default branch (origin/HEAD not set). Use 'wk -h $branch' from the appropriate branch instead."; return 1; }
+      git fetch origin "$default" --quiet 2>/dev/null
+      git worktree add -b "$branch" --no-track "$worktree_path" "origin/$default" || return 1
       ;;
     new-from-here) git worktree add -b "$branch" "$worktree_path" || return 1 ;;
   esac
+
+  [ -e "$repo_root/.env" ] && ln -sf "$repo_root/.env" "$worktree_path/.env"
 
   if [ -f "$repo_root/.wk-share" ]; then
     while IFS= read -r share_path; do
