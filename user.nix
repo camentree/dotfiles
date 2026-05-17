@@ -117,6 +117,12 @@
           User camen
           SetEnv TERM=xterm-256color
 
+        Host mac-intel-server-remote
+          HostName ssh.smallworkshop.dev
+          User camen
+          SetEnv TERM=xterm-256color
+          ProxyCommand cloudflared access ssh --hostname=%h
+
         Host *
           IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
       '';

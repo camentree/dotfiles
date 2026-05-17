@@ -16,6 +16,7 @@ in
 
   # Server packages
   environment.systemPackages = with pkgs; [
+    cloudflared
     nginx
     sqlite
     yarn
