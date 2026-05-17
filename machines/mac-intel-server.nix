@@ -68,6 +68,16 @@ in
     KbdInteractiveAuthentication no
   '';
 
+  # Unlock the login keychain on SSH login so tools like `claude` can read
+  # their OAuth credentials. The keychain is only auto-unlocked by GUI login;
+  # SSH sessions inherit a locked keychain. Prompts for the login password.
+  home-manager.users.camen.home.file.".zprofile" = {
+    force = true;
+    text = ''
+      security unlock-keychain ~/Library/Keychains/login.keychain-db
+    '';
+  };
+
   # ============================================================
   # Keep the Mac awake (server mode)
   # ============================================================
