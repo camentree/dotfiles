@@ -116,12 +116,16 @@
           HostName mac-intel-server.local
           User camen
           SetEnv TERM=xterm-256color
+          RequestTTY yes
+          RemoteCommand security unlock-keychain ~/Library/Keychains/login.keychain-db; exec $SHELL -l
 
         Host mac-intel-server-remote
           HostName ssh.smallworkshop.dev
           User camen
           SetEnv TERM=xterm-256color
           ProxyCommand cloudflared access ssh --hostname=%h
+          RequestTTY yes
+          RemoteCommand security unlock-keychain ~/Library/Keychains/login.keychain-db; exec $SHELL -l
 
         Host *
           IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
