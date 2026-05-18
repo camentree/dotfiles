@@ -49,3 +49,9 @@ If asked to change a setting (git config, a package, a macOS default, a keybindi
 - **Research** — prefer `WebFetch` / `WebSearch` directly over spawning a research agent that runs its own curl/python.
 - Always use explicit HTTP method flags with curl (`curl -X GET`, `curl -X POST`) so permission rules can distinguish read-only from mutating requests.
 - Prefer `WebFetch` over `curl | jq` / `curl | python` pipelines for read-only HTTP GETs — it parses JSON/HTML and avoids extra permission prompts.
+
+## Claude session management
+
+- `claude-move-session <session-id> [target-path]` (in `home/zshrc`) — relocates a session's `.jsonl` and aux dir into the project key for `target-path` (default `$PWD`). Use it when a session's original cwd no longer exists (deleted worktree, moved directory) so it shows up in `claude --resume` from a stable location.
+- `wkrm` calls this automatically before removing a worktree, parking any worktree sessions in the main repo's project key — so worktree conversations survive deletion.
+- Background: Claude Code stores sessions under `~/.claude/projects/<encoded-cwd>/` (path with `/` → `-`). `--resume` filters by current cwd; there's no flag to disable that filter, so physical relocation is the workaround.

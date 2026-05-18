@@ -80,9 +80,33 @@ function wkrm () {
   local repo_root=$(_wk-repo-root)
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
+  local encoded_worktree="${worktree_path//\//-}"
+  for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
+    for jsonl in "$proj_dir"/*.jsonl(N); do
+      claude-move-session "${jsonl:t:r}" "$repo_root"
+    done
+    rmdir "$proj_dir" 2>/dev/null
+  done
   git worktree remove "$worktree_path" --force 2>/dev/null
   git branch -D "$branch" 2>/dev/null
   echo "Removed: $branch"
+}
+
+function claude-move-session () {
+  local session_id="$1"
+  local target_path="${2:-$PWD}"
+  [ -z "$session_id" ] && { echo "Usage: claude-move-session <session-id> [target-path]"; return 1; }
+  local source_jsonl=$(find "$HOME/.claude/projects" -maxdepth 2 -name "${session_id}.jsonl" -print -quit 2>/dev/null)
+  [ -z "$source_jsonl" ] && { echo "Session not found: $session_id"; return 1; }
+  local source_dir="${source_jsonl:h}"
+  [[ "$target_path" != /* ]] && target_path="$PWD/$target_path"
+  target_path="${target_path%/}"
+  local encoded="${target_path//\//-}"
+  local target_dir="$HOME/.claude/projects/$encoded"
+  mkdir -p "$target_dir"
+  mv "$source_jsonl" "$target_dir/"
+  [ -d "$source_dir/${session_id}" ] && mv "$source_dir/${session_id}" "$target_dir/"
+  echo "Moved $session_id -> $encoded"
 }
 
 function va () { source .venv/bin/activate ; }
