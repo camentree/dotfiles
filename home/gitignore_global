@@ -22,3 +22,5 @@ CLAUDE.local*
 .worktrees/
 **/.claude/settings.local.json
 **/.claude/worktrees/
+.worktreeinclude
+
