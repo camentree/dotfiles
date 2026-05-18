@@ -118,6 +118,25 @@ vim.keymap.set(
 	{ desc = "Exit terminal mode" }
 )
 
+-- Swallow mouse clicks in terminal-job mode. nvim already forwards events to
+-- the child if it has enabled mouse reporting (DECSET 1000+); when it hasn't,
+-- the default is to exit terminal mode and reposition nvim's cursor — which
+-- then snaps back to the child's cursor on re-entry. Nopping these keeps us
+-- in terminal mode instead. Scroll wheel stays mapped so wheel-scroll still
+-- falls through to the child or to nvim's default scrolling.
+for _, lhs in ipairs({
+	"<LeftMouse>",
+	"<LeftDrag>",
+	"<LeftRelease>",
+	"<2-LeftMouse>",
+	"<3-LeftMouse>",
+	"<4-LeftMouse>",
+	"<MiddleMouse>",
+	"<RightMouse>",
+}) do
+	vim.keymap.set("t", lhs, "<Nop>", { desc = "Stay in terminal mode on click" })
+end
+
 local original_path = vim.env.PATH
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "python",
