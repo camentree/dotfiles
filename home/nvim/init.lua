@@ -238,6 +238,19 @@ do
 		end
 	end
 
+	local function resolve_path(path)
+		if path:match("^/") or path:match("^~") then
+			return path
+		end
+		if vim.bo.buftype == "" then
+			local buffer_dir = vim.fn.expand("%:p:h")
+			if buffer_dir ~= "" then
+				return buffer_dir .. "/" .. path
+			end
+		end
+		return path
+	end
+
 	local function open_target_filepath(target, open_cmd)
 		local path, line, col = target:match("^(.-):(%d+):(%d+)$")
 		if not path then
@@ -249,7 +262,7 @@ do
 		end
 		path = path or target
 		if path ~= "" then
-			vim.cmd[open_cmd](vim.fn.fnameescape(path))
+			vim.cmd[open_cmd](vim.fn.fnameescape(resolve_path(path)))
 		end
 		if line then
 			vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col or 0) })
