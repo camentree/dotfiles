@@ -1352,6 +1352,7 @@ require("lazy").setup({
 				mappings = {
 					["<space>"] = "none",
 					["<C-b>"] = "close_window",
+					["<D-CR>"] = "open_vsplit",
 				},
 			},
 			default_component_configs = {
