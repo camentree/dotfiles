@@ -62,12 +62,13 @@ function wk () {
     new-from-here) git worktree add -b "$branch" "$worktree_path" || return 1 ;;
   esac
 
-  if [ -f "$repo_root/.worktreeinclude" ]; then
+  for share_file in "$repo_root/.worktreeinclude" "$repo_root/.worktreeinclude.local"; do
+    [ -f "$share_file" ] || continue
     while IFS= read -r share_path; do
       [[ -z "$share_path" || "$share_path" == \#* ]] && continue
       [ -e "$repo_root/$share_path" ] && ln -sf "$repo_root/$share_path" "$worktree_path/$share_path"
-    done < "$repo_root/.worktreeinclude"
-  fi
+    done < "$share_file"
+  done
 
   local rel="${PWD#$repo_root/}"
   cd "$worktree_path/$rel" 2>/dev/null || cd "$worktree_path"
