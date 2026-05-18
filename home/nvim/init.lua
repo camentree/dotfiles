@@ -650,6 +650,22 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sf", function()
 				builtin.find_files({ hidden = true })
 			end, { desc = "[S]earch [F]iles" })
+			vim.keymap.set("n", "<leader>sB", function()
+				builtin.find_files({
+					cwd = vim.fn.expand(
+						"$HOME/Projects/august-full-stack/august-backend"
+					),
+					hidden = true,
+				})
+			end, { desc = "[S]earch [B]ackend files" })
+			vim.keymap.set("n", "<leader>sF", function()
+				builtin.find_files({
+					cwd = vim.fn.expand(
+						"$HOME/Projects/august-full-stack/august-frontend"
+					),
+					hidden = true,
+				})
+			end, { desc = "[S]earch [F]rontend files" })
 			vim.keymap.set(
 				"n",
 				"<leader>ss",
@@ -800,6 +816,8 @@ require("lazy").setup({
 						"pyright",
 						"ruff",
 						"prettier",
+						"typescript-language-server",
+						"eslint-lsp",
 					},
 				},
 			},
@@ -908,6 +926,8 @@ require("lazy").setup({
 						},
 					},
 				},
+				ts_ls = {},
+				eslint = {},
 				lua_ls = {
 					on_init = function(client)
 						if client.workspace_folders then
@@ -1033,6 +1053,16 @@ require("lazy").setup({
 				scala = { lsp_format = "prefer" },
 				python = { "ruff_organize_imports", "ruff_format" },
 				markdown = { "prettier" },
+				javascript = { "prettier" },
+				javascriptreact = { "prettier" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
+				json = { "prettier" },
+				jsonc = { "prettier" },
+				css = { "prettier" },
+				scss = { "prettier" },
+				html = { "prettier" },
+				yaml = { "prettier" },
 			},
 		},
 	},
