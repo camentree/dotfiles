@@ -197,14 +197,112 @@ end, { expr = true, desc = "Down by display line" })
 vim.keymap.set("n", "k", function()
 	return vim.v.count == 0 and "gk" or "k"
 end, { expr = true, desc = "Up by display line" })
-vim.keymap.set({ "n", "x" }, "gx", function()
-	local target = vim.fn.expand("<cfile>")
-	if target:match("^%w+://") then
-		vim.ui.open(target)
-	else
-		vim.cmd.edit(target)
+do
+	local url_tlds = {
+		com = true, org = true, net = true, io = true, dev = true,
+		ai = true, co = true, app = true, me = true, info = true,
+		biz = true, gov = true, edu = true, tech = true, cloud = true,
+		xyz = true,
+	}
+
+	local function slugify_heading(text)
+		return text:lower():gsub("[^%w%s%-]", ""):gsub("%s+", "-")
 	end
-end, { desc = "Open URL externally, file in nvim" })
+
+	local function classify_target(target)
+		if target:match("^%w+://") then return "url" end
+		if target:match("^www%.") then return "url" end
+		if target:match("[?&]") then return "url" end
+		if target:match(":%d+:?%d*$") then return "filepath" end
+		local first_segment = target:match("^([^/]+)") or target
+		local ext = first_segment:match("%.([%w]+)$")
+		if ext and url_tlds[ext:lower()] then return "url" end
+		return "filepath"
+	end
+
+	local function open_target_url(target)
+		if not target:match("^%w+://") then
+			target = "https://" .. target
+		end
+		vim.ui.open(target)
+	end
+
+	local function jump_to_heading_anchor(anchor)
+		local goal = slugify_heading(anchor)
+		for lnum, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
+			local heading = line:match("^#+%s+(.+)$")
+			if heading and slugify_heading(heading) == goal then
+				vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+				return
+			end
+		end
+	end
+
+	local function open_target_filepath(target, open_cmd)
+		local path, line, col = target:match("^(.-):(%d+):(%d+)$")
+		if not path then
+			path, line = target:match("^(.-):(%d+)$")
+		end
+		local anchor
+		if not path then
+			path, anchor = target:match("^(.-)#(.+)$")
+		end
+		path = path or target
+		if path ~= "" then
+			vim.cmd[open_cmd](vim.fn.fnameescape(path))
+		end
+		if line then
+			vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col or 0) })
+		elseif anchor then
+			jump_to_heading_anchor(anchor)
+		end
+	end
+
+	local function find_target_under_cursor()
+		local line = vim.api.nvim_get_current_line()
+		local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1
+
+		local pos = 1
+		while true do
+			local start_idx, end_idx, _, target =
+				line:find("%[([^%]]*)%]%(([^%)]+)%)", pos)
+			if not start_idx then break end
+			if cursor_col >= start_idx and cursor_col <= end_idx then
+				return target
+			end
+			pos = end_idx + 1
+		end
+
+		local valid_char = "[%w%-_./:?=&%%#~]"
+		if cursor_col > #line or not line:sub(cursor_col, cursor_col):match(valid_char) then
+			return nil
+		end
+		local start_col = cursor_col
+		while start_col > 1 and line:sub(start_col - 1, start_col - 1):match(valid_char) do
+			start_col = start_col - 1
+		end
+		local end_col = cursor_col
+		while end_col < #line and line:sub(end_col + 1, end_col + 1):match(valid_char) do
+			end_col = end_col + 1
+		end
+		return line:sub(start_col, end_col)
+	end
+
+	local function gx(open_cmd)
+		local target = find_target_under_cursor()
+		if not target or target == "" then return end
+		if classify_target(target) == "url" then
+			open_target_url(target)
+		else
+			open_target_filepath(target, open_cmd)
+		end
+	end
+
+	vim.keymap.set({ "n", "x" }, "gx", function() gx("edit") end,
+		{ desc = "Open URL/filepath under cursor" })
+	vim.keymap.set({ "n", "x" }, "gX", function() gx("vsplit") end,
+		{ desc = "Open filepath under cursor in vsplit" })
+end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
