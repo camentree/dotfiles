@@ -50,6 +50,9 @@ vim.o.number = true
 vim.o.mouse = "a"
 vim.o.showmode = false
 vim.o.breakindent = true
+vim.o.linebreak = true
+vim.o.showbreak = "↳ "
+vim.o.colorcolumn = "80,100"
 vim.o.undofile = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -64,7 +67,6 @@ vim.o.inccommand = "split"
 vim.o.cursorline = false
 vim.o.scrolloff = 0 -- when scrolling how many lines to keep above/below cursor
 vim.o.confirm = true
-vim.o.keymodel = "startsel"
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
@@ -224,6 +226,10 @@ end, { expr = true, desc = "Down by display line" })
 vim.keymap.set("n", "k", function()
 	return vim.v.count == 0 and "gk" or "k"
 end, { expr = true, desc = "Up by display line" })
+vim.keymap.set({ "n", "v" }, "<Down>", "gj", { desc = "Down by display line" })
+vim.keymap.set({ "n", "v" }, "<Up>", "gk", { desc = "Up by display line" })
+vim.keymap.set({ "n", "v" }, "<Home>", "g0", { desc = "Display line start" })
+vim.keymap.set({ "n", "v" }, "<End>", "g$", { desc = "Display line end" })
 do
 	local url_tlds = {
 		com = true, org = true, net = true, io = true, dev = true,
@@ -354,19 +360,18 @@ vim.keymap.set(
 	"<C-o>e<Right>",
 	{ desc = "Word forward (Option+Right)" }
 )
-vim.keymap.set("i", "<C-a>", "<C-o>0", { desc = "Line start (Cmd+Left)" })
-vim.keymap.set("i", "<C-e>", "<C-o>$", { desc = "Line end (Cmd+Right)" })
-vim.keymap.set("i", "<C-Home>", "<C-o>gg", { desc = "Top of file (Cmd+Up)" })
-vim.keymap.set("i", "<C-End>", "<C-o>G", { desc = "End of file (Cmd+Down)" })
+vim.keymap.set("i", "<C-a>", "<C-o>g0", { desc = "Line start (Cmd+Left)" })
+vim.keymap.set("i", "<C-e>", "<C-o>g$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
 vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
-vim.keymap.set("i", "<S-CR>", "<C-o>O", { desc = "New line above" })
-vim.keymap.set("i", "<D-CR>", "<C-o>o", { desc = "New line below" })
+vim.keymap.set("i", "<S-CR>", "<C-o>o", { desc = "New line below" })
+vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
-vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
-vim.keymap.set("i", "<D-S-z>", "<C-o><C-r>", { desc = "Redo" })
+vim.keymap.set("n", "<D-/>", "gcc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("i", "<D-/>", "<C-o>gcc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("v", "<D-/>", "gc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("v", "Y", function()
 	vim.cmd('normal! "+y')
 	vim.fn.setreg(
