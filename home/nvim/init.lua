@@ -52,7 +52,6 @@ vim.o.showmode = false
 vim.o.breakindent = true
 vim.o.linebreak = true
 vim.o.showbreak = "↳ "
-vim.o.colorcolumn = "80,100"
 vim.o.undofile = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -113,12 +112,7 @@ end, { desc = "Paste clipboard with bracketed paste" })
 
 -- Single Esc exits terminal mode. To send a literal Esc to the running program,
 -- use <C-V><Esc>.
-vim.keymap.set(
-	"t",
-	"<Esc>",
-	[[<C-\><C-n>]],
-	{ desc = "Exit terminal mode" }
-)
+vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
 local function terminal_mouse(lhs)
 	return function()
@@ -232,9 +226,21 @@ vim.keymap.set({ "n", "v" }, "<Home>", "g0", { desc = "Display line start" })
 vim.keymap.set({ "n", "v" }, "<End>", "g$", { desc = "Display line end" })
 do
 	local url_tlds = {
-		com = true, org = true, net = true, io = true, dev = true,
-		ai = true, co = true, app = true, me = true, info = true,
-		biz = true, gov = true, edu = true, tech = true, cloud = true,
+		com = true,
+		org = true,
+		net = true,
+		io = true,
+		dev = true,
+		ai = true,
+		co = true,
+		app = true,
+		me = true,
+		info = true,
+		biz = true,
+		gov = true,
+		edu = true,
+		tech = true,
+		cloud = true,
 		xyz = true,
 	}
 
@@ -243,13 +249,23 @@ do
 	end
 
 	local function classify_target(target)
-		if target:match("^%w+://") then return "url" end
-		if target:match("^www%.") then return "url" end
-		if target:match("[?&]") then return "url" end
-		if target:match(":%d+:?%d*$") then return "filepath" end
+		if target:match("^%w+://") then
+			return "url"
+		end
+		if target:match("^www%.") then
+			return "url"
+		end
+		if target:match("[?&]") then
+			return "url"
+		end
+		if target:match(":%d+:?%d*$") then
+			return "filepath"
+		end
 		local first_segment = target:match("^([^/]+)") or target
 		local ext = first_segment:match("%.([%w]+)$")
-		if ext and url_tlds[ext:lower()] then return "url" end
+		if ext and url_tlds[ext:lower()] then
+			return "url"
+		end
 		return "filepath"
 	end
 
@@ -298,7 +314,10 @@ do
 			vim.cmd[open_cmd](vim.fn.fnameescape(resolve_path(path)))
 		end
 		if line then
-			vim.api.nvim_win_set_cursor(0, { tonumber(line), tonumber(col or 0) })
+			vim.api.nvim_win_set_cursor(
+				0,
+				{ tonumber(line), tonumber(col or 0) }
+			)
 		elseif anchor then
 			jump_to_heading_anchor(anchor)
 		end
@@ -312,7 +331,9 @@ do
 		while true do
 			local start_idx, end_idx, _, target =
 				line:find("%[([^%]]*)%]%(([^%)]+)%)", pos)
-			if not start_idx then break end
+			if not start_idx then
+				break
+			end
 			if cursor_col >= start_idx and cursor_col <= end_idx then
 				return target
 			end
@@ -320,15 +341,24 @@ do
 		end
 
 		local valid_char = "[%w%-_./:?=&%%#~]"
-		if cursor_col > #line or not line:sub(cursor_col, cursor_col):match(valid_char) then
+		if
+			cursor_col > #line
+			or not line:sub(cursor_col, cursor_col):match(valid_char)
+		then
 			return nil
 		end
 		local start_col = cursor_col
-		while start_col > 1 and line:sub(start_col - 1, start_col - 1):match(valid_char) do
+		while
+			start_col > 1
+			and line:sub(start_col - 1, start_col - 1):match(valid_char)
+		do
 			start_col = start_col - 1
 		end
 		local end_col = cursor_col
-		while end_col < #line and line:sub(end_col + 1, end_col + 1):match(valid_char) do
+		while
+			end_col < #line
+			and line:sub(end_col + 1, end_col + 1):match(valid_char)
+		do
 			end_col = end_col + 1
 		end
 		return line:sub(start_col, end_col)
@@ -336,7 +366,9 @@ do
 
 	local function gx(open_cmd)
 		local target = find_target_under_cursor()
-		if not target or target == "" then return end
+		if not target or target == "" then
+			return
+		end
 		if classify_target(target) == "url" then
 			open_target_url(target)
 		else
@@ -344,10 +376,12 @@ do
 		end
 	end
 
-	vim.keymap.set({ "n", "x" }, "gx", function() gx("edit") end,
-		{ desc = "Open URL/filepath under cursor" })
-	vim.keymap.set({ "n", "x" }, "gX", function() gx("vsplit") end,
-		{ desc = "Open filepath under cursor in vsplit" })
+	vim.keymap.set({ "n", "x" }, "gx", function()
+		gx("edit")
+	end, { desc = "Open URL/filepath under cursor" })
+	vim.keymap.set({ "n", "x" }, "gX", function()
+		gx("vsplit")
+	end, { desc = "Open filepath under cursor in vsplit" })
 end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
@@ -370,7 +404,12 @@ vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
 vim.keymap.set("n", "<D-/>", "gcc", { remap = true, desc = "Toggle comment" })
-vim.keymap.set("i", "<D-/>", "<C-o>gcc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set(
+	"i",
+	"<D-/>",
+	"<C-o>gcc",
+	{ remap = true, desc = "Toggle comment" }
+)
 vim.keymap.set("v", "<D-/>", "gc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("v", "Y", function()
 	vim.cmd('normal! "+y')
