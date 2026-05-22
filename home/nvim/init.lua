@@ -692,7 +692,20 @@ require("lazy").setup({
 				{ desc = "[S]earch [K]eymaps" }
 			)
 			vim.keymap.set("n", "<leader>sf", function()
-				builtin.find_files({ hidden = true })
+				builtin.find_files({
+					hidden = true,
+					no_ignore = true,
+					file_ignore_patterns = {
+						"%.git/",
+						"node_modules/",
+						"target/",
+						"build/",
+						"dist/",
+						"%.next/",
+						"__pycache__/",
+						"%.venv/",
+					},
+				})
 			end, { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>sB", function()
 				builtin.find_files({
