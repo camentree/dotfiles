@@ -238,4 +238,5 @@
   "claudeCode.selectedModel": "default",
   "git.confirmSync": false,
   "git.autofetch": true,
+  "editor.copyWithSyntaxHighlighting": false,
 }
