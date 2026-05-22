@@ -33,6 +33,10 @@ function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Pro
 
 function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
 function wk () {
+  case "$1" in
+    ls) shift; _wk-ls "$@"; return ;;
+    rm) shift; _wk-rm "$@"; return ;;
+  esac
   local mode=switch
   case "$1" in
     -b) mode=new-from-default; shift ;;
@@ -73,10 +77,12 @@ function wk () {
   local rel="${PWD#$repo_root/}"
   cd "$worktree_path/$rel" 2>/dev/null || cd "$worktree_path"
 }
-function wkls () { git worktree list; }
-function wkrm () {
+function _wk-ls () {
+  git worktree list --porcelain | awk '/^branch / { sub(/^refs\/heads\//, "", $2); print $2 }'
+}
+function _wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
-  [ -z "$branch" ] && { echo "Usage: wkrm [branch]"; return 1; }
+  [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
