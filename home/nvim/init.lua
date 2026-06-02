@@ -480,19 +480,42 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)
+		local function cycle_todo(line)
+			local indent, marker, rest =
+				line:match("^(%s*)([%-%*%+] )(.*)$")
+			if not marker then
+				return line
+			end
+			local checked = rest:match("^%[[xX]%] (.*)$")
+			if checked then
+				return indent .. marker .. checked
+			end
+			local unchecked = rest:match("^%[ %] (.*)$")
+			return indent .. marker .. "[x] " .. (unchecked or rest)
+		end
 		vim.keymap.set("n", "<leader>x", function()
-			local line = vim.api.nvim_get_current_line()
-			local pre, text = line:match("^(%s*[%-%*%+] )(.*)")
-			if not pre then
-				pre, text = "", line
+			vim.api.nvim_set_current_line(
+				cycle_todo(vim.api.nvim_get_current_line())
+			)
+		end, { buffer = event.buf, desc = "Toggle todo: bullet <-> [x]" })
+		vim.keymap.set("x", "<leader>x", function()
+			local first = vim.fn.line("v")
+			local last = vim.fn.line(".")
+			if first > last then
+				first, last = last, first
 			end
-			local unwrapped = text:match("^~~(.*)~~$")
-			if unwrapped then
-				vim.api.nvim_set_current_line(pre .. unwrapped)
-			else
-				vim.api.nvim_set_current_line(pre .. "~~" .. text .. "~~")
+			local lines =
+				vim.api.nvim_buf_get_lines(event.buf, first - 1, last, false)
+			for i, line in ipairs(lines) do
+				lines[i] = cycle_todo(line)
 			end
-		end, { buffer = event.buf, desc = "Stri[x]ethrough line" })
+			vim.api.nvim_buf_set_lines(event.buf, first - 1, last, false, lines)
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+				"n",
+				false
+			)
+		end, { buffer = event.buf, desc = "Cycle todos in selection" })
 	end,
 })
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -1433,6 +1456,11 @@ require("lazy").setup({
 			bullet = {
 				icons = { "–", "–", "–", "–" },
 			},
+			checkbox = {
+				checked = {
+					scope_highlight = "RenderMarkdownTodoDone",
+				},
+			},
 			latex = { enabled = false },
 			html = {
 				comment = { conceal = false },
@@ -1477,6 +1505,17 @@ require("lazy").setup({
 				0,
 				"@markup.italic.markdown_inline",
 				{ italic = true, fg = "#98c379" }
+			)
+			vim.api.nvim_set_hl(0, "RenderMarkdownChecked", { fg = "#98c379" })
+			vim.api.nvim_set_hl(
+				0,
+				"RenderMarkdownUnchecked",
+				{ fg = "#b0aaa0" }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"RenderMarkdownTodoDone",
+				{ fg = "#b0aaa0", strikethrough = true }
 			)
 			require("render-markdown").setup(opts)
 		end,
