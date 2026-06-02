@@ -661,6 +661,22 @@ require("lazy").setup({
 						horizontal = { preview_width = 0.5 },
 					},
 					path_display = { "filename_first" },
+					file_ignore_patterns = {
+						"%.git/",
+						"node_modules/",
+						"target/",
+						"build/",
+						"dist/",
+						"%.next/",
+						"__pycache__/",
+						"%.venv/",
+						"%.bloop/",
+						"%.metals/",
+						"%.idea/",
+						"%.mypy_cache/",
+						"%.pytest_cache/",
+						"%.ruff_cache/",
+					},
 					mappings = {
 						i = {
 							["<D-CR>"] = actions.select_vertical,
@@ -695,16 +711,6 @@ require("lazy").setup({
 				builtin.find_files({
 					hidden = true,
 					no_ignore = true,
-					file_ignore_patterns = {
-						"%.git/",
-						"node_modules/",
-						"target/",
-						"build/",
-						"dist/",
-						"%.next/",
-						"__pycache__/",
-						"%.venv/",
-					},
 				})
 			end, { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>sB", function()
