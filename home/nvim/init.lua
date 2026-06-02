@@ -653,6 +653,23 @@ require("lazy").setup({
 		},
 		config = function()
 			local actions = require("telescope.actions")
+			local file_ignore_patterns = {
+				"%.git/",
+				"node_modules/",
+				"target/",
+				"build/",
+				"dist/",
+				"%.next/",
+				"__pycache__/",
+				"%.venv/",
+				"%.bloop/",
+				"%.claude%-scratch/",
+				"%.metals/",
+				"%.idea/",
+				"%.mypy_cache/",
+				"%.pytest_cache/",
+				"%.ruff_cache/",
+			}
 			require("telescope").setup({
 				defaults = {
 					layout_strategy = "horizontal",
@@ -661,22 +678,7 @@ require("lazy").setup({
 						horizontal = { preview_width = 0.5 },
 					},
 					path_display = { "filename_first" },
-					file_ignore_patterns = {
-						"%.git/",
-						"node_modules/",
-						"target/",
-						"build/",
-						"dist/",
-						"%.next/",
-						"__pycache__/",
-						"%.venv/",
-						"%.bloop/",
-						"%.metals/",
-						"%.idea/",
-						"%.mypy_cache/",
-						"%.pytest_cache/",
-						"%.ruff_cache/",
-					},
+					file_ignore_patterns = file_ignore_patterns,
 					mappings = {
 						i = {
 							["<D-CR>"] = actions.select_vertical,
@@ -708,10 +710,7 @@ require("lazy").setup({
 				{ desc = "[S]earch [K]eymaps" }
 			)
 			vim.keymap.set("n", "<leader>sf", function()
-				builtin.find_files({
-					hidden = true,
-					no_ignore = true,
-				})
+				builtin.find_files({ hidden = true })
 			end, { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>sB", function()
 				builtin.find_files({
