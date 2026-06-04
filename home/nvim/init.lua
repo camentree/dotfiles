@@ -454,7 +454,7 @@ create_sidebar_mapping("<C-.>", "TODO_PATH", "Toggle ToDo")
 
 -- [[ AUTOCOMMANDS ]]
 local indent_by_filetype = {
-	markdown = { width = 2, expandtab = true },
+	markdown = { width = 4, expandtab = true },
 	python = { width = 4, expandtab = true },
 	lua = { width = 2, expandtab = true },
 	nix = { width = 2, expandtab = true },
