@@ -66,17 +66,27 @@ function wk () {
     new-from-here) git worktree add -b "$branch" "$worktree_path" || return 1 ;;
   esac
 
+  local -A share_sources=()
+  local share_file share_pattern share_source share_target
   for share_file in "$repo_root/.worktreeinclude" "$repo_root/.worktreeinclude.local"; do
     [ -f "$share_file" ] || continue
     while IFS= read -r share_pattern; do
       [[ -z "$share_pattern" || "$share_pattern" == \#* ]] && continue
-      local share_source share_target
-      for share_source in "$repo_root"/${~share_pattern}(N); do
-        share_target="$worktree_path/${share_source#$repo_root/}"
-        mkdir -p "${share_target:h}"
-        ln -sf "$share_source" "$share_target"
-      done
+      if [[ "$share_pattern" == !* ]]; then
+        for share_source in "$repo_root"/${~share_pattern#!}(N); do
+          unset "share_sources[$share_source]"
+        done
+      else
+        for share_source in "$repo_root"/${~share_pattern}(N); do
+          share_sources[$share_source]=1
+        done
+      fi
     done < "$share_file"
+  done
+  for share_source in "${(k)share_sources[@]}"; do
+    share_target="$worktree_path/${share_source#$repo_root/}"
+    mkdir -p "${share_target:h}"
+    ln -sf "$share_source" "$share_target"
   done
 
   local rel="${PWD#$repo_root/}"
