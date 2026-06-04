@@ -702,6 +702,16 @@ require("lazy").setup({
 					},
 					path_display = { "filename_first" },
 					file_ignore_patterns = file_ignore_patterns,
+					vimgrep_arguments = {
+						"rg",
+						"--color=never",
+						"--no-heading",
+						"--with-filename",
+						"--line-number",
+						"--column",
+						"--smart-case",
+						"--follow",
+					},
 					mappings = {
 						i = {
 							["<D-CR>"] = actions.select_vertical,
@@ -709,6 +719,9 @@ require("lazy").setup({
 						},
 						n = { ["<D-CR>"] = actions.select_vertical },
 					},
+				},
+				pickers = {
+					find_files = { follow = true },
 				},
 				extensions = {
 					["ui-select"] = {
@@ -738,7 +751,7 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sB", function()
 				builtin.find_files({
 					cwd = vim.fn.expand(
-						"$HOME/Projects/august-full-stack/august-backend"
+						"$HOME/Projects/august-fullstack/august-backend"
 					),
 					hidden = true,
 				})
@@ -746,7 +759,7 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sF", function()
 				builtin.find_files({
 					cwd = vim.fn.expand(
-						"$HOME/Projects/august-full-stack/august-frontend"
+						"$HOME/Projects/august-fullstack/august-frontend"
 					),
 					hidden = true,
 				})
