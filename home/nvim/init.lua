@@ -481,8 +481,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)
 		local function cycle_todo(line)
-			local indent, marker, rest =
-				line:match("^(%s*)([%-%*%+] )(.*)$")
+			local indent, marker, rest = line:match("^(%s*)([%-%*%+] )(.*)$")
 			if not marker then
 				return line
 			end
@@ -748,22 +747,6 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sf", function()
 				builtin.find_files({ hidden = true })
 			end, { desc = "[S]earch [F]iles" })
-			vim.keymap.set("n", "<leader>sB", function()
-				builtin.find_files({
-					cwd = vim.fn.expand(
-						"$HOME/Projects/august-fullstack/august-backend"
-					),
-					hidden = true,
-				})
-			end, { desc = "[S]earch [B]ackend files" })
-			vim.keymap.set("n", "<leader>sF", function()
-				builtin.find_files({
-					cwd = vim.fn.expand(
-						"$HOME/Projects/august-fullstack/august-frontend"
-					),
-					hidden = true,
-				})
-			end, { desc = "[S]earch [F]rontend files" })
 			vim.keymap.set(
 				"n",
 				"<leader>ss",
