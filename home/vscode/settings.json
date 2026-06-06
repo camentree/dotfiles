@@ -57,14 +57,14 @@
       {
         "scope": "markup.italic.markdown",
         "settings": {
-          "foreground": "#ed8796",
+          "foreground": "#e06c75",
           "fontStyle": "italic",
         },
       },
       {
         "scope": "markup.bold.markdown",
         "settings": {
-          "foreground": "#4e9a5e",
+          "foreground": "#98c379",
           "fontStyle": "bold",
         },
       },
@@ -98,7 +98,7 @@
   "workbench.activityBar.location": "hidden",
   "workbench.layoutControl.enabled": false,
   "workbench.iconTheme": "catppuccin-macchiato",
-  "workbench.colorTheme": "Catppuccin Macchiato",
+  "workbench.colorTheme": "Atom One Dark",
   // keyboard
   "keyboard.touchbar.enabled": false,
   // window

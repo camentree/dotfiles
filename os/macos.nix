@@ -126,6 +126,12 @@
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771300</integer></dict>' \
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771298</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771296</integer></dict>'
 
+    # Mission Control + Spaces: Cmd+Option+Up, Cmd+Option+Left/Right
+    # Modifier mask 1572864 = Command (0x100000) | Option (0x080000); key codes: 126=Up, 123=Left, 124=Right
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 32 '{enabled = 1; value = { parameters = (65535, 126, 1572864); type = "standard"; }; }'
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{enabled = 1; value = { parameters = (65535, 123, 1572864); type = "standard"; }; }'
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{enabled = 1; value = { parameters = (65535, 124, 1572864); type = "standard"; }; }'
+
     # Screen saver idle time (5 minutes)
     defaults -currentHost write com.apple.screensaver idleTime -int 300
 
