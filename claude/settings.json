@@ -43,7 +43,7 @@
     "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true,
   "statusLine": {
