@@ -80,11 +80,11 @@ in
   };
 
   system.activationScripts.postActivation.text = ''
-    # Force integrated GPU only.
+    # Dynamic GPU switching (integrated + dGPU as needed).
     # The AMD Radeon Pro dGPU on the 16,1 is the most common cause of
     # WindowServer hangs (which trigger watchdog kernel panics) and runs
-    # hot/power-hungry. Headless server has no use for it.
-    sudo pmset -a gpuswitch 0
+    # hot/power-hungry, but it's required to drive external displays.
+    sudo pmset -a gpuswitch 2
     # Allow lid-closed operation without an external display attached.
     # Without this, closing the lid sleeps regardless of `sleep = never`.
     sudo pmset -a disablesleep 1
