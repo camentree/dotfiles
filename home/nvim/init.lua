@@ -1461,6 +1461,7 @@ require("lazy").setup({
 			html = {
 				comment = { conceal = false },
 			},
+			anti_conceal = { disabled_modes = { "n" } },
 		},
 		config = function(_, opts)
 			-- Heading colors: defined once, applied to both render-markdown and treesitter
