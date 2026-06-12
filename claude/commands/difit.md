@@ -5,7 +5,7 @@ description: Run difit to do local code review before committing
 
 # Difit
 
-If there are uncommitted changes (including untracked files via `git status --porcelain`), run `npx difit working --no-open --clean --include-untracked`. Otherwise run `npx difit @ master --no-open --clean --include-untracked`.
+If there are uncommitted changes (including untracked files via `git status --porcelain`), run `npx difit working --no-open --clean --include-untracked`. Otherwise run `npx difit @ master --no-open --clean --include-untracked`. Print the url of the difit server afterwards since --no-open is used.
 
 Wait for any comments. If none -- that's fine -- just means I didn't have comments.
 
