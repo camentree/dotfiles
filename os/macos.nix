@@ -40,11 +40,14 @@
     mise
     neovim
     nodejs_24
+    nodePackages.prettier
     pandoc
     python3
     ripgrep
+    ruff
     sqlite
     starship
+    stylua
     tmux
     tree-sitter
     uv

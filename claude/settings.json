@@ -2,6 +2,9 @@
   "env": {
     "DIRHELPER_USER_DIR_SUFFIX": ""
   },
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true
+  },
   "permissions": {
     "allow": [
       "Bash(gh issue list *)",
@@ -38,7 +41,13 @@
       "Read",
       "Bash(mise where:*)",
       "Bash(npx difit *)",
-      "Skill(keybindings-help)"
+      "Skill(keybindings-help)",
+      "mcp__linear__list_issues",
+      "mcp__linear__get_issue",
+      "mcp__linear__list_comments",
+      "mcp__notion__notion-fetch",
+      "mcp__notion__notion-search",
+      "mcp__chrome-devtools__list_pages"
     ],
     "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]
@@ -49,5 +58,18 @@
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/format-on-edit.sh"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -487,7 +487,7 @@ vim.api.nvim_create_autocmd("FileType", {
 			end
 			local checked = rest:match("^%[[xX]%] (.*)$")
 			if checked then
-				return indent .. marker .. checked
+				return indent .. marker .. "[ ] " .. checked
 			end
 			local unchecked = rest:match("^%[ %] (.*)$")
 			return indent .. marker .. "[x] " .. (unchecked or rest)
@@ -496,7 +496,7 @@ vim.api.nvim_create_autocmd("FileType", {
 			vim.api.nvim_set_current_line(
 				cycle_todo(vim.api.nvim_get_current_line())
 			)
-		end, { buffer = event.buf, desc = "Toggle todo: bullet <-> [x]" })
+		end, { buffer = event.buf, desc = "Toggle todo: [ ] <-> [x]" })
 		vim.keymap.set("x", "<leader>x", function()
 			local first = vim.fn.line("v")
 			local last = vim.fn.line(".")
