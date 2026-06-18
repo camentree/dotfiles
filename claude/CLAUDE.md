@@ -50,6 +50,15 @@ If asked to change a setting (git config, a package, a macOS default, a keybindi
 - Always use explicit HTTP method flags with curl (`curl -X GET`, `curl -X POST`) so permission rules can distinguish read-only from mutating requests.
 - Prefer `WebFetch` over `curl | jq` / `curl | python` pipelines for read-only HTTP GETs — it parses JSON/HTML and avoids extra permission prompts.
 
+## CloudWatch Logs Insights
+
+CloudWatch Logs Insights bills on **bytes scanned across the time range**, not on rows matched — a tighter `filter` does *not* reduce cost, only a shorter time range does. The prod app log group (`/aws/eks/prod/application`, us-west-2) is huge: a single 7-day query scanned ~1.7 TB and cost ~$8.50.
+
+- **Always scope queries to a small time range — under 30 minutes.** Widen only when a narrow window comes up empty, and only one step at a time.
+- **Don't fan out queries.** Run as few as possible; each one costs real money. Prefer one well-targeted query over several exploratory ones.
+- Before running, ask whether I'd rather run it myself in the console — for anything beyond a quick narrow check, hand me the query string to paste into the UI instead of running it via the CLI.
+- Completed query results are retained ~7 days and re-fetchable by `queryId` for free (`aws logs get-query-results`) — reuse a prior result instead of re-running.
+
 ## Claude session management
 
 - `claude-move-session <session-id> [target-path]` (in `home/zshrc`) — relocates a session's `.jsonl` and aux dir into the project key for `target-path` (default `$PWD`). Use it when a session's original cwd no longer exists (deleted worktree, moved directory) so it shows up in `claude --resume` from a stable location.

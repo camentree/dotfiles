@@ -37,7 +37,6 @@
     git
     htop
     jq
-    mise
     neovim
     nodejs_24
     nodePackages.prettier
