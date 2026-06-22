@@ -906,7 +906,6 @@ require("lazy").setup({
 				"j-hui/fidget.nvim",
 				opts = {
 					notification = { override_vim_notify = true },
-					progress = { ignore = { "metals" } },
 				},
 			},
 		},
@@ -1081,7 +1080,7 @@ require("lazy").setup({
 			}
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
-				statusBarProvider = "on",
+				statusBarProvider = "off",
 			}
 			metals_config.capabilities =
 				vim.lsp.protocol.make_client_capabilities()
@@ -1276,9 +1275,6 @@ require("lazy").setup({
 							label = vim.bo.filetype
 						end
 
-						local metals_status = vim.g.metals_status or ""
-						local metals_bsp = vim.g.metals_bsp_status or ""
-
 						return statusline.combine_groups({
 							{ hl = mode_hl, strings = { mode } },
 							{
@@ -1286,10 +1282,6 @@ require("lazy").setup({
 								strings = { filename },
 							},
 							"%=",
-							{
-								hl = "MiniStatuslineDevinfo",
-								strings = { metals_bsp, metals_status },
-							},
 							{ hl = mode_hl, strings = { label } },
 						})
 					end,
