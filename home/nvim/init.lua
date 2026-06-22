@@ -1074,10 +1074,13 @@ require("lazy").setup({
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
 				autoImportBuild = "all",
+				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
+				bloopJvmProperties = { "-Xmx16g", "-XX:+UseG1GC" },
+				shutdownBloopOnEditorClose = true,
 			}
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
-				statusBarProvider = "off",
+				statusBarProvider = "on",
 			}
 			metals_config.capabilities =
 				vim.lsp.protocol.make_client_capabilities()
@@ -1272,6 +1275,9 @@ require("lazy").setup({
 							label = vim.bo.filetype
 						end
 
+						local metals_status = vim.g.metals_status or ""
+						local metals_bsp = vim.g.metals_bsp_status or ""
+
 						return statusline.combine_groups({
 							{ hl = mode_hl, strings = { mode } },
 							{
@@ -1279,6 +1285,10 @@ require("lazy").setup({
 								strings = { filename },
 							},
 							"%=",
+							{
+								hl = "MiniStatuslineDevinfo",
+								strings = { metals_bsp, metals_status },
+							},
 							{ hl = mode_hl, strings = { label } },
 						})
 					end,
