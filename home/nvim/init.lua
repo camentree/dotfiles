@@ -905,7 +905,10 @@ require("lazy").setup({
 			{
 				"j-hui/fidget.nvim",
 				opts = {
-					notification = { override_vim_notify = true },
+					notification = {
+						override_vim_notify = true,
+						window = { winblend = 0 },
+					},
 					progress = { ignore = { "metals" } },
 				},
 			},
