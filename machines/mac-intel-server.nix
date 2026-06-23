@@ -80,11 +80,9 @@ in
   };
 
   system.activationScripts.postActivation.text = ''
-    # Dynamic GPU switching (integrated + dGPU as needed).
-    # The AMD Radeon Pro dGPU on the 16,1 is the most common cause of
-    # WindowServer hangs (which trigger watchdog kernel panics) and runs
-    # hot/power-hungry, but it's required to drive external displays.
-    sudo pmset -a gpuswitch 2
+    # GPU switching is managed manually via switch-gpu-off / switch-gpu-on
+    # aliases (~/.zshenv.local) — not set here because the dGPU causes
+    # GPU restart storms when headless, but is needed for external displays.
     # Allow lid-closed operation without an external display attached.
     # Without this, closing the lid sleeps regardless of `sleep = never`.
     sudo pmset -a disablesleep 1

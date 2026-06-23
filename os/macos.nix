@@ -29,7 +29,6 @@
   # ============================================================
   environment.systemPackages = with pkgs; [
     awscli2
-    claude-code
     coursier
     curl
     fd
