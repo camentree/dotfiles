@@ -5,6 +5,16 @@
 
 let
   postgres = pkgs.postgresql.withPackages (p: [ p.pgvector ]);
+
+  postgresLauncher = pkgs.writeShellScript "postgres-launch" ''
+    PGDATA=/Users/camen/.postgres
+    [ -f "$PGDATA/PG_VERSION" ] || ${postgres}/bin/initdb -D "$PGDATA"
+    if [ -f "$PGDATA/postmaster.pid" ] && \
+       ! ps -p "$(head -1 "$PGDATA/postmaster.pid")" -o comm= | grep -q postgres; then
+      rm -f "$PGDATA/postmaster.pid"
+    fi
+    exec ${postgres}/bin/postgres -D "$PGDATA"
+  '';
 in
 {
   nixpkgs.hostPlatform = "x86_64-darwin";
@@ -50,8 +60,10 @@ in
   };
 
   # Data dir lives at ~/.postgres; bootstrap runs initdb on first launch.
+  # Launcher clears a stale postmaster.pid (e.g. after an unclean shutdown)
+  # only when no live postgres owns it — guards against the PID-reuse case.
   launchd.user.agents.postgresql = {
-    command = "/bin/bash -c 'PGDATA=/Users/camen/.postgres; [ -f \"$PGDATA/PG_VERSION\" ] || ${postgres}/bin/initdb -D \"$PGDATA\"; exec ${postgres}/bin/postgres -D \"$PGDATA\"'";
+    command = "${postgresLauncher}";
     serviceConfig = {
       RunAtLoad = true;
       KeepAlive = true;
@@ -80,11 +92,9 @@ in
   };
 
   system.activationScripts.postActivation.text = ''
-    # Dynamic GPU switching (integrated + dGPU as needed).
-    # The AMD Radeon Pro dGPU on the 16,1 is the most common cause of
-    # WindowServer hangs (which trigger watchdog kernel panics) and runs
-    # hot/power-hungry, but it's required to drive external displays.
-    sudo pmset -a gpuswitch 2
+    # GPU switching is managed manually via switch-gpu-off / switch-gpu-on
+    # aliases (~/.zshenv.local) — not set here because the dGPU causes
+    # GPU restart storms when headless, but is needed for external displays.
     # Allow lid-closed operation without an external display attached.
     # Without this, closing the lid sleeps regardless of `sleep = never`.
     sudo pmset -a disablesleep 1

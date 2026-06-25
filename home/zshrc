@@ -1,3 +1,6 @@
+# npm global prefix (for packages managed outside Nix, e.g. claude-code)
+export PATH="$HOME/.npm-global/bin:$PATH"
+
 # Nix store paths (oh-my-zsh, etc.)
 [[ -f ~/.nix-paths.sh ]] && source ~/.nix-paths.sh
 
