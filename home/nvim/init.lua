@@ -201,12 +201,17 @@ vim.keymap.set(
 	{ desc = "Escape to unhighlight search returns" }
 )
 vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "[W]rite file" })
-vim.keymap.set(
-	{ "n", "i", "t" },
-	"<C-;>",
-	"<cmd>only<CR>",
-	{ desc = "Zen mode (close other windows)" }
-)
+local zen_mode_enabled = false
+vim.keymap.set({ "n", "i", "t" }, "<C-;>", function()
+	if zen_mode_enabled then
+		require("no-neck-pain").disable()
+		zen_mode_enabled = false
+	else
+		vim.cmd("only")
+		require("no-neck-pain").enable()
+		zen_mode_enabled = true
+	end
+end, { desc = "Zen mode (center + close other windows)" })
 vim.keymap.set("n", "<leader>q", function()
 	if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
 		vim.cmd("lclose")
@@ -1251,6 +1256,11 @@ require("lazy").setup({
 		---@type TodoOptions
 		---@diagnostic disable-next-line: missing-fields
 		opts = { signs = false },
+	},
+	-- shortcuts/no-neck-pain.nvim
+	{
+		"shortcuts/no-neck-pain.nvim",
+		opts = { width = 120 },
 	},
 	-- nvim-mini/mini.nvim
 	{
