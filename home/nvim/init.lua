@@ -63,6 +63,7 @@ vim.o.splitbelow = true
 vim.o.laststatus = 3 -- global statusline
 
 vim.o.inccommand = "split"
+vim.o.fillchars = "eob: "
 vim.o.cursorline = false
 vim.o.scrolloff = 0 -- when scrolling how many lines to keep above/below cursor
 vim.o.confirm = true
@@ -1260,7 +1261,7 @@ require("lazy").setup({
 	-- shortcuts/no-neck-pain.nvim
 	{
 		"shortcuts/no-neck-pain.nvim",
-		opts = { width = 120 },
+		opts = { width = 100 },
 	},
 	-- nvim-mini/mini.nvim
 	{
