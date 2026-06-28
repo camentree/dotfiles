@@ -180,9 +180,9 @@ in
   };
 
   system.activationScripts.postActivation.text = ''
-    # GPU switching is managed manually via switch-gpu-off / switch-gpu-on
-    # aliases (~/.zshenv.local) — not set here because the dGPU causes
-    # GPU restart storms when headless, but is needed for external displays.
+    # GPU switching is managed manually via the switch-gpu-off / switch-gpu-on
+    # shell aliases below — not set here because the dGPU causes GPU restart
+    # storms when headless, but is needed for external displays.
     # Allow lid-closed operation without an external display attached.
     # Without this, closing the lid sleeps regardless of `sleep = never`.
     sudo pmset -a disablesleep 1
@@ -228,5 +228,8 @@ in
     backup-now = "${rsnapshotRun} daily";
     backup-test = "${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest";
     backup-ls = "ls -lah ${rsnapshotBackupRoot}";
+
+    switch-gpu-off = "sudo pmset -a gpuswitch 0";
+    switch-gpu-on = "sudo pmset -a gpuswitch 2";
   };
 }
