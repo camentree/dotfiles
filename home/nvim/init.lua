@@ -1277,10 +1277,11 @@ require("lazy").setup({
 			window = {
 				backdrop = 1,
 				width = 100,
-				options = {
-					number = false,
-				},
 			},
+			on_open = function(win)
+				local buf = vim.api.nvim_win_get_buf(win)
+				vim.wo[win].number = vim.bo[buf].buftype ~= "terminal"
+			end,
 		},
 	},
 	-- nvim-mini/mini.nvim
