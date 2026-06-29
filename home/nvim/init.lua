@@ -71,6 +71,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
+vim.opt.diffopt:append({ "linematch:60", "context:20", "iwhiteall" })
 vim.o.termguicolors = true
 vim.o.autoread = true
 vim.o.title = true
@@ -202,17 +203,6 @@ vim.keymap.set(
 	{ desc = "Escape to unhighlight search returns" }
 )
 vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "[W]rite file" })
-local zen_mode_enabled = false
-vim.keymap.set({ "n", "i", "t" }, "<C-;>", function()
-	if zen_mode_enabled then
-		require("no-neck-pain").disable()
-		zen_mode_enabled = false
-	else
-		vim.cmd("only")
-		require("no-neck-pain").enable()
-		zen_mode_enabled = true
-	end
-end, { desc = "Zen mode (center + close other windows)" })
 vim.keymap.set("n", "<leader>q", function()
 	if vim.fn.getloclist(0, { winid = 0 }).winid ~= 0 then
 		vim.cmd("lclose")
@@ -663,225 +653,210 @@ require("lazy").setup({
 			},
 		},
 	},
-	-- nvim-telescope/telescope.nvim
+	-- folke/snacks.nvim (picker)
 	{
-		"nvim-telescope/telescope.nvim",
-		event = "VimEnter",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			{
-				"nvim-telescope/telescope-fzf-native.nvim",
-				build = "make",
-				cond = function()
-					return vim.fn.executable("make") == 1
-				end,
-			},
-			{ "nvim-telescope/telescope-ui-select.nvim" },
-			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
-		},
-		config = function()
-			local actions = require("telescope.actions")
-			local file_ignore_patterns = {
-				"%.git/",
-				"node_modules/",
-				"target/",
-				"build/",
-				"dist/",
-				"%.next/",
-				"__pycache__/",
-				"%.venv/",
-				"%.bloop/",
-				"%.claude%-scratch/",
-				"%.metals/",
-				"%.idea/",
-				"%.mypy_cache/",
-				"%.pytest_cache/",
-				"%.ruff_cache/",
-			}
-			require("telescope").setup({
-				defaults = {
-					layout_strategy = "horizontal",
-					layout_config = {
-						width = 0.9,
-						horizontal = { preview_width = 0.5 },
-					},
-					path_display = { "filename_first" },
-					file_ignore_patterns = file_ignore_patterns,
-					vimgrep_arguments = {
-						"rg",
-						"--color=never",
-						"--no-heading",
-						"--with-filename",
-						"--line-number",
-						"--column",
-						"--smart-case",
-						"--follow",
-					},
-					mappings = {
-						i = {
-							["<D-CR>"] = actions.select_vertical,
-							["<Esc>"] = actions.close,
+		"folke/snacks.nvim",
+		lazy = false,
+		priority = 1000,
+		opts = {
+			explorer = { replace_netrw = true },
+			picker = {
+				ui_select = true,
+				win = {
+					input = {
+						keys = {
+							["<D-CR>"] = { "edit_vsplit", mode = { "n", "i" } },
 						},
-						n = { ["<D-CR>"] = actions.select_vertical },
 					},
 				},
-				pickers = {
-					find_files = { follow = true },
-				},
-				extensions = {
-					["ui-select"] = {
-						require("telescope.themes").get_dropdown(),
+				sources = {
+					explorer = {
+						hidden = true,
+						ignored = false,
+						follow_file = true,
+						auto_close = false,
+						layout = {
+							preset = "sidebar",
+							preview = false,
+							layout = { width = 35 },
+						},
+						win = {
+							list = {
+								keys = {
+									["<D-CR>"] = "edit_vsplit",
+									["<C-b>"] = "close",
+								},
+							},
+						},
 					},
 				},
-			})
-
-			pcall(require("telescope").load_extension, "fzf")
-			pcall(require("telescope").load_extension, "ui-select")
-			local builtin = require("telescope.builtin")
-			vim.keymap.set(
-				"n",
-				"<leader>sh",
-				builtin.help_tags,
-				{ desc = "[S]earch [H]elp" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>sk",
-				builtin.keymaps,
-				{ desc = "[S]earch [K]eymaps" }
-			)
-			vim.keymap.set("n", "<leader>sf", function()
-				builtin.find_files({ hidden = true })
-			end, { desc = "[S]earch [F]iles" })
-			vim.keymap.set(
-				"n",
-				"<leader>ss",
-				builtin.builtin,
-				{ desc = "[S]earch [S]elect Telescope" }
-			)
-			vim.keymap.set(
-				{ "n", "v" },
-				"<leader>sw",
-				builtin.grep_string,
-				{ desc = "[S]earch current [W]ord" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>sg",
-				builtin.live_grep,
-				{ desc = "[S]earch by [G]rep" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>sd",
-				builtin.diagnostics,
-				{ desc = "[S]earch [D]iagnostics" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>sr",
-				builtin.resume,
-				{ desc = "[S]earch [R]esume" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>s.",
-				builtin.oldfiles,
-				{ desc = '[S]earch Recent Files ("." for repeat)' }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>sc",
-				builtin.commands,
-				{ desc = "[S]earch [C]ommands" }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader><leader>",
-				builtin.buffers,
-				{ desc = "[ ] Find existing buffers" }
-			)
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup(
-					"telescope-lsp-attach",
-					{ clear = true }
-				),
-				callback = function(event)
-					local buf = event.buf
-					vim.keymap.set(
-						"n",
-						"grr",
-						builtin.lsp_references,
-						{ buffer = buf, desc = "[G]oto [R]eferences" }
-					)
-					vim.keymap.set(
-						"n",
-						"gri",
-						builtin.lsp_implementations,
-						{ buffer = buf, desc = "[G]oto [I]mplementation" }
-					)
-					vim.keymap.set(
-						"n",
-						"grd",
-						builtin.lsp_definitions,
-						{ buffer = buf, desc = "[G]oto [D]efinition" }
-					)
-					vim.keymap.set(
-						"n",
-						"gO",
-						builtin.lsp_document_symbols,
-						{ buffer = buf, desc = "Open Document Symbols" }
-					)
-					vim.keymap.set(
-						"n",
-						"gW",
-						builtin.lsp_dynamic_workspace_symbols,
-						{ buffer = buf, desc = "Open Workspace Symbols" }
-					)
-					vim.keymap.set(
-						"n",
-						"grt",
-						builtin.lsp_type_definitions,
-						{ buffer = buf, desc = "[G]oto [T]ype Definition" }
-					)
+			},
+		},
+		keys = {
+			{
+				"<C-b>",
+				function()
+					local explorers = Snacks.picker.get({ source = "explorer" })
+					if explorers[1] then
+						explorers[1]:close()
+					else
+						Snacks.explorer()
+					end
 				end,
-			})
-			vim.keymap.set("n", "<leader>/", function()
-				builtin.current_buffer_fuzzy_find(
-					require("telescope.themes").get_dropdown({
-						winblend = 10,
-						previewer = false,
-					})
-				)
-			end, { desc = "[/] Fuzzily search in current buffer" })
-			vim.keymap.set("n", "<leader>ff", function()
-				builtin.current_buffer_fuzzy_find(
-					require("telescope.themes").get_dropdown({
-						winblend = 10,
-						previewer = false,
-					})
-				)
-			end, { desc = "[F]ind in buffer ([F]uzzy)" })
-			vim.keymap.set("v", "<leader>ff", function()
-				vim.cmd('normal! "zy')
-				builtin.current_buffer_fuzzy_find(
-					require("telescope.themes").get_dropdown({
-						winblend = 10,
-						previewer = false,
-						default_text = vim.fn.getreg("z"),
-					})
-				)
-			end, { desc = "[F]ind selection in buffer" })
-			vim.keymap.set("n", "<leader>s/", function()
-				builtin.live_grep({
-					grep_open_files = true,
-					prompt_title = "Live Grep in Open Files",
-				})
-			end, { desc = "[S]earch [/] in Open Files" })
-			vim.keymap.set("n", "<leader>sn", function()
-				builtin.find_files({ cwd = vim.fn.stdpath("config") })
-			end, { desc = "[S]earch [N]eovim files" })
-		end,
+				mode = { "n", "i", "t" },
+				desc = "Toggle file explorer",
+			},
+			{
+				"<leader>sh",
+				function()
+					Snacks.picker.help()
+				end,
+				desc = "[S]earch [H]elp",
+			},
+			{
+				"<leader>sk",
+				function()
+					Snacks.picker.keymaps()
+				end,
+				desc = "[S]earch [K]eymaps",
+			},
+			{
+				"<leader>sf",
+				function()
+					Snacks.picker.files({ hidden = true })
+				end,
+				desc = "[S]earch [F]iles",
+			},
+			{
+				"<leader>ss",
+				function()
+					Snacks.picker.pickers()
+				end,
+				desc = "[S]earch [S]elect picker",
+			},
+			{
+				"<leader>sw",
+				function()
+					Snacks.picker.grep_word()
+				end,
+				mode = { "n", "v" },
+				desc = "[S]earch current [W]ord",
+			},
+			{
+				"<leader>sg",
+				function()
+					Snacks.picker.grep()
+				end,
+				desc = "[S]earch by [G]rep",
+			},
+			{
+				"<leader>sd",
+				function()
+					Snacks.picker.diagnostics()
+				end,
+				desc = "[S]earch [D]iagnostics",
+			},
+			{
+				"<leader>sr",
+				function()
+					Snacks.picker.resume()
+				end,
+				desc = "[S]earch [R]esume",
+			},
+			{
+				"<leader>s.",
+				function()
+					Snacks.picker.recent()
+				end,
+				desc = "[S]earch Recent Files",
+			},
+			{
+				"<leader>sc",
+				function()
+					Snacks.picker.commands()
+				end,
+				desc = "[S]earch [C]ommands",
+			},
+			{
+				"<leader>s/",
+				function()
+					Snacks.picker.grep_buffers()
+				end,
+				desc = "[S]earch in Open Files",
+			},
+			{
+				"<leader>sn",
+				function()
+					Snacks.picker.files({ cwd = vim.fn.stdpath("config") })
+				end,
+				desc = "[S]earch [N]eovim files",
+			},
+			{
+				"<leader><leader>",
+				function()
+					Snacks.picker.buffers()
+				end,
+				desc = "[ ] Find existing buffers",
+			},
+			{
+				"<leader>/",
+				function()
+					Snacks.picker.lines()
+				end,
+				desc = "[/] Fuzzily search in current buffer",
+			},
+			{
+				"<leader>/",
+				function()
+					vim.cmd('normal! "zy')
+					Snacks.picker.lines({ pattern = vim.fn.getreg("z") })
+				end,
+				mode = "v",
+				desc = "[/] Search selection in current buffer",
+			},
+			{
+				"grr",
+				function()
+					Snacks.picker.lsp_references()
+				end,
+				desc = "[G]oto [R]eferences",
+			},
+			{
+				"gri",
+				function()
+					Snacks.picker.lsp_implementations()
+				end,
+				desc = "[G]oto [I]mplementation",
+			},
+			{
+				"grd",
+				function()
+					Snacks.picker.lsp_definitions()
+				end,
+				desc = "[G]oto [D]efinition",
+			},
+			{
+				"grt",
+				function()
+					Snacks.picker.lsp_type_definitions()
+				end,
+				desc = "[G]oto [T]ype Definition",
+			},
+			{
+				"gO",
+				function()
+					Snacks.picker.lsp_symbols()
+				end,
+				desc = "Open Document Symbols",
+			},
+			{
+				"gW",
+				function()
+					Snacks.picker.lsp_workspace_symbols()
+				end,
+				desc = "Open Workspace Symbols",
+			},
+		},
 	},
 	-- neovim/nvim-lspconfig
 	{
@@ -911,6 +886,15 @@ require("lazy").setup({
 			{
 				"j-hui/fidget.nvim",
 				opts = {
+					-- LSP progress is shown in the statusline instead; keep fidget
+					-- for vim.notify only.
+					progress = {
+						ignore = {
+							function()
+								return true
+							end,
+						},
+					},
 					notification = {
 						override_vim_notify = true,
 						window = { winblend = 0 },
@@ -1258,10 +1242,46 @@ require("lazy").setup({
 		---@diagnostic disable-next-line: missing-fields
 		opts = { signs = false },
 	},
-	-- shortcuts/no-neck-pain.nvim
+	-- folke/zen-mode.nvim
 	{
-		"shortcuts/no-neck-pain.nvim",
-		opts = { width = 100 },
+		"folke/zen-mode.nvim",
+		keys = {
+			{
+				"<C-;>",
+				function()
+					-- zen-mode runs :normal on open, which can't execute from
+					-- terminal mode; leave it first, then toggle on the next tick.
+					if vim.api.nvim_get_mode().mode == "t" then
+						vim.api.nvim_feedkeys(
+							vim.api.nvim_replace_termcodes(
+								"<C-\\><C-n>",
+								true,
+								false,
+								true
+							),
+							"n",
+							false
+						)
+						vim.schedule(function()
+							require("zen-mode").toggle()
+						end)
+						return
+					end
+					require("zen-mode").toggle()
+				end,
+				mode = { "n", "i", "t" },
+				desc = "Zen mode (center current window)",
+			},
+		},
+		opts = {
+			window = {
+				backdrop = 1,
+				width = 100,
+				options = {
+					number = false,
+				},
+			},
+		},
 	},
 	-- nvim-mini/mini.nvim
 	{
@@ -1270,6 +1290,95 @@ require("lazy").setup({
 			require("mini.ai").setup({ n_lines = 500 })
 			require("mini.surround").setup()
 			local statusline = require("mini.statusline")
+			local lsp_progress = { active = false }
+			local spinner_frames = {
+				"⠋",
+				"⠙",
+				"⠹",
+				"⠸",
+				"⠼",
+				"⠴",
+				"⠦",
+				"⠧",
+				"⠇",
+				"⠏",
+			}
+			local spinner_index = 1
+			local spinner_timer = nil
+			local function stop_spinner()
+				if spinner_timer then
+					spinner_timer:stop()
+					spinner_timer:close()
+					spinner_timer = nil
+				end
+			end
+			local function start_spinner()
+				if spinner_timer then
+					return
+				end
+				spinner_timer = vim.uv.new_timer()
+				spinner_timer:start(
+					0,
+					100,
+					vim.schedule_wrap(function()
+						spinner_index = (spinner_index % #spinner_frames) + 1
+						vim.cmd("redrawstatus")
+					end)
+				)
+			end
+			vim.api.nvim_create_autocmd("LspProgress", {
+				callback = function(args)
+					local value = args.data
+						and args.data.params
+						and args.data.params.value
+					if not value or not value.kind then
+						return
+					end
+					local client = vim.lsp.get_client_by_id(args.data.client_id)
+					if value.kind == "end" then
+						lsp_progress = { active = false }
+						stop_spinner()
+					else
+						lsp_progress = {
+							active = true,
+							name = client and client.name or "lsp",
+							title = value.title,
+							message = value.message,
+							percentage = value.percentage,
+						}
+						start_spinner()
+					end
+					vim.cmd("redrawstatus")
+				end,
+			})
+			local function section_lsp()
+				if vim.bo.buftype == "terminal" then
+					return ""
+				end
+				local clients = vim.lsp.get_clients({ bufnr = 0 })
+				if #clients == 0 then
+					return ""
+				end
+				if lsp_progress.active then
+					local parts = { lsp_progress.title or "working" }
+					if lsp_progress.message then
+						parts[#parts + 1] = lsp_progress.message
+					end
+					if lsp_progress.percentage then
+						parts[#parts + 1] = lsp_progress.percentage .. "%"
+					end
+					return spinner_frames[spinner_index]
+						.. " "
+						.. (lsp_progress.name or "lsp")
+						.. ": "
+						.. table.concat(parts, " ")
+				end
+				local names = {}
+				for _, client in ipairs(clients) do
+					names[#names + 1] = client.name
+				end
+				return "● " .. table.concat(names, ", ")
+			end
 			statusline.setup({
 				use_icons = vim.g.have_nerd_font,
 				content = {
@@ -1296,6 +1405,10 @@ require("lazy").setup({
 								strings = { filename },
 							},
 							"%=",
+							{
+								hl = "MiniStatuslineLsp",
+								strings = { section_lsp() },
+							},
 							{ hl = mode_hl, strings = { label } },
 						})
 					end,
@@ -1335,6 +1448,11 @@ require("lazy").setup({
 				0,
 				"MiniStatuslineFilename",
 				{ bg = "#1c1a1e", fg = "#b0aaa0", bold = true }
+			)
+			vim.api.nvim_set_hl(
+				0,
+				"MiniStatuslineLsp",
+				{ bg = "#1c1a1e", fg = "#86c9c0" }
 			)
 		end,
 	},
@@ -1386,7 +1504,7 @@ require("lazy").setup({
 		event = "VimEnter",
 		opts = {
 			provider_selector = function()
-				return { "treesitter", "indent" }
+				return { "lsp", "indent" }
 			end,
 			fold_virt_text_handler = function(
 				virtText,
@@ -1595,70 +1713,6 @@ require("lazy").setup({
 			end,
 		},
 	},
-	-- nvim-neo-tree/neo-tree.nvim
-	{
-		"nvim-neo-tree/neo-tree.nvim",
-		branch = "v3.x",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"nvim-tree/nvim-web-devicons",
-			"MunifTanjim/nui.nvim",
-		},
-		cmd = "Neotree",
-		keys = {
-			{
-				"<C-b>",
-				function()
-					if vim.bo.filetype == "neo-tree" then
-						require("neo-tree.command").execute({ action = "close" })
-					else
-						require("neo-tree.command").execute({
-							toggle = true,
-							reveal = true,
-						})
-					end
-				end,
-				mode = { "n", "i", "t" },
-				desc = "Toggle file tree",
-			},
-		},
-		opts = {
-			close_if_last_window = true,
-			filesystem = {
-				follow_current_file = { enabled = true },
-				use_libuv_file_watcher = true,
-				filtered_items = {
-					visible = true,
-					hide_dotfiles = false,
-					hide_gitignored = true,
-				},
-			},
-			window = {
-				width = 35,
-				mappings = {
-					["<space>"] = "none",
-					["<C-b>"] = "close_window",
-					["<D-CR>"] = "open_vsplit",
-				},
-			},
-			default_component_configs = {
-				indent = { with_markers = true },
-				git_status = {
-					symbols = {
-						added = "",
-						modified = "",
-						deleted = "",
-						renamed = "",
-						untracked = "",
-						ignored = "",
-						unstaged = "",
-						staged = "",
-						conflict = "",
-					},
-				},
-			},
-		},
-	},
 	-- coder/claudecode.nvim
 	{
 		"coder/claudecode.nvim",
@@ -1708,9 +1762,12 @@ require("lazy").setup({
 			},
 		},
 	},
-	-- sindrets/diffview.nvim
+	-- dlyongemallo/diffview-plus.nvim
 	{
-		"sindrets/diffview.nvim",
+		-- Maintained diffview fork; repo is "diffview-plus" but the Lua module
+		-- is still "diffview", so main must be set explicitly.
+		"dlyongemallo/diffview-plus.nvim",
+		main = "diffview",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
 		keys = {
@@ -1721,15 +1778,24 @@ require("lazy").setup({
 				"<cmd>DiffviewFileHistory<cr>",
 				desc = "Diffview file history",
 			},
+			{
+				"<leader>gw",
+				function()
+					if vim.tbl_contains(vim.opt.diffopt:get(), "iwhiteall") then
+						vim.opt.diffopt:remove("iwhiteall")
+						vim.notify("diff: showing whitespace")
+					else
+						vim.opt.diffopt:append("iwhiteall")
+						vim.notify("diff: ignoring whitespace")
+					end
+					pcall(vim.cmd, "DiffviewRefresh")
+				end,
+				desc = "Diffview toggle whitespace",
+			},
 		},
 		opts = {
-			hooks = {
-				diff_buf_read = function(bufnr)
-					vim.api.nvim_buf_call(bufnr, function()
-						vim.opt_local.foldenable = false
-						vim.opt_local.foldlevel = 99
-					end)
-				end,
+			view = {
+				default = { layout = "diff1_inline" },
 			},
 		},
 	},

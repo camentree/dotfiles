@@ -32,6 +32,7 @@ font-size = 15
 # Behavior
 shell-integration-features = no-title
 macos-option-as-alt = left
+mouse-shift-capture = never
 quit-after-last-window-closed = true
 unfocused-split-opacity = 1
 confirm-close-surface = false
