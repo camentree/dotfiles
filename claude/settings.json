@@ -36,6 +36,7 @@
       "Bash(mdfind *)",
       "Bash(npm run compile *)",
       "Bash(curl -X GET *)",
+      "Bash(pbcopy)",
       "WebSearch",
       "WebFetch",
       "Read",
@@ -48,6 +49,22 @@
       "mcp__notion__notion-fetch",
       "mcp__notion__notion-search",
       "mcp__chrome-devtools__list_pages"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(rm -rf $HOME*)",
+      "Bash(sudo rm *)",
+      "Bash(git push --force)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(chmod -R 777 *)",
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]

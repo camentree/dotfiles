@@ -49,6 +49,7 @@ If asked to change a setting (git config, a package, a macOS default, a keybindi
 - **Research** — prefer `WebFetch` / `WebSearch` directly over spawning a research agent that runs its own curl/python.
 - Always use explicit HTTP method flags with curl (`curl -X GET`, `curl -X POST`) so permission rules can distinguish read-only from mutating requests.
 - Prefer `WebFetch` over `curl | jq` / `curl | python` pipelines for read-only HTTP GETs — it parses JSON/HTML and avoids extra permission prompts.
+- When you produce content whose main purpose is for me to paste elsewhere — an email, a Slack/message draft, a commit message, a standalone snippet — also pipe a clean copy to `pbcopy` and tell me it's on the clipboard. Skip this for ordinary explanatory output; it's for the "here's the thing, go paste it" cases.
 
 ## CloudWatch Logs Insights
 

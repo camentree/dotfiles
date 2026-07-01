@@ -147,9 +147,27 @@ function vdd () {
   echo "Removed .venv"
 }
 
-# Tab title (directory name)
-function set_terminal_title() { print -Pn '\e]0;%1~\a' }
+# Tab title: project name, or "project · branch" inside a linked worktree
+function set_terminal_title() {
+  local common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  if [ -z "$common_dir" ]; then print -Pn '\e]0;%1~\a'; return; fi
+  local repo_root="${common_dir%/.git}"
+  local project="${repo_root:t}"
+  local toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ -n "$toplevel" ] && [ "$toplevel" != "$repo_root" ]; then
+    local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+    [ ${#branch} -gt 14 ] && branch="${branch:0:14}…"
+    print -Pn "\e]0;${project} · ${branch}\a"
+  else
+    print -Pn "\e]0;${project}\a"
+  fi
+}
 precmd_functions+=(set_terminal_title)
+
+function claude() {
+  set_terminal_title
+  CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 command claude "$@"
+}
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
