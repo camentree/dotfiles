@@ -30,6 +30,7 @@ let
     "config_version\t1.2\n" +
     "snapshot_root\t${rsnapshotBackupRoot}/\n" +
     "cmd_rsync\t${pkgs.rsync}/bin/rsync\n" +
+    "rsync_long_args\t--delete --numeric-ids --relative --delete-excluded --info=progress2\n" +
     "link_dest\t1\n" +
     "retain\tdaily\t7\n" +
     "retain\tweekly\t4\n" +
@@ -46,7 +47,7 @@ let
   rsnapshotRun = pkgs.writeShellScript "rsnapshot-run" ''
     set -euo pipefail
     mkdir -p ${rsnapshotBackupRoot}
-    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$1"
+    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
   '';
 in
 {
@@ -225,7 +226,7 @@ in
     ha-restart = "sudo launchctl bootout system/org.nixos.home-assistant && sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
     ha-log = "tail -f /tmp/home-assistant.stderr.log";
 
-    backup-now = "${rsnapshotRun} daily";
+    backup-now = "${rsnapshotRun} -V daily";
     backup-test = "${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest";
     backup-ls = "ls -lah ${rsnapshotBackupRoot}";
 
