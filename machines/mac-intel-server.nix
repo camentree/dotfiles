@@ -30,7 +30,7 @@ let
     "config_version\t1.2\n" +
     "snapshot_root\t${rsnapshotBackupRoot}/\n" +
     "cmd_rsync\t${pkgs.rsync}/bin/rsync\n" +
-    "rsync_long_args\t--delete --numeric-ids --relative --delete-excluded --info=progress2\n" +
+    "rsync_long_args\t--delete --numeric-ids --relative --delete-excluded --info=progress2,name0 --stats\n" +
     "link_dest\t1\n" +
     "retain\tdaily\t7\n" +
     "retain\tweekly\t4\n" +
