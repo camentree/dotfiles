@@ -71,7 +71,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.opt.diffopt:append({ "linematch:60", "context:20", "iwhiteall" })
+vim.opt.diffopt:append({ "linematch:60", "context:20" })
 vim.o.termguicolors = true
 vim.o.autoread = true
 vim.o.title = true

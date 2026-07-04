@@ -1,6 +1,7 @@
 {
   "env": {
-    "DIRHELPER_USER_DIR_SUFFIX": ""
+    "DIRHELPER_USER_DIR_SUFFIX": "",
+    "CLAUDE_AFK_TIMEOUT_MS": "2000000000"
   },
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
