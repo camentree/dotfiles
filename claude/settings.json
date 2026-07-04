@@ -69,7 +69,6 @@
     "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]
   },
-  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true,
   "statusLine": {
