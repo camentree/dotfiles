@@ -105,7 +105,7 @@ function _wk-rm () {
   local repo_root=$(_wk-repo-root)
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
-  local encoded_worktree="${worktree_path//\//-}"
+  local encoded_worktree="${worktree_path//[\/.]/-}"
   for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
     for jsonl in "$proj_dir"/*.jsonl(N); do
       claude-move-session "${jsonl:t:r}" "$repo_root"
@@ -126,7 +126,7 @@ function claude-move-session () {
   local source_dir="${source_jsonl:h}"
   [[ "$target_path" != /* ]] && target_path="$PWD/$target_path"
   target_path="${target_path%/}"
-  local encoded="${target_path//\//-}"
+  local encoded="${target_path//[\/.]/-}"
   local target_dir="$HOME/.claude/projects/$encoded"
   mkdir -p "$target_dir"
   mv "$source_jsonl" "$target_dir/"
