@@ -96,6 +96,8 @@
     "Library/Application Support/Code/User/keybindings.json" = { source = ./home/vscode/keybindings.json; force = true; };
 
   } // (
+    # settings.json is excluded here and symlinked to the repo file via an
+    # activation script — Claude Code's /effort et al. must be able to write it.
     let claudeRoot = toString ./claude;
     in builtins.listToAttrs (map (file:
       let rel = lib.removePrefix "${claudeRoot}/" (toString file);
@@ -103,7 +105,9 @@
         name = ".claude/${rel}";
         value = { source = file; force = true; };
       }
-    ) (lib.filesystem.listFilesRecursive ./claude))
+    ) (builtins.filter
+        (file: lib.removePrefix "${claudeRoot}/" (toString file) != "settings.json")
+        (lib.filesystem.listFilesRecursive ./claude)))
   ) // {
 
     # SSH
@@ -148,5 +152,11 @@
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${config.home.homeDirectory}/Projects/dotfiles/home/nvim/lazy-lock.json \
       ${config.home.homeDirectory}/.config/nvim/lazy-lock.json
+  '';
+
+  home.activation.claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
+      ${config.home.homeDirectory}/Projects/dotfiles/claude/settings.json \
+      ${config.home.homeDirectory}/.claude/settings.json
   '';
 }
