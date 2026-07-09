@@ -74,8 +74,7 @@ vim.o.foldlevelstart = 99
 vim.opt.diffopt:append({ "linematch:60", "context:20" })
 vim.o.termguicolors = true
 vim.o.autoread = true
-vim.o.title = true
-vim.o.titlestring = "%{fnamemodify(getcwd(), ':t')}"
+vim.o.title = false
 vim.o.guicursor = "n-v-c-sm:block,i-ci-ve-t:ver25,r-cr-o:hor20"
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
