@@ -3,9 +3,6 @@
     "DIRHELPER_USER_DIR_SUFFIX": "",
     "CLAUDE_AFK_TIMEOUT_MS": "2000000000"
   },
-  "enabledPlugins": {
-    "security-guidance@claude-plugins-official": true
-  },
   "permissions": {
     "allow": [
       "Bash(gh issue list *)",
@@ -68,13 +65,10 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
-  },
-  "promptSuggestionEnabled": false,
-  "autoDreamEnabled": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
   "hooks": {
     "PostToolUse": [
@@ -88,5 +82,15 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true
+  },
+  "effortLevel": "low",
+  "promptSuggestionEnabled": false,
+  "autoDreamEnabled": true
 }
