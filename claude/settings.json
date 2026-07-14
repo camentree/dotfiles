@@ -70,6 +70,7 @@
       "/tmp"
     ]
   },
+  "model": "opus[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -90,7 +91,7 @@
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
-  "effortLevel": "low",
+  "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true
 }
