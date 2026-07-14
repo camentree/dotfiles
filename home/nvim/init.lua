@@ -1783,7 +1783,63 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
 		keys = {
-			{ "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
+			{
+				"<leader>gd",
+				function()
+					if
+						#vim.fs.find(
+							".git",
+							{ upward = true, path = vim.uv.cwd() }
+						) > 0
+					then
+						vim.cmd("DiffviewOpen")
+						return
+					end
+
+					-- A fullstack worktree is a plain directory of symlinks to the
+					-- per-repo worktrees, so it's not a repo itself and diffview has
+					-- nothing to open. Diff each linked repo that has changes instead.
+					-- `-C` takes no space: `-C{path}`.
+					local cwd = vim.uv.cwd()
+					local repositories, changed = {}, {}
+					for name, kind in vim.fs.dir(cwd) do
+						if kind == "directory" or kind == "link" then
+							local path = vim.fs.joinpath(cwd, name)
+							if
+								#vim.fs.find(".git", { path = path, depth = 1 })
+								> 0
+							then
+								table.insert(repositories, name)
+								local status = vim.system({
+									"git",
+									"-C",
+									path,
+									"status",
+									"--porcelain",
+								}):wait()
+								if vim.trim(status.stdout or "") ~= "" then
+									table.insert(changed, path)
+								end
+							end
+						end
+					end
+
+					if #repositories == 0 then
+						vim.cmd("DiffviewOpen")
+					elseif #changed == 0 then
+						table.sort(repositories)
+						vim.notify(
+							"No changes in " .. table.concat(repositories, ", ")
+						)
+					else
+						table.sort(changed)
+						for _, path in ipairs(changed) do
+							vim.cmd("DiffviewOpen -C" .. path)
+						end
+					end
+				end,
+				desc = "Diffview open",
+			},
 			{ "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
 			{
 				"<leader>gh",
