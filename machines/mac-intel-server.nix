@@ -201,12 +201,12 @@ in
   # ============================================================
   # Runs as a LaunchDaemon (root) to bypass macOS Local Network Privacy,
   # which silently blocks mDNS multicast for LaunchAgent processes.
-  # bin/start drops to user camen via sudo before launching hass.
+  # scripts/serve drops to user camen via sudo before launching hass.
   launchd.daemons.home-assistant = {
-    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/bin/start && exec /Users/camen/Projects/home-assistant/bin/start'";
+    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/scripts/serve && exec /Users/camen/Projects/home-assistant/scripts/serve'";
     serviceConfig = {
       KeepAlive.PathState = {
-        "/Users/camen/Projects/home-assistant/bin/start" = true;
+        "/Users/camen/Projects/home-assistant/scripts/serve" = true;
       };
       RunAtLoad = true;
       StandardOutPath = "/tmp/home-assistant.stdout.log";
