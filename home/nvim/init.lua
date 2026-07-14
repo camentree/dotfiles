@@ -1703,6 +1703,13 @@ require("lazy").setup({
 			persist_mode = false,
 		},
 	},
+	-- willothy/flatten.nvim
+	{
+		"willothy/flatten.nvim",
+		config = true,
+		lazy = false,
+		priority = 1001,
+	},
 	-- okuuva/auto-save.nvim
 	{
 		"okuuva/auto-save.nvim",
