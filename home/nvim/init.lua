@@ -71,7 +71,9 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.opt.diffopt:append({ "linematch:60", "context:20" })
+-- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
+vim.opt.diffopt:remove("linematch:40")
+vim.opt.diffopt:append("linematch:60")
 vim.o.termguicolors = true
 vim.o.autoread = true
 vim.o.title = false
@@ -1806,6 +1808,11 @@ require("lazy").setup({
 		opts = {
 			view = {
 				default = { layout = "diff1_inline" },
+				-- diff1_inline runs with 'diff' off, so nvim-ufo attaches and adds
+				-- structural folds that the default foldlevel=0 then closes over the
+				-- hunks. Inline does no unchanged-region folding of its own, so nothing
+				-- is lost; this does disable it for the diff2 layouts, which we don't use.
+				foldlevel = 99,
 			},
 		},
 	},
