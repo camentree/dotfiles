@@ -71,7 +71,9 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.opt.diffopt:append({ "linematch:60", "context:20" })
+-- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
+vim.opt.diffopt:remove("linematch:40")
+vim.opt.diffopt:append("linematch:60")
 vim.o.termguicolors = true
 vim.o.autoread = true
 vim.o.title = false
@@ -688,6 +690,9 @@ require("lazy").setup({
 							},
 						},
 					},
+					files = { follow = true },
+					grep = { follow = true },
+					grep_word = { follow = true },
 				},
 			},
 		},
@@ -1700,6 +1705,13 @@ require("lazy").setup({
 			persist_mode = false,
 		},
 	},
+	-- willothy/flatten.nvim
+	{
+		"willothy/flatten.nvim",
+		config = true,
+		lazy = false,
+		priority = 1001,
+	},
 	-- okuuva/auto-save.nvim
 	{
 		"okuuva/auto-save.nvim",
@@ -1771,7 +1783,63 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory" },
 		keys = {
-			{ "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
+			{
+				"<leader>gd",
+				function()
+					if
+						#vim.fs.find(
+							".git",
+							{ upward = true, path = vim.uv.cwd() }
+						) > 0
+					then
+						vim.cmd("DiffviewOpen")
+						return
+					end
+
+					-- A fullstack worktree is a plain directory of symlinks to the
+					-- per-repo worktrees, so it's not a repo itself and diffview has
+					-- nothing to open. Diff each linked repo that has changes instead.
+					-- `-C` takes no space: `-C{path}`.
+					local cwd = vim.uv.cwd()
+					local repositories, changed = {}, {}
+					for name, kind in vim.fs.dir(cwd) do
+						if kind == "directory" or kind == "link" then
+							local path = vim.fs.joinpath(cwd, name)
+							if
+								#vim.fs.find(".git", { path = path, depth = 1 })
+								> 0
+							then
+								table.insert(repositories, name)
+								local status = vim.system({
+									"git",
+									"-C",
+									path,
+									"status",
+									"--porcelain",
+								}):wait()
+								if vim.trim(status.stdout or "") ~= "" then
+									table.insert(changed, path)
+								end
+							end
+						end
+					end
+
+					if #repositories == 0 then
+						vim.cmd("DiffviewOpen")
+					elseif #changed == 0 then
+						table.sort(repositories)
+						vim.notify(
+							"No changes in " .. table.concat(repositories, ", ")
+						)
+					else
+						table.sort(changed)
+						for _, path in ipairs(changed) do
+							vim.cmd("DiffviewOpen -C" .. path)
+						end
+					end
+				end,
+				desc = "Diffview open",
+			},
 			{ "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
 			{
 				"<leader>gh",
@@ -1796,6 +1864,11 @@ require("lazy").setup({
 		opts = {
 			view = {
 				default = { layout = "diff1_inline" },
+				-- diff1_inline runs with 'diff' off, so nvim-ufo attaches and adds
+				-- structural folds that the default foldlevel=0 then closes over the
+				-- hunks. Inline does no unchanged-region folding of its own, so nothing
+				-- is lost; this does disable it for the diff2 layouts, which we don't use.
+				foldlevel = 99,
 			},
 		},
 	},

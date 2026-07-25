@@ -2,12 +2,13 @@
 # Claude Code status line — matches Starship/Ghostty palette
 # Colors: #86c9c0 (teal), #8a8a8a (muted gray)
 #
-# Line 1: [model]  branch | ctx%
+# Line 1: [model (effort)]  branch | ctx%
 # Line 2: 5h N% (resets at h:mm AM), 7d N% (resets at Mon DD)
 
 input=$(cat)
 
 model=$(jq -r '.model.display_name'                     <<<"$input")
+effort=$(jq -r '.effort.level // empty'                 <<<"$input")
 cwd=$(jq -r '.workspace.current_dir // .cwd'            <<<"$input")
 ctx_pct=$(jq -r '.context_window.used_percentage // empty'        <<<"$input")
 fivehr_pct=$(jq -r '.rate_limits.five_hour.used_percentage // empty' <<<"$input")
@@ -31,7 +32,8 @@ fi
 
 fmt_pct() { [ -n "$1" ] && printf "%.0f%%" "$1"; }
 
-# Line 1: [model]  branch | ctx%
+# Line 1: [model (effort)]  branch | ctx%
+[ -n "$effort" ] && model="${model} (${effort})"
 line1="${gray}[${model}]${reset}"
 [ -n "$branch" ]  && line1="${line1} ${teal}${github_icon} ${branch}${reset}"
 ctx_str=$(fmt_pct "$ctx_pct")

@@ -70,6 +70,7 @@
       "/tmp"
     ]
   },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -90,7 +91,11 @@
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
+<<<<<<< HEAD
   "effortLevel": "xhigh",
+=======
+  "effortLevel": "high",
+>>>>>>> 2721b87afeece477b8d6163b64ad070ed405dd8f
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true,
   "agentPushNotifEnabled": true
