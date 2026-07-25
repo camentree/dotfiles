@@ -90,7 +90,8 @@
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
-  "effortLevel": "low",
+  "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
-  "autoDreamEnabled": true
+  "autoDreamEnabled": true,
+  "agentPushNotifEnabled": true
 }
