@@ -65,10 +65,7 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": [
-      "~/",
-      "/tmp"
-    ]
+    "additionalDirectories": ["~/", "/tmp"]
   },
   "model": "opus[1m]",
   "hooks": {
@@ -93,5 +90,6 @@
   },
   "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
-  "autoDreamEnabled": true
+  "autoDreamEnabled": true,
+  "agentPushNotifEnabled": true
 }

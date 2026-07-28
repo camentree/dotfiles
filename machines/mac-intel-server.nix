@@ -49,6 +49,59 @@ let
     mkdir -p ${rsnapshotBackupRoot}
     exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
   '';
+
+  oneOffsRoot = "/Users/camen/Projects/one-offs";
+
+  oneOffsNginxConf = pkgs.writeText "one-offs.nginx.conf" ''
+    daemon off;
+    worker_processes 1;
+    pid /tmp/one-offs-nginx.pid;
+    error_log /tmp/one-offs-nginx.error.log warn;
+    events { worker_connections 64; }
+    http {
+      include ${pkgs.nginx}/conf/mime.types;
+      types { application/manifest+json webmanifest; }
+      default_type application/octet-stream;
+      access_log off;
+      client_body_temp_path /tmp/one-offs-nginx-client;
+      proxy_temp_path /tmp/one-offs-nginx-proxy;
+      fastcgi_temp_path /tmp/one-offs-nginx-fastcgi;
+      uwsgi_temp_path /tmp/one-offs-nginx-uwsgi;
+      scgi_temp_path /tmp/one-offs-nginx-scgi;
+      server {
+        listen 127.0.0.1:8789;
+        # cloudflared speaks plain http to us, so an absolute redirect would
+        # send the browser from https back to http.
+        absolute_redirect off;
+        root ${oneOffsRoot};
+
+        location ~ /\. { return 404; }
+        location ~ \.md$ { return 404; }
+
+        location = / { try_files /index.html =404; }
+
+        # ^~ stops the project regex below from matching "api" as a project.
+        location ^~ /api/ {
+          proxy_pass http://127.0.0.1:8787;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto https;
+        }
+
+        location ~ ^/(?<project>[^/.]+)$ { return 301 /$project/; }
+
+        # index.html candidates come first: a bare directory candidate would
+        # make try_files internally redirect to the same URI and loop.
+        location ~ ^/(?<project>[^/.]+)(?<rest>/.*)$ {
+          try_files /$project/dist''${rest}index.html /$project''${rest}index.html
+                    /$project/dist$rest /$project$rest
+                    /$project/dist/index.html /$project/index.html =404;
+        }
+
+        location / { try_files $uri =404; }
+      }
+    }
+  '';
 in
 {
   nixpkgs.hostPlatform = "x86_64-darwin";
@@ -78,12 +131,39 @@ in
 
   # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
   launchd.user.agents.cloudflared = {
-    command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config /Users/camen/.cloudflared/config.yml run parallax";
+    command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config /Users/camen/.cloudflared/config.yml run";
     serviceConfig = {
       RunAtLoad = true;
       KeepAlive = true;
       StandardOutPath = "/tmp/cloudflared.stdout.log";
       StandardErrorPath = "/tmp/cloudflared.stderr.log";
+    };
+  };
+
+  launchd.user.agents.one-offs = {
+    command = "${pkgs.nginx}/bin/nginx -c ${oneOffsNginxConf} -e /tmp/one-offs-nginx.error.log";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/one-offs-nginx.stdout.log";
+      StandardErrorPath = "/tmp/one-offs-nginx.stderr.log";
+    };
+  };
+
+  # Read-only deploy key rather than the 1Password agent, which is unavailable
+  # to an unattended agent whenever 1Password is locked or not yet running.
+  launchd.user.agents.one-offs-pull = {
+    command = "${pkgs.git}/bin/git -C ${oneOffsRoot} pull --ff-only";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 120;
+      StandardOutPath = "/tmp/one-offs-pull.stdout.log";
+      StandardErrorPath = "/tmp/one-offs-pull.stderr.log";
+      EnvironmentVariables = {
+        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+        HOME = "/Users/camen";
+        GIT_SSH_COMMAND = "ssh -i /Users/camen/.ssh/one-offs-deploy -o IdentitiesOnly=yes";
+      };
     };
   };
 
