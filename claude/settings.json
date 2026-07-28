@@ -70,7 +70,7 @@
       "/tmp"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -91,7 +91,7 @@
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": true
 }

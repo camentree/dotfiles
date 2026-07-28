@@ -36,10 +36,12 @@ function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#${1:?Usage: nix-rebuild <machine-name>}" ; }
 
 function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
+function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
 function wk () {
   case "$1" in
     ls) shift; _wk-ls "$@"; return ;;
     rm) shift; _wk-rm "$@"; return ;;
+    clean) shift; _wk-clean "$@"; return ;;
   esac
   local mode=switch
   case "$1" in
@@ -59,10 +61,15 @@ function wk () {
         $1=="worktree" { p=$2 }
         $1=="branch" && $2==b { print p; exit }')
       if [ -n "$existing" ]; then cd "$existing"; return 0; fi
+      if [ "$branch" = "$(_wk-default-branch)" ]; then
+        git -C "$repo_root" checkout "$branch" || return 1
+        cd "$repo_root"
+        return 0
+      fi
       git worktree add "$worktree_path" "$branch" || return 1
       ;;
     new-from-default)
-      local default=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')
+      local default=$(_wk-default-branch)
       [ -z "$default" ] && { echo "Could not detect default branch (origin/HEAD not set). Use 'wk -h $branch' from the appropriate branch instead."; return 1; }
       git fetch origin "$default" --quiet 2>/dev/null
       git worktree add -b "$branch" --no-track "$worktree_path" "origin/$default" || return 1
@@ -115,6 +122,20 @@ function _wk-rm () {
   git worktree remove "$worktree_path" --force 2>/dev/null
   git branch -D "$branch" 2>/dev/null
   echo "Removed: $branch"
+}
+function _wk-clean () {
+  local repo_root=$(_wk-repo-root)
+  [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
+  local branches=($(git worktree list --porcelain | awk -v root=$repo_root '
+    $1=="worktree" { path=$2 }
+    $1=="branch" && path!=root { sub(/^refs\/heads\//, "", $2); print $2 }'))
+  [ ${#branches} -eq 0 ] && { echo "No worktrees to remove"; return 0; }
+  print -l "Will remove ${#branches} worktree(s) and force-delete their branches:" ${branches/#/  }
+  local reply_confirm
+  read "reply_confirm?Proceed? [y/N] " || return 1
+  [[ "$reply_confirm" == [yY]* ]] || { echo "Aborted"; return 1; }
+  local branch
+  for branch in $branches; do _wk-rm "$branch"; done
 }
 
 function claude-move-session () {
