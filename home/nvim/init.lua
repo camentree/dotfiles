@@ -221,6 +221,14 @@ vim.keymap.set({ "n", "v" }, "<Down>", "gj", { desc = "Down by display line" })
 vim.keymap.set({ "n", "v" }, "<Up>", "gk", { desc = "Up by display line" })
 vim.keymap.set({ "n", "v" }, "<Home>", "g0", { desc = "Display line start" })
 vim.keymap.set({ "n", "v" }, "<End>", "g$", { desc = "Display line end" })
+vim.keymap.set("n", "<D-z>", "u", { desc = "Undo" })
+vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
+vim.keymap.set("v", "<D-z>", "<Esc>u", { desc = "Undo" })
+for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
+	vim.keymap.set("n", redo_key, "<C-r>", { desc = "Redo" })
+	vim.keymap.set("i", redo_key, "<C-o><C-r>", { desc = "Redo" })
+	vim.keymap.set("v", redo_key, "<Esc><C-r>", { desc = "Redo" })
+end
 do
 	local url_tlds = {
 		com = true,
@@ -1710,9 +1718,22 @@ require("lazy").setup({
 	-- willothy/flatten.nvim
 	{
 		"willothy/flatten.nvim",
-		config = true,
 		lazy = false,
 		priority = 1001,
+		opts = {
+			window = { open = "tab" },
+			hooks = {
+				-- Claude Code reads its prompt file back the moment $EDITOR exits.
+				should_block = function(argv)
+					for _, arg in ipairs(argv) do
+						if arg:find("claude%-prompt%-") then
+							return true
+						end
+					end
+					return false
+				end,
+			},
+		},
 	},
 	-- okuuva/auto-save.nvim
 	{

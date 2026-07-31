@@ -91,10 +91,6 @@
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
-  "effortLevel": "xhigh",
-  "promptSuggestionEnabled": false,
-  "autoDreamEnabled": true,
-  "agentPushNotifEnabled": true,
   "extraKnownMarketplaces": {
     "august-marketplace": {
       "source": {
@@ -102,5 +98,15 @@
         "repo": "augusthealth/august-marketplace"
       }
     }
-  }
+  },
+  "effortLevel": "xhigh",
+  "promptSuggestionEnabled": false,
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "tap"
+  },
+  "autoDreamEnabled": true,
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true
 }
