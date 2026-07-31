@@ -1289,6 +1289,23 @@ require("lazy").setup({
 				vim.wo[win].number = vim.bo[buf].buftype ~= "terminal"
 			end,
 		},
+		config = function(_, opts)
+			require("zen-mode").setup(opts)
+			-- zen-mode's close() reads the parent window without checking that
+			-- it's still valid, so closing the parent while zen is open wedges
+			-- zen mode: every toggle then fails with E5108 and the float stays
+			-- up. Drop the stale handle before it's dereferenced.
+			local view = require("zen-mode.view")
+			local close = view.close
+			view.close = function(...)
+				if
+					view.parent and not vim.api.nvim_win_is_valid(view.parent)
+				then
+					view.parent = nil
+				end
+				return close(...)
+			end
+		end,
 	},
 	-- nvim-mini/mini.nvim
 	{
