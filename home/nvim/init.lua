@@ -1263,8 +1263,6 @@ require("lazy").setup({
 			{
 				"<C-;>",
 				function()
-					-- zen-mode runs :normal on open, which can't execute from
-					-- terminal mode; leave it first, then toggle on the next tick.
 					if vim.api.nvim_get_mode().mode == "t" then
 						vim.api.nvim_feedkeys(
 							vim.api.nvim_replace_termcodes(
