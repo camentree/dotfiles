@@ -1069,6 +1069,36 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 		ft = { "scala", "sbt", "java" },
+		init = function()
+			vim.api.nvim_create_autocmd("VimEnter", {
+				group = vim.api.nvim_create_augroup(
+					"nvim-metals-eager-start",
+					{ clear = true }
+				),
+				nested = true,
+				callback = function()
+					local build_file = vim.fs.find({
+						"build.sbt",
+						"build.sc",
+						"build.mill",
+						"project.scala",
+					}, {
+						upward = true,
+						type = "file",
+						path = vim.uv.cwd(),
+						stop = vim.env.HOME,
+					})[1]
+					if not build_file then
+						return
+					end
+					require("lazy").load({ plugins = { "nvim-metals" } })
+					-- Metals only starts from a buffer holding a real Scala file,
+					-- so load the build file to give it one. `nested` is what
+					-- lets that load fire the FileType autocmd below.
+					vim.fn.bufload(vim.fn.bufadd(build_file))
+				end,
+			})
+		end,
 		opts = function()
 			local metals_config = require("metals").bare_config()
 			metals_config.settings = {
