@@ -1297,6 +1297,19 @@ require("lazy").setup({
 				vim.wo[win].number = vim.bo[buf].buftype ~= "terminal"
 			end,
 		},
+		config = function(_, opts)
+			require("zen-mode").setup(opts)
+			local view = require("zen-mode.view")
+			local close = view.close
+			view.close = function(...)
+				if
+					view.parent and not vim.api.nvim_win_is_valid(view.parent)
+				then
+					view.parent = nil
+				end
+				return close(...)
+			end
+		end,
 	},
 	-- nvim-mini/mini.nvim
 	{
