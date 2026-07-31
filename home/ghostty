@@ -43,3 +43,5 @@ keybind = cmd+down=text:\x1b[1;5F
 
 # Disable default toggle_fullscreen
 keybind = cmd+enter=unbind
+
+keybind = cmd+shift+i=prompt_tab_title
