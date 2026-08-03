@@ -25,4 +25,5 @@ CLAUDE.local*
 **/.claude/worktrees/
 .worktreeinclude.local
 .ignore
+.mcp.json
 
