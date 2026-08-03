@@ -109,6 +109,13 @@ in
   networking.hostName = "mac-intel-server";
   networking.computerName = "mac-intel-server";
 
+  # DHCP hands out only the router as a resolver, so any hiccup there fails
+  # every lookup outright -- Home Assistant integrations then time out and mark
+  # their entities unavailable, which Apple Home shows as "No Response". The
+  # router stays first so local hostnames still resolve.
+  networking.knownNetworkServices = [ "Wi-Fi" "USB 10/100/1000 LAN" ];
+  networking.dns = [ "192.168.0.1" "1.1.1.1" "8.8.8.8" ];
+
   system.defaults.screensaver.askForPassword = lib.mkForce false;
 
   # Disable iCloud "Optimize Mac Storage" so Documents/Desktop files stay fully
