@@ -1083,9 +1083,10 @@ require("lazy").setup({
 				autoImportBuild = "all",
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
 				bloopJvmProperties = { "-Xmx16g", "-XX:+UseG1GC" },
-				shutdownBloopOnEditorClose = true,
 				startMcpServer = true,
 				mcpClient = "claude",
+				-- metals 2
+				serverVersion = "2.0.0-M16",
 			}
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
