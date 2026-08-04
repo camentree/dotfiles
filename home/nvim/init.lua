@@ -229,6 +229,8 @@ for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
 	vim.keymap.set("i", redo_key, "<C-o><C-r>", { desc = "Redo" })
 	vim.keymap.set("v", redo_key, "<Esc><C-r>", { desc = "Redo" })
 end
+vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
+vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
 do
 	local url_tlds = {
 		com = true,
