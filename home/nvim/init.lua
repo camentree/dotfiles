@@ -556,6 +556,11 @@ end
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
+local sbt_build_file = vim.fs.joinpath(vim.uv.cwd(), "build.sbt")
+if not vim.uv.fs_stat(sbt_build_file) then
+	sbt_build_file = nil
+end
+
 require("lazy").setup({
 	rocks = { enabled = false, hererocks = false },
 	-- NMAC427/guess-indent.nvim
@@ -1071,8 +1076,13 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 		ft = { "scala", "sbt", "java" },
+		event = sbt_build_file and "VeryLazy" or nil,
 		opts = function()
 			local metals_config = require("metals").bare_config()
+			table.insert(
+				require("metals.config").valid_metals_settings,
+				"autoImportBuilds"
+			)
 			metals_config.settings = {
 				showImplicitArguments = true,
 				showImplicitConversionsAndClasses = true,
@@ -1080,7 +1090,7 @@ require("lazy").setup({
 				superMethodLensesEnabled = true,
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
-				autoImportBuild = "all",
+				autoImportBuilds = "all",
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
 				bloopJvmProperties = { "-Xmx16g", "-XX:+UseG1GC" },
 				startMcpServer = true,
@@ -1109,6 +1119,9 @@ require("lazy").setup({
 					require("metals").initialize_or_attach(metals_config)
 				end,
 			})
+			if sbt_build_file then
+				vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
+			end
 		end,
 	},
 	-- stevearc/conform.nvim
