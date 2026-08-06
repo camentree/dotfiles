@@ -1545,7 +1545,10 @@ require("lazy").setup({
 		dependencies = { "kevinhwang91/promise-async" },
 		event = "VimEnter",
 		opts = {
-			provider_selector = function()
+			provider_selector = function(_bufnr, filetype, _buftype)
+				if filetype == "markdown" then
+					return { "treesitter", "indent" }
+				end
 				return { "lsp", "indent" }
 			end,
 			fold_virt_text_handler = function(
