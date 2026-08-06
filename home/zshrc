@@ -111,6 +111,7 @@ function _wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
+  [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
   local encoded_worktree="${worktree_path//[\/.]/-}"
@@ -120,9 +121,13 @@ function _wk-rm () {
     done
     rmdir "$proj_dir" 2>/dev/null
   done
-  git worktree remove "$worktree_path" --force 2>/dev/null
-  git branch -D "$branch" 2>/dev/null
-  echo "Removed: $branch"
+  rm -rf "$worktree_path"
+  git worktree prune
+  if git branch -q -D "$branch"; then
+    echo "Removed: $branch"
+  else
+    echo "Removed worktree; kept branch: $branch"
+  fi
 }
 function _wk-clean () {
   local repo_root=$(_wk-repo-root)
