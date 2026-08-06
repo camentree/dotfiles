@@ -1092,7 +1092,13 @@ require("lazy").setup({
 				scalafixConfigPath = ".scalafix.conf",
 				autoImportBuilds = "all",
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
-				bloopJvmProperties = { "-Xmx16g", "-XX:+UseG1GC" },
+				bloopJvmProperties = {
+					"-Xmx8g",
+					"-Xss4m",
+					"-XX:MaxInlineLevel=20",
+					"-XX:+UseZGC",
+					"-XX:ZUncommitDelay=30",
+				},
 				startMcpServer = true,
 				mcpClient = "claude",
 				-- metals 2
@@ -1120,7 +1126,9 @@ require("lazy").setup({
 				end,
 			})
 			if sbt_build_file then
-				vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
+				vim.schedule(function()
+					vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
+				end)
 			end
 		end,
 	},
