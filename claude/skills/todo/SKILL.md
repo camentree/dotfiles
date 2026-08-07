@@ -1,27 +1,33 @@
 ---
 name: todo
-description: Maintains ~/Documents/notes/ToDo.md. With a Linear ID or URL, appends that ticket to Up Next in Camen's format. With no arguments, refreshes the day - Meetings and Schedule are rewritten, Reviewable PRs and Up Next are merged so checked-off entries drop and new ones append. Camen owns the To Do section and this skill never writes it.
+description: Maintains ~/Documents/notes/ToDo.md. A Linear ID or URL appends that ticket to Up Next; a time and title like "12pm josh" adds a meeting in time order; the word "schedule" rebuilds the Schedule block alone; no argument refreshes the whole day, rewriting Meetings and Schedule and merging Reviewable PRs and Up Next so checked-off entries drop and new ones append. Camen owns the To Do section and this skill never writes it.
 ---
 
 # Todo
 
-Two modes, chosen by whether an argument was passed.
+The argument decides the mode.
 
 | Invocation | Effect |
 |---|---|
-| `/todo` | Refresh the day |
+| `/todo` | Refresh the whole day |
 | `/todo INT-626` | Append that ticket to `### Up Next` |
 | `/todo <linear-url>` | Same, from a URL |
+| `/todo 12pm josh` | Add a meeting, kept in time order |
+| `/todo schedule` | Rebuild `### Schedule` only |
 
-What refresh touches:
+Recognising the mode: the literal word `schedule`; else a Linear identifier (`ABC-123`) or a `linear.app` URL; else anything starting with a time (`12pm`, `1200`, `1:30pm`, `9am`) is a meeting. Anything else, ask rather than guess.
 
-| Section | On `/todo` | On `/todo <id>` |
-|---|---|---|
-| `### To Do` | untouched | untouched |
-| `### Up Next` | merged — `[x]` drop, new append | one entry appended |
-| `### Meetings` | rewritten | untouched |
-| `### Reviewable PRs` | merged — `[x]` drop, new append | untouched |
-| `### Schedule` | rewritten from the current hour on | untouched |
+| Section | `/todo` | `/todo <id>` | `/todo <time> <title>` | `/todo schedule` |
+|---|---|---|---|---|
+| `### To Do` | untouched | untouched | untouched | untouched |
+| `### Up Next` | merged | one entry appended | untouched | untouched |
+| `### Meetings` | rewritten | untouched | one entry inserted | untouched |
+| `### Reviewable PRs` | merged | untouched | untouched | untouched |
+| `### Schedule` | rewritten | untouched | untouched | rewritten |
+
+Merged means checked-off `[x]` entries drop and new ones append. Rewritten means regenerated from the current hour on, preserving earlier `[x]` rows.
+
+Adding a meeting deliberately leaves `### Schedule` alone — run `/todo schedule` when you want the day re-laid around it.
 
 Camen owns `### To Do`. This skill never writes it — he promotes entries up from Up Next himself.
 
@@ -79,7 +85,23 @@ Any other team: first three letters of the team name, lowercased. If the team is
 
 Do not reorder or reformat existing entries in any section.
 
-## Mode 2 — refresh the day
+## Mode 2 — add a meeting
+
+`/todo 12pm josh` inserts one row into `### Meetings`, in time order:
+
+```
+- [ ] 1200 josh
+```
+
+Normalise the time to four digits, 12-hour, no colon and no meridiem — `12pm` → `1200`, `1:30pm` → `0130`, `9am` → `0900`. Sort on the real 24-hour value, not the printed string, so `0130` follows `1200`. With no meridiem given, assume the workday: 9 through 12 are morning, 1 through 5 are afternoon.
+
+Everything after the time is the title, verbatim and lowercase as written.
+
+## Mode 3 — rebuild the schedule
+
+`/todo schedule` regenerates `### Schedule` alone, using the meetings already in the file. Same rules as the schedule part of a full refresh: start at `max(now, 0900)`, preserve earlier `[x]` rows, no other section touched. Do not ask about meetings — read them from the file.
+
+## Mode 4 — refresh the day
 
 ### Meetings and Schedule — always rewritten
 
