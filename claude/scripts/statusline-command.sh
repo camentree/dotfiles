@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# Claude Code status line — matches Starship/Ghostty palette
-# Colors: #86c9c0 (teal), #8a8a8a (muted gray)
-#
-# Line 1: [model (effort)]  branch | ctx%
-# Line 2: 5h N% (resets at h:mm AM), 7d N% (resets at Mon DD)
-
 input=$(cat)
 
 model=$(jq -r '.model.display_name'                     <<<"$input")
@@ -16,15 +10,12 @@ fivehr_reset=$(jq -r '.rate_limits.five_hour.resets_at // empty'     <<<"$input"
 sevenday_pct=$(jq -r '.rate_limits.seven_day.used_percentage // empty' <<<"$input")
 sevenday_reset=$(jq -r '.rate_limits.seven_day.resets_at // empty'     <<<"$input")
 
-# ANSI 24-bit color helpers
 teal='\033[38;2;134;201;192m'
 gray='\033[38;2;138;138;138m'
 reset='\033[0m'
 
-# Nerd Font GitHub icon (nf-fa-github, U+F09B)
 github_icon=$''
 
-# Git branch (non-blocking — skip any index lock)
 branch=""
 if git -C "$cwd" rev-parse --git-dir --no-optional-locks &>/dev/null; then
   branch=$(git -C "$cwd" symbolic-ref --short HEAD 2>/dev/null)

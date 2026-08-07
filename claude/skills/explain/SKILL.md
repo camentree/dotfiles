@@ -58,3 +58,12 @@ Then `open` it.
 ### 5. Check the rendered structure
 
 Not just the markup. The `<details>`-inside-`<p>` bug looks fine in source and visibly breaks the page.
+
+## Style
+
+Read before writing:
+
+- Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
+- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the cold-reader check in `cold-reader.md`
+
+Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

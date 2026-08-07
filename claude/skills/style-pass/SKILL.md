@@ -43,17 +43,17 @@ If a rule can only be satisfied by editing pre-existing code, do not edit it. Re
 
 ## 4. Style
 
-- human-readable variable names (prefer non-abbreviations, no single-letter abbreviations)
+The Code section of the `writing-for-humans` output style is the standard: naming, comments, added layers, keyword arguments, type hints. It's always loaded, so it isn't repeated here. If it isn't active — you're a subagent, or it's switched off — load it before judging anything.
+
+These are the review-only checks it doesn't cover:
+
 - avoid nested methods
 - a method whose body is a single expression — inline that expression at the call site instead of defining the method
-- unearned helpers, traits, wrappers
-- only tool comments, no code comments, unless the user asked specifically for it
 - methods should have names that start with a verb
 - undue stark drift from neighboring code — before judging this, open a file that does the same job (same directory, same layer, same kind of test) and read it
 - SQL should use CTEs instead of nested statements
 - SQL should use explicit join types
 - SQL should not acronym aliases
-- prefer calling methods by keyword argument
 
 ## 5. Apply
 

@@ -93,3 +93,12 @@ Say the plan is ready and the next step is `/plan-pr` on PR 1. End the session.
 - **Don't touch `/explain`'s sections.** Carry them through when regenerating.
 - **Refuse scope creep.** A different feature is a fresh `/plan-feature`.
 - Linear for tickets, `gh` for GitHub. Don't hedge about which tracker.
+
+## Style
+
+Read before writing:
+
+- Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
+- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the cold-reader check in `cold-reader.md`
+
+Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

@@ -84,3 +84,12 @@ Say the next step is `/execute-pr` on this slice. End the session.
 - **One page per piece of work.** No separate per-PR doc.
 - **Own only this slice's Plan field.** Everything else on the page belongs to another skill.
 - **Refuse scope creep.** Another slice is a fresh `/plan-pr`.
+
+## Style
+
+Read before writing:
+
+- Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
+- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the cold-reader check in `cold-reader.md`
+
+Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

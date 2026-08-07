@@ -188,3 +188,12 @@ Hand over links to the comments that are theirs to answer, and write nothing on 
 - **Don't run preflight.** The user does.
 - **Answer the comment, nothing more.** Scope creep here is the failure mode this skill exists to fix.
 - **No new helpers, layers, or doc blocks** unless the comment explicitly asked for one.
+
+## Style
+
+Read before writing:
+
+- Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
+- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the cold-reader check in `cold-reader.md`
+
+Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

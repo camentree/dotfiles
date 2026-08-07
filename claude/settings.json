@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh record"
+            "command": "bash ~/.claude/scripts/claude-tab.sh record"
           }
         ]
       }
@@ -110,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
           }
         ]
       }
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh working"
+            "command": "bash ~/.claude/scripts/claude-tab.sh working"
           }
         ]
       }
@@ -130,7 +130,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh working"
+            "command": "bash ~/.claude/scripts/claude-tab.sh working"
           }
         ]
       }
@@ -140,7 +140,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh done"
+            "command": "bash ~/.claude/scripts/claude-tab.sh done"
           }
         ]
       }
@@ -150,7 +150,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
           }
         ]
       }
@@ -160,7 +160,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh clear"
+            "command": "bash ~/.claude/scripts/claude-tab.sh clear"
           }
         ]
       }
@@ -171,7 +171,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/format-on-edit.sh"
+            "command": "bash ~/.claude/scripts/format-on-edit.sh"
           }
         ]
       },
@@ -179,7 +179,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh working"
+            "command": "bash ~/.claude/scripts/claude-tab.sh working"
           }
         ]
       }
@@ -190,7 +190,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
           }
         ]
       }
@@ -200,7 +200,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
           }
         ]
       }
@@ -208,7 +208,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "command": "bash ~/.claude/scripts/statusline-command.sh"
   },
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
@@ -230,5 +230,7 @@
   },
   "autoDreamEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "outputStyle": "writing-for-humans",
+  "includeCoAuthoredBy": false
 }
