@@ -1,93 +1,86 @@
 ---
 name: plan-pr
-description: Plan one PR slice in detail before executing it. Reads the feature plan doc, loops with the user on interfaces (method signatures, model shapes, route paths, test cases), and writes the per-PR plan into the feature doc's PR section. No code edits.
+description: Plan one PR slice in detail before executing it. Reads the feature plan page, loops with Camen on interfaces (method signatures, model shapes, route paths, test cases), and writes the per-PR plan into that page. No code edits.
 ---
 
 # Plan a PR slice
 
-Run this after `/plan-feature` and before `/execute-pr`. The goal is to lock down the **interfaces** for one PR slice — method signatures, class/struct shapes, route paths, test case names — without writing any bodies.
+Runs after `/plan-feature`, before `/execute-pr`. Locks down the **interfaces** for one slice — signatures, shapes, route paths, test case names. No bodies.
 
-This is the diff-of-the-plan at PR scope. Catching shape mistakes here is cheap; catching them mid-execute means re-reviewing the same code twice.
+Catching a shape mistake here is cheap. Catching it mid-execute means reviewing the same code twice, which is a friction Camen has named explicitly.
 
-## Inputs
+## Input
 
-Ask the user, in order:
+**Don't ask a checklist.** Resolve it yourself:
 
-1. **Plan doc path** — e.g. `~/Documents/notes/plans/<slug>.md`. If they don't give one, list `~/Documents/notes/plans/*.md` and ask which.
-2. **Which PR slice** — number or name from the doc's PR Slices section.
-3. **Any additional context** — anything the user wants you to factor in beyond what's in the doc.
+- No page given → most recently modified `~/Documents/notes/explain/*.html`.
+- No slice given → the first slice whose Plan field is still unfilled.
 
-Read the plan doc. Confirm: "Planning PR N — <name>. Files: <list from feature doc>. Sound right?"
+State what you picked in one line and start: "Planning PR 2 — repository layer, from int-631.html." He'll correct you if it's wrong. Only ask when genuinely ambiguous — two pages touched today, or every slice already planned.
+
+**This skill runs standalone.** Small work doesn't need `/plan-feature` first. With no page and no slices, plan the whole change as one slice from whatever context came with the invocation, and create the page at the end with just that slice in it. Don't send him back up the stack for a two-file change.
+
+## Read first
+
+- `~/.claude/skills/explain/reference/format.md` — house style, governs chat here too.
+- `~/.claude/skills/explain/reference/page.html` — the scaffold, if you create the page.
+
+## Output style
+
+- **Open each turn with where we are.** "Layer 2 of 4 — the service signatures."
+- **One layer per turn.** Proposing all four at once is the wall of text Camen complains about.
+- Show the signature, not a paragraph about why. He'll ask.
 
 ## Process
 
 ### 1. Re-read the relevant code
 
-Read the canonical examples called out in the project's `CLAUDE.md` / `CLAUDE.local.md` and the feature doc's Style notes section. Skim any similar past PRs the doc references. Don't dump file contents at the user — just internalize the patterns.
+The canonical examples from `CLAUDE.md` / `CLAUDE.local.md` and the plan page's Decisions section. Find the existing implementation this should mirror — Camen would rather copy what's there than see a new design.
 
-### 2. Propose interfaces, one layer at a time
+Don't dump file contents at him. Internalize and move on.
 
-For each layer / concern in the slice, propose the **interface only**. No bodies.
+### 2. Propose interfaces, one layer per turn
 
-- Data / storage: method or query signatures with parameter and return types.
-- Domain models: class / struct / type declarations with field names, types, and a one-line description per field.
-- Application logic: method signatures.
-- Surface layer (HTTP, CLI, RPC): paths, action signatures, response shapes.
-- Tests: list of test case names. No assertions yet.
+Interface only, no bodies:
 
-Adapt the layer names to the project's conventions. Present each layer as a short block. The user accepts or corrects. Loop until everything fits.
+- Data layer: method and query signatures with parameter and return types.
+- Models: declarations with field names, types, one line each.
+- Service: method signatures.
+- Controller and routes: paths, action signatures, response shapes.
+- Tests: test case names, no assertions.
 
-If the user asks you to write a body to clarify a point, write the body **into the chat** to discuss — do not write it to a file. This is still planning.
+He accepts or corrects. Loop until it fits.
+
+If a body would clarify something, put it **in the chat** to discuss. Not on disk.
 
 ### 3. Surface late-breaking questions
 
-The detailed pass often surfaces questions the feature plan missed. Add them to the feature doc's Open Questions section, marked as belonging to this PR. Answer them with the user before continuing.
+The detailed pass finds things the feature plan missed. Add them to the page's Open questions, tagged to this slice, and settle them before continuing.
 
-### 4. Write the PR plan into the feature doc
+### 4. Write the plan into the page
 
-Update the relevant PR Slice section in the feature doc. Replace `**Plan:** _(filled in during /plan-pr)_` with a bulleted summary, ~10–20 lines, capturing the agreed interfaces and any non-obvious decisions:
+Fill this slice's **Plan** field. Nothing else on the page is yours.
 
-```markdown
-### PR N — <name>
-- **Files:** <paths>
-- **Plan:**
-  - <Layer 1>: <signature / shape summary>
-  - <Layer 2>: <signature / shape summary>
-  - Tests: <test case names>
-  - Non-obvious decisions: <e.g. "cursor pagination not offset", "facility-scoped">
-- **Branch:** _(filled in during /execute-pr)_
-- **PR:** _(filled in during /execute-pr)_
-```
+Signatures are code, so they collapse. The visible line is the shape — "one repo method, one model, six test cases". Inside go the actual signatures grouped by layer, the test case names, and each non-obvious decision in a sentence ("cursor not offset", "facility-scoped").
 
-Don't write code into the plan. The plan is the contract; the code is the contract's implementation.
+A visible list of eight test names is the wall of text Camen has complained about. Fold it; the summary says how many and what kinds.
+
+Regenerate the page rather than hand-patching the HTML, and carry every other section through untouched.
+
+Don't write code into the plan. The plan is the contract; code is its implementation.
 
 ### 5. Iterate
 
-Show the user the updated PR Slice section. They may edit it directly and leave inline markers of the form `(? their note)` anywhere they want a response.
-
-When they say "iterate" (or just save and re-invoke), `grep -n '(?' <plan-doc>` to find every marker in the PR Slice section. Address each one with the user — adjust the interface, answer the question, or pull it into Open Questions. Remove the marker when resolved.
+Open the page. He comments via the comments layer and pastes back. Work them one at a time.
 
 ### 6. Close out
 
-When zero `(?` markers remain in this PR's section, tell the user the next step is `/execute-pr` pointed at this doc + slice. End the session.
-
-## Editing convention
-
-The user leaves inline notes / questions in the plan doc with the marker `(? text)`. Examples:
-
-```markdown
-- Controller: `MedicationOrderController.scala` (? facility-scoped or org-scoped permission?)
-```
-
-```markdown
-- Tests: list 8 cases (? do we need the 403-when-deleted case here or push to a separate slice?)
-```
-
-Treat every `(? ...)` in this PR's section as a pending action. Don't close the session while any remain unresolved.
+Say the next step is `/execute-pr` on this slice. End the session.
 
 ## Constraints
 
-- **No code edits.** Bodies are for `/execute-pr`. If a body would help discussion, put it in the chat, not on disk.
-- **One slice per session.** If a question reveals the slice boundary is wrong, stop and send the user back to `/plan-feature` to re-slice.
-- **The feature doc is the single source of truth.** Don't write a separate per-PR doc.
-- **Refuse scope creep.** If the user wants to plan another slice, tell them to start a fresh `/plan-pr` session.
+- **No code edits.** Bodies belong to `/execute-pr`. A body worth discussing goes in chat.
+- **One slice per session.** If a question reveals the slice boundary is wrong, stop and send him back to `/plan-feature` to re-slice.
+- **One page per piece of work.** No separate per-PR doc.
+- **Own only this slice's Plan field.** Everything else on the page belongs to another skill.
+- **Refuse scope creep.** Another slice is a fresh `/plan-pr`.

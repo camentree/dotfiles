@@ -1,5 +1,12 @@
 { config, pkgs, lib, ... }:
 
+let
+  dotfilesRepo = "${config.home.homeDirectory}/Projects/dotfiles";
+  liveLink = relativePath: {
+    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRepo}/${relativePath}";
+    force = true;
+  };
+in
 {
   home.username = "camen";
   home.homeDirectory = "/Users/camen";
@@ -11,6 +18,7 @@
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono  # font for terminal / editor
     oh-my-zsh                  # zsh framework
+    terminal-notifier          # clickable notifications for Claude Code hooks
   ];
 
   # ============================================================
@@ -60,8 +68,9 @@
   };
 
   # ============================================================
-  # Dotfiles — plain files, symlinked into ~/
-  # Edit these directly, then run `rebuild`.
+  # Dotfiles — plain files, live-symlinked into ~/ via liveLink.
+  # Edit these directly; changes take effect without a rebuild.
+  # A rebuild is only needed to add, rename, or remove a file.
   # ============================================================
   home.file = {
     ".nix-paths.sh" = {
@@ -72,41 +81,44 @@
       '';
     };
 
-    ".zshrc"             = { source = ./home/zshrc;             force = true; };
-    ".zshenv"            = { source = ./home/zshenv;            force = true; };
-    ".vimrc"             = { source = ./home/vimrc; };
-    ".gitignore_global"  = { source = ./home/gitignore_global;  force = true; };
-    ".prettierrc"        = { source = ./home/prettierrc;       force = true; };
-    "agent-status.sh"    = { source = ./home/agent-status.sh; };
-    "life-backup.sh"     = { source = ./home/life-backup.sh; };
-    ".ipython/profile_default/startup/00-imports.py" = { source = ./home/ipython_startup_imports.py; };
+    ".zshrc"             = liveLink "home/zshrc";
+    ".zshenv"            = liveLink "home/zshenv";
+    ".vimrc"             = liveLink "home/vimrc";
+    ".gitignore_global"  = liveLink "home/gitignore_global";
+    ".prettierrc"        = liveLink "home/prettierrc";
+    "agent-status.sh"    = liveLink "home/agent-status.sh";
+    "life-backup.sh"     = liveLink "home/life-backup.sh";
+    ".ipython/profile_default/startup/00-imports.py" = liveLink "home/ipython_startup_imports.py";
 
     # Starship prompt
-    ".config/starship.toml" = { source = ./home/starship.toml; force = true; };
+    ".config/starship.toml" = liveLink "home/starship.toml";
 
-    # Neovim (lazy-lock.json is symlinked via activation script — it must be writable)
-    ".config/nvim/init.lua"       = { source = ./home/nvim/init.lua;       force = true; };
-    ".config/nvim/.stylua.toml"   = { source = ./home/nvim/.stylua.toml;   force = true; };
+    # Neovim (lazy-lock.json is live-linked too — lazy.nvim must be able to write it)
+    ".config/nvim/init.lua"       = liveLink "home/nvim/init.lua";
+    ".config/nvim/.stylua.toml"   = liveLink "home/nvim/.stylua.toml";
+    ".config/nvim/lazy-lock.json" = liveLink "home/nvim/lazy-lock.json";
 
     # Ghostty terminal
-    ".config/ghostty/config" = { source = ./home/ghostty; force = true; };
+    ".config/ghostty/config" = liveLink "home/ghostty";
 
     # VSCode
     "Library/Application Support/Code/User/settings.json"    = { source = ./home/vscode/settings.json;    force = true; };
     "Library/Application Support/Code/User/keybindings.json" = { source = ./home/vscode/keybindings.json; force = true; };
 
   } // (
-    # settings.json is excluded here and symlinked to the repo file via an
-    # activation script — Claude Code's /effort et al. must be able to write it.
-    let claudeRoot = toString ./claude;
-    in builtins.listToAttrs (map (file:
-      let rel = lib.removePrefix "${claudeRoot}/" (toString file);
-      in {
-        name = ".claude/${rel}";
-        value = { source = file; force = true; };
-      }
-    ) (builtins.filter
-        (file: lib.removePrefix "${claudeRoot}/" (toString file) != "settings.json")
+    # settings.json is excluded here and symlinked via an activation script —
+    # Claude Code's /effort et al. must be able to write it.
+    # The ./claude path literal is used only to enumerate filenames; each entry
+    # is then live-linked back to the working tree by relative path.
+    let
+      claudeRoot = toString ./claude;
+      relativeTo = file: lib.removePrefix "${claudeRoot}/" (toString file);
+    in builtins.listToAttrs (map (file: {
+        name = ".claude/${relativeTo file}";
+        value = liveLink "claude/${relativeTo file}";
+      })
+    (builtins.filter
+        (file: relativeTo file != "settings.json")
         (lib.filesystem.listFilesRecursive ./claude)))
   ) // {
 
@@ -148,15 +160,9 @@
     $DRY_RUN_CMD chmod 600 ${config.home.homeDirectory}/.ssh/authorized_keys
   '';
 
-  home.activation.neovimLazyLock = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
-      ${config.home.homeDirectory}/Projects/dotfiles/home/nvim/lazy-lock.json \
-      ${config.home.homeDirectory}/.config/nvim/lazy-lock.json
-  '';
-
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
-      ${config.home.homeDirectory}/Projects/dotfiles/claude/settings.json \
+      ${dotfilesRepo}/claude/settings.json \
       ${config.home.homeDirectory}/.claude/settings.json
   '';
 }

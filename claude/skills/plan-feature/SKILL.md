@@ -1,137 +1,95 @@
 ---
 name: plan-feature
-description: Plan a feature or change end-to-end before writing code. Gather context, explore the codebase, surface open questions, agree on a rough file list, break the work into PR-sized slices, and write a plan doc. No code edits in this session.
+description: Plan a feature end-to-end before writing code. Reads the ticket, explores the codebase, resolves open questions with Camen, slices the work into PRs, and writes an HTML plan page. No code edits in this session.
 ---
 
 # Plan a feature
 
-Run this at the start of a new piece of work. The goal is a plan doc good enough to brief a future-you (or a future Claude session) who has no context. **You do not write code in this session.** If the user asks for code, remind them this is a planning session and `/execute-pr` is for code.
+The deliverable is a plan page good enough to brief a future session with no context. **No code this session.** If asked for code, say this is planning and `/execute-pr` writes it.
 
-## Inputs
+## Input
 
-Ask the user, in order:
+Whatever came with the invocation. Usually a ticket key, sometimes nothing.
 
-1. **Any context** — links (ticket URL, issue ID, RFC, design doc, Slack thread, prior PRs), notes, intuitions about the approach, or just a short description of what they want to do. Fetch any URLs they give. Don't assume a specific tracker.
-2. **Anything else they want you to factor in** — constraints, prior conversations, "don't touch X."
+**Don't ask for context.** With no input, find the work yourself: `mcp__linear__list_issues` for Camen's in-progress and todo issues, and pick the obvious one. If two are plausible, ask which — one question, not a checklist. Camen includes context in the invoking message when there is any.
 
-Don't ask for anything else up front. The rest emerges.
+Fetch the Linear issue and anything it links.
+
+## Read first
+
+- `~/.claude/skills/explain/reference/format.md` — house style, governs chat and the page.
+- `~/.claude/skills/explain/reference/page.html` — the scaffold every page is built from.
+
+## Output style
+
+In chat, per turn:
+
+- **Open with one line saying where we are.** "Step 3 of 5 — file list for the exception-reason work." Camen has said the `/plan-*` commands never restate what we're doing.
+- **Show the decision, not the reasoning that produced it.** He'll ask if he wants the reasoning.
+- **One screen.** If a step's output doesn't fit, the step is too big — split it and check in.
+- No walls of code paths. Name the two or three files that matter.
 
 ## Process
 
-Work through these steps conversationally. Don't batch them silently — say what you're doing at each step.
+Say what you're doing at each step. Don't batch them silently.
 
-### 1. Read the context and the codebase
+### 1. Orient
 
-- Read everything the user pointed at.
-- Identify the layer(s) likely affected. Map to the project's own conventions (consult the project's `CLAUDE.md` and any `CLAUDE.local.md` for file groupings, patterns, and preferences).
-- Find similar past work — grep for analogous code. Tell the user 2–4 canonical files to read and the `CLAUDE.md` sections that apply.
+**If a page exists** (`~/Documents/notes/explain/<ticket>.html`), read it and skip to step 2 — it already covers current behavior, constraints, and open questions. You'll be appending to it.
 
-Report back as a short bulleted list. Don't write the plan doc yet.
+**If none exists, run `/explain <ticket>` to create it.** Orientation and planning are different jobs, and a plan built without the first one is built on a shaky model. Come back here when the page exists.
 
-### 2. Co-generate open questions
+Skip that only for work Camen already knows cold. Then: read the ticket, identify the layers affected, and find the closest existing implementation to mirror. Consult `CLAUDE.md` and `CLAUDE.local.md`.
 
-Based on what's unclear, propose a numbered list of questions worth answering before coding. Examples: "what's the shape of X?", "does this need a new permission or reuse Y?", "what's the auth boundary?", "is the data model nested or flat?".
+Report back in under ten lines: the layers, the two or three canonical files, and the existing thing this should copy.
 
-These are sticky design questions, not proposing sepcific implementation. The user adds / removes / edits questions. Then loop: answer them one at a time (you propose, they confirm or correct). Some resolve to "decide later" — mark them parked.
+### 2. Resolve the open questions
 
-### 3. Rough file list (high-level, no contents)
+Propose the design questions worth settling before code — shape of the data, permission model, auth boundary, where the change belongs. Not implementation proposals.
 
-Once questions are mostly answered, list every file that will be created or modified, grouped by layer / concern. **No code contents.** Just file paths and a one-line description of what changes there.
+Camen adds, removes, edits. Then work them one at a time: propose an answer, he confirms or corrects. Some park.
 
-Present this explicitly: "Here's the file list. Does this match what you expected? Anything missing or that shouldn't be here?" This is the alignment checkpoint. Don't move on until they confirm.
+**One question per turn.** A numbered list of eight questions is a wall of text.
 
-### 4. Propose PR slices
+### 3. File list
 
-Group the files into PRs that each ship independently (for some changes this could be one single PR). The goal is not too many PRs but also not too big. Consult the project's `CLAUDE.md` / `CLAUDE.local.md` for any documented preferences on how the user splits work in this repo. Default order is dependency-driven bottom-up: data → interfaces → callers.
+Every file created or modified, grouped by layer. Paths and one line each. No contents.
 
-Each PR must be independently mergeable (compiles, tests pass, even if downstream layers don't exist yet — an unused function is fine).
+This is the alignment checkpoint: "Does this match what you expected?" Don't move on until confirmed.
 
-Show the proposed slicing. The user confirms or restructures.
+### 4. PR slices
 
-### 5. Write the plan doc
+Group into independently mergeable PRs — each compiles and passes tests even if downstream layers don't exist yet. An unused function is fine.
 
-Write to `~/Documents/notes/plans/<slug>.md` (slug = short kebab-case identifier; if a ticket ID was given, use it). Structure:
+Follow the slicing order in `CLAUDE.local.md`. Default is bottom-up: data → interfaces → callers. Not too many, not too big; one PR is a valid answer.
 
-```markdown
-# <Feature Title>
+Show the slicing. He confirms or restructures.
 
-## Goal
+### 5. Write into the work page
 
-<2–3 sentences of user-visible outcome>
+`~/Documents/notes/explain/<ticket>.html`. The page exists with its orientation sections — **append, don't replace.**
 
-## Context / Refs
+You own three sections: **Files**, **PR slices**, **Decisions**. You also append to **Open questions**. Everything else belongs to `/explain` — carry it through untouched.
 
-- <links the user gave>
+Per `format.md`, none of these is a flat list. Files fold per layer with the layer, count, and what changes as the summary. Slices fold with the name and what ships. The paths live in the fold bodies, where a future session can find them and Camen doesn't have to read them.
 
-## Background
-
-<Context the next session needs but the linked material doesn't give. Reference relevant CLAUDE.md / CLAUDE.local.md sections that apply.>
-
-## Files (all)
-
-### <layer / concern 1>
-
-- <path> — <what>
-
-### <layer / concern 2>
-
-- <path> — <what>
-
-## PR Slices
-
-### PR 1 — <name>
-
-- **Files:** <paths>
-- **Plan:** _(filled in during /plan-pr)_
-- **Branch:** _(filled in during /execute-pr)_
-- **PR:** _(filled in during /execute-pr)_
-
-### PR 2 — <name>
-
-...
-
-## Open Questions
-
-- [resolved] <Q> → <answer>
-- [open] <Q>
-- [parked] <Q> — revisit during PR N
-
-## Style notes
-
-<Project-specific decisions that came up — "use X pattern", "scope to facility", "reuse Y not new Z". Keep short. The project CLAUDE.md is the default.>
-```
+Now that slices exist, collapse the orientation sections — he's planning, not orienting.
 
 ### 6. Iterate
 
-Show the user the written file. Ask: "Anything to add or change?" The user may edit the doc directly and leave inline markers of the form `(? their note or question)` anywhere they want a response.
+Open the page. He clicks `comment` on anything he wants changed, hits Copy, pastes back.
 
-When they say "iterate" (or just save and re-invoke), `grep -n '(?' <plan-doc>` to find every marker. Address them one at a time with the user — answer the question, update the relevant section, or pull it into Open Questions. Remove the marker from the doc when resolved. The doc is "done iterating" when zero `(?` markers remain.
-
-Don't use difit on this — it's markdown, just re-read it.
+Work his notes one at a time. Regenerate the page when done — don't hand-patch the HTML.
 
 ### 7. Close out
 
-Tell the user the plan is ready and the next step is `/plan-pr` pointed at PR 1 in this file (followed by `/execute-pr` once that's done). End the session.
-
-## Editing convention
-
-The user leaves inline notes / questions in the plan doc with the marker `(? text)`. Examples:
-
-```markdown
-- **Files:** `app/foo/Bar.scala` (? do we need a separate file or inline into Baz?)
-```
-
-```markdown
-## Open Questions
-- [open] (? should this be facility-scoped or org-scoped — gut says facility but check w/ Josh)
-```
-
-Treat every `(? ...)` as a pending action. Don't close the session while any remain unresolved.
+Say the plan is ready and the next step is `/plan-pr` on PR 1. End the session.
 
 ## Constraints
 
-- **No code edits.** Not even tiny ones. If you find a real bug while exploring, note it as an open question for a separate ticket.
-- **Plan doc is the deliverable.** If the session ends without a plan doc on disk, the skill failed.
-- **Don't fill in PR-level Plan/Branch/PR fields** — those are for `/plan-pr` and `/execute-pr`.
-- **Refuse scope creep.** If the user starts asking about a different feature, suggest a fresh `/plan-feature` session.
-- **No tracker assumptions.** Work from whatever context the user gives. If they give a Linear URL, use linear MCP tools. If a GitHub URL, use `gh`. If neither, work from their description.
+- **No code edits.** Not even tiny ones. A real bug found while exploring becomes an open question for a separate ticket.
+- **The work page is the deliverable.** No page on disk means the session failed.
+- **Don't fill a slice's Plan, Branch, or PR fields** — those belong to `/plan-pr` and `/execute-pr`.
+- **Don't touch `/explain`'s sections.** Carry them through when regenerating.
+- **Refuse scope creep.** A different feature is a fresh `/plan-feature`.
+- Linear for tickets, `gh` for GitHub. Don't hedge about which tracker.

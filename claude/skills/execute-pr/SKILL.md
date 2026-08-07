@@ -1,67 +1,88 @@
 ---
 name: execute-pr
-description: Execute one PR slice that has already been planned via /plan-pr. Reads the PR plan from the feature doc, writes the code layer-by-layer, runs the project's verification commands, and opens difit without stealing focus. Hands off to the user for commit and push. Use /open-pr after pushing.
+description: Execute one PR slice already planned via /plan-pr. Reads the plan from the feature page, writes the code layer-by-layer, runs the project's verification, self-checks against Camen's style rules, walks him through the diff, and opens difit without stealing focus. Hands off for commit and push.
 ---
 
 # Execute a PR slice
 
-Run this after `/plan-pr`. The PR plan in the feature doc is the input — interfaces are already agreed. This session writes bodies, runs checks, and hands off to self-review.
+Runs after `/plan-pr`. The interfaces are agreed. This session writes bodies, verifies, and hands off to self-review.
 
-## Inputs
+## Input
 
-Ask the user, in order:
+**Don't ask a checklist.** Most recently modified `~/Documents/notes/explain/*.html`, first slice with a filled Plan and no Branch. State what you picked and the branch name you'd use, then go.
 
-1. **Plan doc path** — e.g. `~/Documents/notes/plans/<slug>.md`.
-2. **Which PR slice** — number or name.
-3. **Any additional context** — anything not in the doc that affects this slice.
+**This skill runs standalone.** For small work with no page, write the code from whatever context came with the invocation and skip the page entirely — a two-file change doesn't need one.
 
-Read the doc. Confirm: "Executing PR N — <name>. Plan: <one-line summary>. Branch will be: <propose a kebab-case branch name>. Go?"
+When a page exists but the slice's Plan is unfilled, that's a slice someone meant to plan. Say so and offer `/plan-pr`; don't silently plan during execute.
 
-If the PR Slice's **Plan:** field is still `_(filled in during /plan-pr)_`, stop and tell the user to run `/plan-pr` first. Don't plan during execute.
+## Read first
+
+- `~/.claude/skills/explain/reference/format.md` — house style, governs chat here too.
+- `~/.claude/skills/explain/reference/page.html` — the scaffold, if you create the page.
+
+## Output style
+
+Say where you are, show what changed, skip the narration.
 
 ## Process
 
 ### 1. Branch
 
-Work on the current branch. Don't create one. If the user is on master / main, stop and tell them to check out a feature branch first (via `wk -b <branch>` or `git checkout -b <branch>`).
+Work on the current branch; don't create one. On master, stop and say to check out a branch first (`wk -b <branch>`).
 
-Record the current branch in the doc's **Branch:** field.
+Record it in this slice's Branch field. Collapse the finished slices above it and leave this one open — he's working here now.
 
-### 2. Write the code, dependency-order
+### 2. Write the code, bottom-up
 
-Order: bottom-up — data layer before callers, types before consumers, models before controllers, code before tests for that code. Within each file, write the whole file in one pass; don't ping-pong mid-implementation.
+Data before callers, types before consumers, models before controllers, code before its tests. Write each file in one pass; don't ping-pong mid-implementation.
 
-For **cross-cutting changes** within the slice (same pattern across N files), apply to one file first, get it right, then say "I'll apply the same pattern to the others — confirm?" before touching the rest.
+For a pattern repeated across N files: do one, get it right, confirm, then apply to the rest.
 
-Apply the project's `CLAUDE.md` / `CLAUDE.local.md` style guidance. The user shouldn't have to remind you about it. If you find yourself writing something that violates the project's documented style, stop and fix it before continuing.
+**Style is binding while writing, not something to fix at review.** Camen redoes work over style more than over correctness, and it's always the same two things:
+
+- **No comments. No ScalaDoc.** Not on new public methods, not for a non-obvious constraint. Say it in chat instead.
+- **No layers he didn't ask for.** No helper, trait, or indirection for a single call site. Three similar lines beat a premature abstraction.
+- No `Try` / `Option` / `Either` wrapping calls that can't fail. Validate at boundaries only.
+- Names spelled out — `index` not `i`, `error` not `e`, `markdownClient` not `md`.
+- Keyword arguments at call sites past two parameters.
+- Exhaustive matches. List the enum cases; no `case _`.
+- **One thing per change.** No refactor smuggled into a feature, no rename while fixing.
+
+Read `CLAUDE.local.md` before the first file, not after the first correction.
 
 ### 3. Verify
 
-Consult the project's `CLAUDE.md` for the canonical verify sequence (formatter, compile / typecheck, unit tests, integration tests, preflight scripts, lint). Run them in the order the project specifies. If `CLAUDE.md` doesn't say, ask the user once and then remember within this session.
+Follow `CLAUDE.md`'s verify sequence. Metals MCP over `sbt` for compile checks — Bloop is warm, `sbt` cold-compiles in ~109s. Camen runs preflight himself.
 
-Fix anything that fails. Don't ask the user to fix obvious compile / type errors — fix them, then report back what you fixed.
+Fix what fails. Don't hand him compile errors to fix; fix them and say what you fixed.
 
-### 4. Self-review handoff (no auto-commit)
+### 4. Self-check before handing over
 
-When everything passes:
+Re-read your own diff against step 2's list. Every comment you wrote, every helper with one caller, every `case _` — fix it now. This pass exists because Camen otherwise finds them in difit and you both review the same code again.
 
-- Run `git status` and `git diff --stat` to summarize what changed.
-- **Start difit without stealing focus.** `difit --no-open`. Print the URL for the user to click when ready.
-- Send a macOS notification: `osascript -e 'display notification "PR N ready for review" with title "Claude"'`.
-- Do not commit. Do not push. Do not open the PR — that's `/open-pr`.
+### 5. Walk him through the diff
 
-The user reviews via difit, makes any last edits, commits, and pushes themselves. Then they run `/open-pr` to open the PR. End this session after the handoff.
+Before difit, explain what you wrote and why — the mechanism, the non-obvious calls, anything that diverged from the plan. He's said that with Claude writing most of the code he's learning less, and that explaining the diff afterwards is what helps.
+
+Keep it to the interesting parts. Skip the mechanical files.
+
+### 6. Hand off
+
+- `git status` and `git diff --stat` for the summary.
+- `difit --no-open`, print the URL. Don't steal focus, don't open a browser.
+- Notify: `osascript -e 'display notification "PR N ready for review" with title "Claude"'`.
+- **Don't commit. Don't push. Don't open the PR.**
+
+He reviews, edits, commits, pushes, then runs `/open-pr`. End the session after handoff.
 
 ## Constraints
 
 - **One slice per session.** Don't drift into PR N+1.
-- **Don't re-plan.** The plan is the contract. If you find a mistake in it, stop and tell the user — they decide whether to amend or restart with `/plan-pr`.
-- **Don't commit or push.** The user does that after self-review.
-- **Don't open the PR.** That's `/open-pr`, in a fresh session.
-- **Don't open the browser.** difit runs headless or backgrounded; URL goes to stdout.
-- **Project style is canon.** If you violate documented style, stop and fix.
+- **Don't re-plan.** The plan is the contract. Found a mistake in it? Stop and say so; he decides whether to amend or restart `/plan-pr`.
+- **Never commit or push.** Finishing the work is not permission to commit.
+- **Don't open the PR.** That's `/open-pr`, fresh session.
+- **Style is canon.** Violating it is a bug, not a preference.
 
-## Notes for future-me
+## If he wants to write part of it
 
-- Stay bottom-up. Don't write callers before callees exist. Compile / typecheck after each layer when the language supports it.
-- This skill assumes mono-focus: one slice, one session, finish before starting another.
+He's said he'd like to start an implementation and have Claude finish it — it sets the style in code rather than in instructions. If he seeds a file or a signature, match what's there over anything in this skill, and don't rewrite his lines to your own shape.

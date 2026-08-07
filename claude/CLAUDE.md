@@ -16,6 +16,21 @@
 - If you think I might not know a feature exists, mention that it exists — but don't offer to do it; let me ask.
 - **Ask up front** when something is unclear, rather than letting me discover the gap later. Err on the side of asking.
 
+## Prose style
+
+Reading is effortful. Every word has a cost — optimize for fewest.
+
+- **Cut anything that says a thing matters instead of what it does.** "That id is the whole basis of this change" → "that id is what we use to spot duplicates."
+- **Cut any sentence that summarizes the one above**, any first line that re-explains its own header, and any framing about why you're telling me something.
+- **Shortest phrasing wins.** "So they send the identical batch again" → "So they retry."
+- **No claudeisms.** No "is the tell", no "the whole picture", no italics for emphasis, no punchy summary clause tacked onto a finished sentence.
+- **Make consequences explicit** — that isn't fluff. "Both create" → "both create, resulting in a duplicate."
+- **Avoid black-and-white.** "That reads like a bug and isn't" → "That reads like a bug but is defensible."
+- **Don't assume knowledge I don't have.** Explain Scala idioms, FP patterns, and this codebase's conventions. Assume SQL, Python, TypeScript/React, HTTP, and git.
+- Prefer a list to a paragraph. Prefer a header that lands the point to a header plus explanation.
+
+When writing an HTML page for me, the full version of this lives in `~/.claude/skills/explain/reference/format.md`, along with how to use collapsing.
+
 ## Code style
 
 - **Readable over clever.** Legibility beats performance micro-optimization by default.

@@ -1,0 +1,190 @@
+---
+name: address-comments
+description: Turns a reviewed pull request into one commit per review comment. Gathers every comment the user hasn't replied to, sorts them by how much of their attention they need, handles trivial ones unattended, walks the rest with the user one at a time, then opens a difit server per commit with the reviewer's context pinned to the diff. Posts bare commit shas only after the user green-lights each one, and never writes prose on GitHub. Use when addressing, responding to, or working through PR feedback, review comments, or reviewer requests on a pull request.
+---
+
+# Address PR comments
+
+## What this is for
+
+Turning a reviewed PR into commits costs more attention than it should. Today the whole review lands
+as one undifferentiated pile, every fix gets the same amount of thought whether it needs it or not,
+small notes come back overbuilt, and the same preferences get restated every time.
+
+This skill sorts the review by how much of the user's attention each comment actually deserves, and
+spends that attention only where it changes the outcome.
+
+- **Trivial** — the ask is clear and there is nothing to decide. Done in the background, no check-in.
+- **Medium** — a decision is needed. The user sees the proposed fix and why the reviewer asked, one at a time, and answers yes or no.
+- **Hard, and any medium they said no to** — planned together, one at a time, before code.
+- **Theirs** — the comment wants an answer, not a change.
+
+Every comment becomes its own commit. The user reviews the result in difit. Only after that does a
+bare sha go back as a reply — nothing else. Every sentence a reviewer reads comes from the user's own
+hand, so the skill hands them links for the comments that are theirs to answer.
+
+## Inputs
+
+`/address-comments` with no argument resolves the PR from the current branch
+(`gh pr view --json number,title,url,headRefName`). `/address-comments <number|url>` overrides it.
+
+Stop and say so if the branch has no PR, the branch is the default branch, or the resolved PR's head
+branch isn't the one you're on. Don't guess, and don't check anything out.
+
+## Process
+
+State is easy to lose here — trivial work runs while the user answers questions, and green lights
+arrive one commit at a time. Keep a checklist and update it as you go:
+
+```
+- [ ] Gathered — N comments after dropping ones the user replied to
+- [ ] Triaged — _ trivial, _ medium, _ hard, _ theirs
+- [ ] Trivial committed (background)
+- [ ] Medium walked — yes: ___  no: ___
+- [ ] Hard planned and committed
+- [ ] difit launched — one server per commit
+- [ ] Green-lit and sha posted: (one line per commit)
+- [ ] User handed their links, with a drafted answer for each
+```
+
+### 1. Gather
+
+Pull every review comment on the PR, then drop any the user has already replied to. Their reply is
+the signal that a comment is handled or is theirs to handle — a sha from a previous run, a
+disagreement, a question, anything. Resolved-vs-unresolved is not the filter; their participation is.
+
+This makes re-runs safe. A second run over the same PR sees only what's still open.
+
+### 2. Triage
+
+**Size is not complexity.** A clear ask is trivial no matter how much code it touches — a new test,
+a rename across ten files, a deletion. The question is whether anything is left to decide, not how
+much work it is. The bar for trivial is lower than it feels.
+
+Trivial when any of these hold:
+
+- The reviewer supplied the change — a GitHub `suggestion` block, or code in the comment body.
+- It's a deletion. Removing code has no style component.
+- A project rule already settles it (`CLAUDE.md`, a documented convention, an established pattern in the repo).
+- The reviewer is qualified to make the call and made it. A direct instruction is not a debate.
+- It duplicates an earlier comment whose decision is already made.
+
+Medium when a decision is genuinely open: the right answer depends on the user's intent, or the
+reviewer proposed an approach that has to be accepted before it's built. A blocking review with an
+implementation attached is still medium — the implementation removes the work, not the decision.
+
+A refactor the reviewer fully specified is trivial, even when it changes a signature. What makes
+something medium is an unmade decision, never the shape or size of the change.
+
+Hard is rare. Reserve it for consequences invisible from the diff: cross-repo breakage, ops and
+deploy implications, semantics that ripple past this PR.
+
+Theirs when the comment wants an answer rather than a change — a question about intent, a domain
+question, praise, an emoji. Don't write these. Read the code, work out what the answer probably is,
+and hand it over with the link so the user replies in their own words. They'll confirm whether the
+read was right.
+
+Some questions need research before they can be answered ("does this library support audience
+validation?"). Do the research, hand over the finding, let the user post it.
+
+When unsure, escalate one level. The user reviews everything anyway, so a miss is annoying, not
+dangerous.
+
+### 3. Plan
+
+No triage screen. Open with three lines and go straight to the first question:
+
+```
+PR 6871 — 9 comments.
+4 trivial handled in background.
+5 need you.
+```
+
+Then one comment at a time, in this shape and no longer:
+
+```
+[1/5] josh on PersonService:96
+  "Can this go through the existing
+   validator instead?"
+
+  Why: there's already a validation path
+  for person fields; this adds a second one.
+
+  I'd do: drop the inline check, call
+  PersonFieldValidator.validate.
+
+  yes / no ?
+```
+
+Reviewer's words verbatim, one line of why they asked, one line of what you'd do, then wait. Don't
+show code. Don't stack two questions. Don't summarize what came before.
+
+Mediums first, since they're cheap. A `no` moves that comment to the hard queue rather than
+reopening it — the alternative is discussed when its turn comes.
+
+Then the hard queue, still one at a time, but planned rather than answered: propose an approach,
+give whatever context is missing, and settle it before writing anything.
+
+### 4. Implement
+
+Trivial comments are already being worked while the user walks the medium queue. Everything else
+starts once its decision is made.
+
+One commit per comment. Subject describes the change, not the comment. Nothing else rides along —
+no drive-by cleanups, no adjacent fixes, no reformatting of untouched lines.
+
+Exception: duplicates and near-duplicates share a commit. Reviewers flag these themselves — "similar
+to <link>", the same note on two call sites — and splitting them produces two commits with identical
+diffs. Its sha gets posted to every comment it answers.
+
+Compile after each commit through the fastest checker the project has. In Scala repos with Metals
+running, that's `metals:compile-file` on what changed, or `metals:compile-module` when the change
+crosses a module boundary — Bloop is already warm and shared with the editor, so this costs seconds
+where a cold `sbt compile` costs minutes. Don't fall back to the slow path for a routine check.
+
+The user runs preflight themselves. Don't run it, don't offer to.
+
+The fix answers the comment and stops there. A one-line note gets a one-line change. If the fix seems
+to need a new helper, a new layer, or a doc block that nobody asked for, that is the signal it has
+outgrown the comment — stop and say so rather than building it. When a reviewer asks for one
+outright, write it; their request beats the user's standing preference on their own review.
+
+### 5. Hand off
+
+difit is mandatory, one server per commit, all launched together — not one at a time.
+
+Each server opens with the context already pinned to the diff, so the user isn't rebuilding it from
+memory. For every commit, inject a `thread` comment at the line the reviewer commented on:
+
+```bash
+npx difit <sha>~1 <sha> --no-open --keep-alive --comment '{"type":"thread","filePath":"<path>","position":{"side":"new","line":<n>},"body":"<annotation>"}'
+```
+
+The annotation carries, in this order: the reviewer's comment verbatim and who wrote it, why they
+asked, what was decided and by whom (backgrounded as trivial / approved in the medium round /
+planned together), and what changed.
+
+Print one line per commit: sha, subject, difit URL, and the comment it answers. Send a single macOS
+notification when all servers are up.
+
+Then wait. Green lights come per commit, not all at once — the user reviews one difit, says go, and
+that commit's sha is posted in reply to its comment while they move to the next.
+
+Re-derive the sha from git at posting time. They may amend or squash during review, so the value
+printed at launch is not the value to post.
+
+Post the bare sha, nothing else. If the commit isn't on the remote yet, say so and wait — an
+unpushed sha is nothing a reviewer can click.
+
+Hand over links to the comments that are theirs to answer, and write nothing on them.
+
+## Constraints
+
+- **Never write prose on GitHub.** Bare commit shas only, and only after the user's green light. No
+  replies, no review submissions, no resolving threads, no reactions. Every sentence a reviewer reads
+  is one the user wrote.
+- **Comments the user has replied to are theirs.** Don't reopen them, address them, or mention them.
+- **Commit, but never push.** One commit per comment is the job; pushing is the user's.
+- **Don't run preflight.** The user does.
+- **Answer the comment, nothing more.** Scope creep here is the failure mode this skill exists to fix.
+- **No new helpers, layers, or doc blocks** unless the comment explicitly asked for one.

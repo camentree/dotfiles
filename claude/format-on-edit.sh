@@ -7,6 +7,10 @@ file_path="$(jq -r '.tool_input.file_path // empty')"
 run() { command -v "$1" >/dev/null 2>&1 && "$@" >/dev/null 2>&1; }
 
 case "$file_path" in
+	*/scratchpad/* | /private/tmp/claude-* | */notes/explain/* | */claude/skills/*) exit 0 ;;
+esac
+
+case "$file_path" in
 	*.py)
 		run ruff check --select I --fix "$file_path"
 		run ruff format "$file_path"

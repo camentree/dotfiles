@@ -25,6 +25,28 @@
       "Bash(ls *)",
       "Bash(wc *)",
       "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(sed -n *)",
+      "Bash(awk *)",
+      "Bash(jq *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(tr *)",
+      "Bash(du *)",
+      "Bash(date *)",
+      "Bash(printf *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(gh api *)",
+      "Bash(gh run view *)",
+      "Bash(gh run list *)",
+      "Bash(git worktree list *)",
+      "Bash(git blame *)",
+      "Bash(git rev-parse *)",
+      "Bash(docker ps *)",
+      "Bash(aws logs get-query-results *)",
       "Bash(sbt *)",
       "Bash(which *)",
       "Bash(pwd)",
@@ -65,13 +87,51 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": [
-      "~/",
-      "/tmp"
-    ]
+    "additionalDirectories": ["~/", "/tmp"]
   },
   "model": "opus[1m]",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "elicitation_dialog|agent_needs_input",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/notify.sh input"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/notify.sh start"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/notify.sh stop"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -99,7 +159,7 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "voice": {
