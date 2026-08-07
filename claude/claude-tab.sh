@@ -14,12 +14,21 @@
 set -uo pipefail
 
 MAP_FILE="${HOME}/.claude/session-tabs.json"
-WORKING="🟡"
-IDLE="🟢"
-ATTENTION="🔴"
+WORKING="🔸"
+IDLE="🔹"
+ATTENTION="♦️"
 
 payload="$(cat)"
 session_id="$(printf '%s' "$payload" | jq -r '.session_id // empty')"
+
+if [ -n "${CLAUDE_TAB_DEBUG:-}" ] || [ -f "${HOME}/.claude/tab-debug.on" ]; then
+  printf '%s mode=%s event=%s type=%s session=%s\n' \
+    "$(date +%T)" "${1:-}" \
+    "$(printf '%s' "$payload" | jq -r '.hook_event_name // "?"')" \
+    "$(printf '%s' "$payload" | jq -r '.notification_type // "-"')" \
+    "${session_id:0:8}" >> "${HOME}/.claude/tab-debug.log"
+fi
+
 [ -z "$session_id" ] && exit 0
 
 tab_id_for_session() {
@@ -77,16 +86,27 @@ tab_name() {
     end tell" 2>/dev/null
 }
 
+current_state() {
+  [ -f "$MAP_FILE" ] || return 0
+  jq -r --arg session "$session_id" '.[$session].state // empty' "$MAP_FILE" 2>/dev/null
+}
+
+remember_state() {
+  local updated
+  updated="$(jq --arg session "$session_id" --arg state "$1" \
+    '.[$session].state = $state' "$MAP_FILE" 2>/dev/null)"
+  [ -n "$updated" ] && printf '%s' "$updated" > "$MAP_FILE"
+}
+
 set_marker() {
   local tab_id="$1" marker="$2"
   local name base title
+  [ "$(current_state)" = "$marker" ] && return 0
   name="$(tab_name "$tab_id")"
   [ -z "$name" ] && return 0
 
-  base="$name"
-  for existing in "$WORKING" "$IDLE" "$ATTENTION"; do
-    base="${base#"$existing" }"
-  done
+  base="$(printf '%s' "$name" | LC_ALL=C sed -E 's/^([^[:alnum:][:space:]]+[[:space:]]*)+//')"
+  [ -z "$base" ] && base="$name"
 
   if [ -n "$marker" ]; then
     title="${marker} ${base}"
@@ -105,6 +125,8 @@ set_marker() {
         end repeat
       end repeat
     end tell" >/dev/null 2>&1
+
+  remember_state "$marker"
 }
 
 forget_session() {
@@ -117,6 +139,8 @@ forget_session() {
 case "${1:-}" in
   record)
     record_session
+    tab_id="$(tab_id_for_session)"
+    [ -n "$tab_id" ] && set_marker "$tab_id" "$IDLE"
     ;;
   working)
     tab_id="$(tab_id_for_session)"

@@ -87,7 +87,10 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
   "model": "opus[1m]",
   "hooks": {
@@ -169,6 +172,35 @@
           {
             "type": "command",
             "command": "bash ~/.claude/format-on-edit.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh working"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh attention"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh attention"
           }
         ]
       }
