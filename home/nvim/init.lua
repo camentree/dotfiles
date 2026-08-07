@@ -229,6 +229,8 @@ for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
 	vim.keymap.set("i", redo_key, "<C-o><C-r>", { desc = "Redo" })
 	vim.keymap.set("v", redo_key, "<Esc><C-r>", { desc = "Redo" })
 end
+vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
+vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
 do
 	local url_tlds = {
 		com = true,
@@ -553,6 +555,11 @@ end
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
+
+local sbt_build_file = vim.fs.joinpath(vim.uv.cwd(), "build.sbt")
+if not vim.uv.fs_stat(sbt_build_file) then
+	sbt_build_file = nil
+end
 
 require("lazy").setup({
 	rocks = { enabled = false, hererocks = false },
@@ -1069,8 +1076,13 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 		ft = { "scala", "sbt", "java" },
+		event = sbt_build_file and "VeryLazy" or nil,
 		opts = function()
 			local metals_config = require("metals").bare_config()
+			table.insert(
+				require("metals.config").valid_metals_settings,
+				"autoImportBuilds"
+			)
 			metals_config.settings = {
 				showImplicitArguments = true,
 				showImplicitConversionsAndClasses = true,
@@ -1078,12 +1090,19 @@ require("lazy").setup({
 				superMethodLensesEnabled = true,
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
-				autoImportBuild = "all",
+				autoImportBuilds = "all",
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
-				bloopJvmProperties = { "-Xmx16g", "-XX:+UseG1GC" },
-				shutdownBloopOnEditorClose = true,
+				bloopJvmProperties = {
+					"-Xmx8g",
+					"-Xss4m",
+					"-XX:MaxInlineLevel=20",
+					"-XX:+UseZGC",
+					"-XX:ZUncommitDelay=30",
+				},
 				startMcpServer = true,
 				mcpClient = "claude",
+				-- metals 2
+				serverVersion = "2.0.0-M16",
 			}
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
@@ -1106,6 +1125,11 @@ require("lazy").setup({
 					require("metals").initialize_or_attach(metals_config)
 				end,
 			})
+			if sbt_build_file then
+				vim.schedule(function()
+					vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
+				end)
+			end
 		end,
 	},
 	-- stevearc/conform.nvim
@@ -1529,7 +1553,10 @@ require("lazy").setup({
 		dependencies = { "kevinhwang91/promise-async" },
 		event = "VimEnter",
 		opts = {
-			provider_selector = function()
+			provider_selector = function(_bufnr, filetype, _buftype)
+				if filetype == "markdown" then
+					return { "treesitter", "indent" }
+				end
 				return { "lsp", "indent" }
 			end,
 			fold_virt_text_handler = function(

@@ -111,6 +111,7 @@ function _wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
+  [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
   local encoded_worktree="${worktree_path//[\/.]/-}"
@@ -120,9 +121,13 @@ function _wk-rm () {
     done
     rmdir "$proj_dir" 2>/dev/null
   done
-  git worktree remove "$worktree_path" --force 2>/dev/null
-  git branch -D "$branch" 2>/dev/null
-  echo "Removed: $branch"
+  rm -rf "$worktree_path"
+  git worktree prune
+  if git branch -q -D "$branch"; then
+    echo "Removed: $branch"
+  else
+    echo "Removed worktree; kept branch: $branch"
+  fi
 }
 function _wk-clean () {
   local repo_root=$(_wk-repo-root)
@@ -167,6 +172,110 @@ function vdd () {
   deactivate 2>/dev/null
   rm -rf .venv
   echo "Removed .venv"
+}
+
+function _metals-server-pids () { pgrep -f 'nvim-metals/metals|scala\.meta\.metals\.Main' 2>/dev/null; }
+function _bloop-daemon-pid () { pgrep -f 'bloop\.BloopServer' 2>/dev/null | head -1; }
+function _metals-format-memory () {
+  awk -v kilobytes="${1:-0}" 'BEGIN { if (kilobytes >= 1048576) printf "%.1fG", kilobytes / 1048576; else printf "%dM", kilobytes / 1024 }'
+}
+function _metals-parent-pid () { ps -o ppid= -p "$1" | tr -d ' '; }
+function _metals-orphan-server-pids () {
+  local server_pid
+  for server_pid in $(_metals-server-pids); do
+    if [ "$(_metals-parent-pid "$server_pid")" = "1" ]; then echo "$server_pid"; fi
+  done
+}
+function _metals-live-server-pids () {
+  local server_pid
+  for server_pid in $(_metals-server-pids); do
+    if [ "$(_metals-parent-pid "$server_pid")" != "1" ]; then echo "$server_pid"; fi
+  done
+}
+
+function metals-doctor () {
+  case "$1" in
+    clean) shift; _metals-doctor-clean "$@"; return ;;
+    reset) shift; _metals-doctor-reset "$@"; return ;;
+    "") ;;
+    *) echo "Usage: metals-doctor [clean|reset]"; return 1 ;;
+  esac
+
+  local bloop_pid=$(_bloop-daemon-pid)
+  if [ -z "$bloop_pid" ]; then
+    echo "bloop   not running"
+  else
+    local bloop_heap=$(ps -o args= -p "$bloop_pid" | tr ' ' '\n' | grep -m1 '^-Xmx')
+    echo "bloop   pid $bloop_pid  up $(ps -o etime= -p "$bloop_pid" | tr -d ' ')  rss $(_metals-format-memory "$(ps -o rss= -p "$bloop_pid" | tr -d ' ')")  heap ${bloop_heap:-default (not started by metals)}"
+  fi
+
+  local server_pids=($(_metals-server-pids))
+  [ ${#server_pids} -eq 0 ] && echo "metals  not running"
+  local server_pid parent_pid workspace owner
+  for server_pid in $server_pids; do
+    parent_pid=$(_metals-parent-pid "$server_pid")
+    workspace=$(lsof -a -p "$server_pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
+    if [ "$parent_pid" = "1" ]; then owner="ORPHAN"; else owner="nvim $parent_pid"; fi
+    echo "metals  pid $server_pid  up $(ps -o etime= -p "$server_pid" | tr -d ' ')  rss $(_metals-format-memory "$(ps -o rss= -p "$server_pid" | tr -d ' ')")  $owner  ${workspace:-unknown}"
+  done
+
+  local workspace_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  [ -z "$workspace_root" ] && return 0
+  local cache_dir
+  for cache_dir in $(find "$workspace_root" -maxdepth 3 -type d \( -name .metals -o -name .bloop \) 2>/dev/null); do
+    echo "cache   $(du -sh "$cache_dir" | cut -f1)  ${cache_dir#$workspace_root/}"
+  done
+}
+
+function _metals-doctor-clean () {
+  local orphan_pids=($(_metals-orphan-server-pids))
+  local live_pids=($(_metals-live-server-pids))
+  local server_pid
+
+  for server_pid in $orphan_pids; do
+    echo "Killing orphaned metals (pid $server_pid)"
+    kill "$server_pid" 2>/dev/null
+    sleep 2
+    kill -0 "$server_pid" 2>/dev/null && kill -9 "$server_pid" 2>/dev/null
+  done
+  [ ${#orphan_pids} -eq 0 ] && echo "No orphaned metals processes"
+
+  for server_pid in $live_pids; do
+    echo "Kept metals pid $server_pid — still attached to nvim; restart it there with :MetalsRestartBuildServer"
+  done
+
+  if [ -n "$(_bloop-daemon-pid)" ]; then
+    echo "Stopping bloop..."
+    bloop exit
+  else
+    echo "bloop not running"
+  fi
+}
+
+function _metals-doctor-reset () {
+  local workspace_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  [ -z "$workspace_root" ] && { echo "Not in a git repo"; return 1; }
+
+  local live_pids=($(_metals-live-server-pids))
+  [ ${#live_pids} -gt 0 ] && { echo "Quit nvim first — metals is still attached (pid ${live_pids[1]})"; return 1; }
+
+  local index_dirs=($(find "$workspace_root" -maxdepth 3 -type d -name .metals 2>/dev/null))
+  [ ${#index_dirs} -eq 0 ] && { echo "No .metals directory under $workspace_root"; return 0; }
+
+  print -l "Will clear the Metals index in:" ${index_dirs/#/  }
+  echo "Compiled output in .bloop is kept; delete that by hand for a full recompile."
+  local reply_confirm
+  read "reply_confirm?Proceed? [y/N] " || return 1
+  [[ "$reply_confirm" == [yY]* ]] || { echo "Aborted"; return 1; }
+
+  _metals-doctor-clean
+
+  local index_dir
+  for index_dir in $index_dirs; do
+    rm -f "$index_dir"/metals.mv.db "$index_dir"/metals.lock.db "$index_dir"/metals.trace.db
+    echo "Cleared ${index_dir#$workspace_root/}"
+  done
+  echo "Reopen nvim to re-index."
 }
 
 # Tab title: project name, or "project · branch" inside a linked worktree
