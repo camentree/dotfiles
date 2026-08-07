@@ -30,7 +30,16 @@ State in one line which files you skipped and why. Do not list their contents.
 
 ## 3. Decide which lines to review
 
-Only lines edited by you, only new code. Do not apply the user's style to code written by someone else.
+Only the lines this change added. Context lines around a hunk are someone else's code — leave them alone even when they break every rule below.
+
+The line that matters most is between new and pre-existing symbols:
+
+- A method, variable, class, or parameter **introduced by this change** is yours to rename, inline, restructure, or delete.
+- A symbol that **existed before this change** must keep its name and shape. Renaming it edits code the user did not touch and ripples out to call sites that are not in this diff. That is a separate change, and not this one.
+
+When unsure whether a symbol is new, check: `git grep -wn "<symbol>" HEAD`. No match means the change introduced it.
+
+If a rule can only be satisfied by editing pre-existing code, do not edit it. Report it under `Left alone` with the reason.
 
 ## 4. Style
 
@@ -46,9 +55,21 @@ Only lines edited by you, only new code. Do not apply the user's style to code w
 - SQL should not acronym aliases
 - prefer calling methods by keyword argument
 
-## 5. Apply, then report
+## 5. Apply
 
-Apply the fixes, then report what you changed. Do not commit — the user commits.
+Apply the fixes. Do not commit — the user commits.
+
+## 6. Check it still compiles
+
+A style pass that breaks the build is worse than no style pass. Renaming and inlining are exactly the edits that miss a call site.
+
+Find the project's compile or typecheck command rather than guessing it — the repo's instruction files usually name it, otherwise infer it from the build file. Run the fastest one that would catch a broken reference. Do not run the full test suite; that is the user's call, not this pass's.
+
+Prefer an incremental or already-warm compiler if the project exposes one (a language server, a build server, a watch task). A cold full build can take minutes and this pass is meant to be quick.
+
+If it does not compile, fix what you broke. If you cannot, revert the fixes that caused it and report them under `Left alone`. Never hand back a diff that fails to build.
+
+## 7. Report
 
 Terse. One line per fix: what you changed, where, and the rule it was breaking. No preamble, no restating the diff, no praise for what is already fine.
 

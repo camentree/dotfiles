@@ -18,7 +18,6 @@ in
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono  # font for terminal / editor
     oh-my-zsh                  # zsh framework
-    terminal-notifier          # clickable notifications for Claude Code hooks
   ];
 
   # ============================================================

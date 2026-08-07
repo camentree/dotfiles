@@ -8,11 +8,15 @@ Work Camen is about to start. The code doesn't exist yet. The output is a starti
 
 ## Gather
 
-**Read the code before the ticket.** Same reason as pull-request mode — a well-written ticket hands you a framing of the problem that may not survive contact with what's actually there. Find the code the ticket is about, understand today's behavior, then read the ticket.
+**Read the ticket's symptom, then the code, then the ticket's explanation.** The framing is what you're protecting yourself from, not the symptom — a bug ticket's error string is often the only thing that points at the right surface. Take enough to locate it, then read the code exhaustively before reading a word about why the author thinks it happens.
 
 Where the ticket's description of current behavior doesn't match the code, that's the most valuable thing you'll produce.
 
+**The ticket's vocabulary often isn't the code's.** GTKY is `ResidentBiography` in the API. When a grep on the ticket's words finds nothing, `git log --grep=<term>` finds the commit that built it, and the commit gives you the call chain.
+
 Then: the ticket, its project, linked docs, and prior PRs on the same subject.
+
+**Work spans repos.** The decisive fact is often in `august-frontend` — an error modal, a cached etag, a hard-coded allowlist. Follow it there and say so in the footer.
 
 ## Sections
 
@@ -24,7 +28,9 @@ An eyebrow: the Linear ticket (`https://linear.app/august-health/issue/<KEY>`), 
 
 ### What's being asked
 
-One sentence under the title. The outcome someone wants, in their terms. Not the implementation.
+The outcome someone wants, in their terms. Not the implementation.
+
+The standfirst above it states the shape of the problem; this section states the wanted outcome. Don't write the same sentence twice. The ticket's own repro steps go here, in a fold — they're the reporter's account, and "What happens today" is the code-verified version.
 
 ### What happens today
 
@@ -46,7 +52,9 @@ What the ticket doesn't answer and someone will have to decide. Product and tech
 
 ### Prior art
 
-Optional, and the most useful thing on the page when it exists: an existing implementation close enough to mirror. Camen would rather copy what's there than see a new design. Find it before anyone proposes anything new.
+Optional, and the most useful thing on the page when it exists: an existing implementation that solves a structurally similar problem. Camen would rather copy what's there than see a new design.
+
+This is where the no-designing rule is hardest to hold, because "an implementation to mirror" is a solution by another name. Describe what the existing code does and where it's called. Stop before "so the fix is" — that sentence belongs to `/plan-feature`.
 
 ## Deliberately absent
 

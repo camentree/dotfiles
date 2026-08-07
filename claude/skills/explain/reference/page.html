@@ -333,9 +333,7 @@
       details.fold > summary {
         cursor: pointer;
         list-style: none;
-        display: flex;
-        gap: 0.7rem;
-        align-items: baseline;
+        display: block;
         padding: 0.85rem 0;
         font-weight: 600;
         font-size: 0.97rem;
@@ -348,7 +346,7 @@
         font-family: var(--mono);
         font-size: 0.8rem;
         color: var(--accent);
-        flex: 0 0 auto;
+        margin-right: 0.7rem;
       }
       details.fold[open] > summary::before {
         content: "－";
@@ -397,16 +395,13 @@
         font-family: var(--mono);
         font-size: 0.68rem;
         letter-spacing: 0.06em;
-        margin-left: auto;
-        align-self: center;
-        flex: 1 1 auto;
-        text-align: right;
+        float: right;
+        margin-left: 1rem;
       }
       .aside.warn {
         color: var(--warn);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        flex: 0 0 auto;
       }
 
       figure {

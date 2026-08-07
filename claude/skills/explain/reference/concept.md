@@ -34,7 +34,9 @@ Diagram first — the pieces and what flows between them. Then the mechanism in 
 
 ### Where the edges are
 
-What's in scope and what isn't. Name the adjacent domains and who owns them. Say which of the neighbours you'd have to change to do something that feels like it belongs here but doesn't.
+What's in scope and what isn't, then a table of "to do X, you'd be changing Y" for the things that feel like they belong here but don't. That table is the load-bearing part.
+
+Name an owning team only where the repo actually says so. `CODEOWNERS` is team-scoped with no per-domain rules, so for most subsystems this isn't determinable — don't guess it.
 
 This section replaces a PR's Constraints. It's the thing that stops the map being infinite.
 
@@ -44,7 +46,9 @@ What forced this into its current shape and still holds it there — the contrac
 
 ## Optional
 
-**Where it breaks** — the known sharp edges. Only if they're real and known, not speculated.
+Both go after Constraints, as `details.fold.section`.
+
+**Where it breaks** — the known sharp edges. Only if they're real and known, not speculated. Distinguish from Constraints: a constraint holds the shape, a sharp edge is just wrong.
 
 **Knowledge checks** — non-obvious facts the worked example didn't teach.
 
@@ -60,4 +64,4 @@ Entry points, main files by count not name, and the date — a concept page goes
 
 ## Lifecycle
 
-Unlike a PR page, this one wants to be updated rather than replaced. Name it for the subject (`snapshots.html`, `scim.html`), and when re-running, revise rather than regenerate from scratch — Camen may have added notes.
+Name it for the subject (`snapshots.html`, `scim.html`). Re-running regenerates it; comments live in `localStorage` keyed on the path, so they survive a rewrite of the file.

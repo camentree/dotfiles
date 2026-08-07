@@ -96,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/session-start.sh"
+            "command": "bash ~/.claude/claude-tab.sh record"
           }
         ]
       }
@@ -107,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/notify.sh input"
+            "command": "bash ~/.claude/claude-tab.sh attention"
           }
         ]
       }
@@ -117,7 +117,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/notify.sh start"
+            "command": "bash ~/.claude/claude-tab.sh working"
+          }
+        ]
+      }
+    ],
+    "ElicitationResult": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh working"
           }
         ]
       }
@@ -127,7 +137,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/notify.sh stop"
+            "command": "bash ~/.claude/claude-tab.sh done"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh attention"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/claude-tab.sh clear"
           }
         ]
       }

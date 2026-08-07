@@ -14,6 +14,8 @@ The collapsed page is the complete fast read. **The failure is having to expand 
 - Never collapse behind a label that only names a topic.
 - Word-cost discipline applies inside folds too. Expanding should not be punished with prose.
 
+**A good summary is longer than a label, and that's correct.** "Feature flag gating" is short and useless; "the feature flag turns the whole surface into 404s" is longer and stands alone. Where standalone summaries and fewest-words disagree, standalone wins — the stated failure is unnecessary expansion, not word count.
+
 **Price each piece by how likely he is to need it.** Very likely, it's uncollapsed prose. Low to medium, it's a fold. Vibes, not arithmetic — the decision is about probability of need, not importance or length.
 
 Collapse two kinds of thing: concepts he may already know, and anything not needed for the task at hand.
@@ -64,6 +66,8 @@ Inline SVG. Conceptual boxes, no file paths or line numbers. Mark what's new or 
 
 No caption — if a diagram needs prose to say what it shows, fix the diagram. Put the description in `aria-label`.
 
+`artifact-diagramming` asks for a `<figcaption>`. This overrides it; everything else in that skill still applies.
+
 Good default, but skip it when the subject is a fact rather than a topology (a map lookup, a single added check). "Would a reader trace this with a finger?" If no, drop it.
 
 ## Vocabulary
@@ -72,9 +76,13 @@ At most three terms, and only ones the explanation hinges on. The known-knowledg
 
 Inline expandable at first use. Never a glossary, never a parenthetical mid-sentence.
 
-Mechanic, and it breaks the page visibly if you get it wrong: `<details>` is not phrasing content and is invalid inside `<p>`. The browser closes the paragraph at the `<details>`, orphaning the rest of the sentence — the text renders overlapping itself. Any paragraph containing an inline expandable must be a `<div>`, styled to match `p`.
+Two mechanics, both of which break the page visibly:
 
-Check the rendered structure, not just the markup. This bug looks fine in source.
+**`<details>` is not phrasing content**, so it's invalid inside *any* element that accepts only phrasing content — `<p>` and `<summary>` both. The browser closes the parent early, orphaning the rest of the sentence, and the text renders overlapping itself. Use `div.prose` for a paragraph containing one, and never put a term inside a fold summary — move it into the body.
+
+**Don't put punctuation directly after a closing `</details>`.** The comma wraps alone onto the next line. Reword so a normal word follows the term.
+
+Check the rendered structure, not just the markup. Both bugs look fine in source.
 
 ## Code
 
@@ -99,6 +107,8 @@ Evolves — update as it changes.
 
 ## Output
 
+`mkdir -p ~/Documents/notes/explain` first — nothing else creates it.
+
 **Start from `page.html` in this directory.** Copy it, replace `TITLE`, the eyebrow, the standfirst, the `<!-- CONTENT -->` marker, and the footer. Don't rewrite the CSS or the script — that's how pages drift apart and how the `<details>`-in-`<p>` bug comes back.
 
 The scaffold already carries: the token palette in all three theme states, the fold styles (`details.fold`, and `details.fold.section` for a whole section), inline vocabulary (`details.term`), `div.prose`, numbered sequences (`.timeline`), `table.data`, callouts (`.was`, `.risk`), the Scala syntax highlighter, and the comments layer.
@@ -115,7 +125,7 @@ Load `artifact-design` for page design and `artifact-diagramming` for the SVG. T
 | A collapsible point | `details.fold` > `summary` + `div.inner` |
 | A whole section collapsed | `details.fold.section` |
 | A note beside a fold summary | `span.aside`, or `span.aside.warn` for a live risk |
-| Old behavior at the step where it changed | `p.was` |
+| Old behavior at the step where it changed | `p.was` — pull-request mode only |
 | A live risk called out | `p.risk` |
 | Worked-example sequence | `ol.timeline` > `li` > `span.step` + `div.body` |
 | Data table | `table.data`, wrapped in `div.scroller` |
