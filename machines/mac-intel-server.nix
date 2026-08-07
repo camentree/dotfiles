@@ -127,6 +127,17 @@ in
     };
   };
 
+  # XProtect definitions and Rapid Security Responses install without rebooting,
+  # so they're safe to automate; full OS updates stay manual so the server never
+  # restarts itself unattended.
+  system.defaults.CustomSystemPreferences = {
+    "/Library/Preferences/com.apple.SoftwareUpdate" = {
+      ConfigDataInstall = true;
+      CriticalUpdateInstall = true;
+    };
+  };
+  system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
+
   # Server packages
   environment.systemPackages = with pkgs; [
     cloudflared
@@ -267,7 +278,9 @@ in
     # restartAfterPowerFailure: not supported on laptop hardware (battery)
   };
 
-  system.activationScripts.postActivation.text = ''
+  # mkAfter so the screensaver override lands after os/macos.nix sets it to 300,
+  # and so `asPrimaryUser` from that block is already defined.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
     # GPU switching is managed manually via the switch-gpu-off / switch-gpu-on
     # shell aliases below — not set here because the dGPU causes GPU restart
     # storms when headless, but is needed for external displays.
@@ -281,6 +294,12 @@ in
     sudo pmset -a womp 1
     # Disable Power Nap (background work during sleep — irrelevant for a server)
     sudo pmset -a powernap 0
+    # Sleep is disabled outright, so the RAM-sized hibernate image at
+    # /var/vm/sleepimage is 32 GB that can never be written to.
+    sudo pmset -a hibernatemode 0
+    # The aerial screensaver decodes 4K video nonstop and pulls the dGPU up once
+    # a minute; that storm wedged the machine on 2026-07-31 and 2026-08-06.
+    $asPrimaryUser defaults -currentHost write com.apple.screensaver idleTime -int 0
   '';
 
   # ============================================================
@@ -292,8 +311,15 @@ in
   launchd.daemons.home-assistant = {
     command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/scripts/serve && exec /Users/camen/Projects/home-assistant/scripts/serve'";
     serviceConfig = {
-      KeepAlive.PathState = {
-        "/Users/camen/Projects/home-assistant/scripts/serve" = true;
+      # RunAtLoad fires ~9s after boot, before Wi-Fi finishes associating, and
+      # zeroconf binds its multicast sockets once — a bind that loses that race
+      # stays broken for the life of the process. NetworkState holds the job
+      # until an interface has an address, which covers most of that gap.
+      KeepAlive = {
+        PathState = {
+          "/Users/camen/Projects/home-assistant/scripts/serve" = true;
+        };
+        NetworkState = true;
       };
       RunAtLoad = true;
       StandardOutPath = "/tmp/home-assistant.stdout.log";

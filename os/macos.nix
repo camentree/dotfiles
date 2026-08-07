@@ -1,7 +1,7 @@
 # ============================================================
 # Common config — shared across all machines
 # ============================================================
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # ============================================================
@@ -114,31 +114,38 @@
   # macOS keyboard shortcuts and modifier keys
   # ============================================================
   system.activationScripts.postActivation.text = ''
+    # Activation runs as root with HOME=/var/root, so every user-domain write
+    # below has to be re-targeted at the login user — nix-darwin wraps its own
+    # `system.defaults` writes the same way. Without this they land in root's
+    # preferences and silently do nothing.
+    asPrimaryUser="launchctl asuser $(id -u -- ${config.system.primaryUser}) sudo --user=${config.system.primaryUser} --"
+
     # Keyboard shortcuts: Cmd+B for sidebar toggle (global, Calendar, Notion)
-    defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Hide Sidebar" "@b"
-    defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Show Sidebar" "@b"
-    defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Toggle Sidebar" "@b"
-    defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
-    defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Show Calendar List" "@b"
-    defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
+    $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Hide Sidebar" "@b"
+    $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Show Sidebar" "@b"
+    $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Toggle Sidebar" "@b"
+    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
+    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Show Calendar List" "@b"
+    $asPrimaryUser defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
 
     # Keyboard modifier keys: Caps Lock → Control, Left Control → Left Command, Left Command → Left Option
-    defaults -currentHost write -g com.apple.keyboard.modifiermapping.0-0-0 -array \
+    # Takes effect at next login, not at rebuild.
+    $asPrimaryUser defaults -currentHost write -g com.apple.keyboard.modifiermapping.0-0-0 -array \
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771300</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771129</integer></dict>' \
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771302</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771300</integer></dict>' \
       '<dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771298</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771296</integer></dict>'
 
     # Mission Control + Spaces: Cmd+Option+Up, Cmd+Option+Left/Right
     # Modifier mask 1572864 = Command (0x100000) | Option (0x080000); key codes: 126=Up, 123=Left, 124=Right
-    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 32 '{enabled = 1; value = { parameters = (65535, 126, 1572864); type = "standard"; }; }'
-    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{enabled = 1; value = { parameters = (65535, 123, 1572864); type = "standard"; }; }'
-    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{enabled = 1; value = { parameters = (65535, 124, 1572864); type = "standard"; }; }'
+    $asPrimaryUser defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 32 '{enabled = 1; value = { parameters = (65535, 126, 1572864); type = "standard"; }; }'
+    $asPrimaryUser defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 '{enabled = 1; value = { parameters = (65535, 123, 1572864); type = "standard"; }; }'
+    $asPrimaryUser defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 '{enabled = 1; value = { parameters = (65535, 124, 1572864); type = "standard"; }; }'
 
     # Screen saver idle time (5 minutes)
-    defaults -currentHost write com.apple.screensaver idleTime -int 300
+    $asPrimaryUser defaults -currentHost write com.apple.screensaver idleTime -int 300
 
     # Restart Finder to pick up changes
-    killall Finder 2>/dev/null || true
+    $asPrimaryUser killall Finder 2>/dev/null || true
   '';
 
   # ============================================================
