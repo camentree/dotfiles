@@ -1014,7 +1014,15 @@ require("lazy").setup({
 
 			---@type table<string, vim.lsp.Config>
 			local servers = {
-				pyright = {},
+				pyright = {
+					settings = {
+						python = {
+							analysis = {
+								diagnosticMode = "workspace",
+							},
+						},
+					},
+				},
 				ruff = {
 					capabilities = {
 						general = {
