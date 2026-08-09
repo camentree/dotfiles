@@ -50,6 +50,11 @@ let
     exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
   '';
 
+  ghosttyTerminfo = pkgs.runCommand "ghostty-terminfo" { nativeBuildInputs = [ pkgs.ncurses ]; } ''
+    mkdir -p $out/share/terminfo
+    tic -x -o $out/share/terminfo ${../home/xterm-ghostty.terminfo}
+  '';
+
   oneOffsRoot = "/Users/camen/Projects/one-offs";
 
   oneOffsNginxConf = pkgs.writeText "one-offs.nginx.conf" ''
@@ -266,6 +271,11 @@ in
     PasswordAuthentication no
     KbdInteractiveAuthentication no
   '';
+
+  home-manager.users.camen.home.file.".terminfo" = {
+    source = "${ghosttyTerminfo}/share/terminfo";
+    recursive = true;
+  };
 
   # ============================================================
   # Keep the Mac awake (server mode)
