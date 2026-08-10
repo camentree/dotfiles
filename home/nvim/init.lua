@@ -307,7 +307,35 @@ do
 		return path
 	end
 
-	local function open_target_filepath(target, open_cmd)
+	local function is_file_window(win)
+		return vim.bo[vim.api.nvim_win_get_buf(win)].buftype == ""
+	end
+
+	local function focus_window_beside()
+		local current = vim.api.nvim_get_current_win()
+		if is_file_window(current) then
+			vim.cmd.vsplit()
+			return
+		end
+		local previous = vim.fn.win_getid(vim.fn.winnr("#"))
+		if
+			previous ~= 0
+			and previous ~= current
+			and is_file_window(previous)
+		then
+			vim.api.nvim_set_current_win(previous)
+			return
+		end
+		for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+			if win ~= current and is_file_window(win) then
+				vim.api.nvim_set_current_win(win)
+				return
+			end
+		end
+		vim.cmd("topleft vsplit")
+	end
+
+	local function open_target_filepath(target, place_window)
 		local path, line, col = target:match("^(.-):(%d+):(%d+)$")
 		if not path then
 			path, line = target:match("^(.-):(%d+)$")
@@ -318,7 +346,9 @@ do
 		end
 		path = path or target
 		if path ~= "" then
-			vim.cmd[open_cmd](vim.fn.fnameescape(resolve_path(path)))
+			local resolved = resolve_path(path)
+			place_window()
+			vim.cmd.edit(vim.fn.fnameescape(resolved))
 		end
 		if line then
 			vim.api.nvim_win_set_cursor(
@@ -371,7 +401,7 @@ do
 		return line:sub(start_col, end_col)
 	end
 
-	local function gx(open_cmd)
+	local function gx(place_window)
 		local target = find_target_under_cursor()
 		if not target or target == "" then
 			return
@@ -379,16 +409,16 @@ do
 		if classify_target(target) == "url" then
 			open_target_url(target)
 		else
-			open_target_filepath(target, open_cmd)
+			open_target_filepath(target, place_window)
 		end
 	end
 
 	vim.keymap.set({ "n", "x" }, "gx", function()
-		gx("edit")
-	end, { desc = "Open URL/filepath under cursor" })
+		gx(focus_window_beside)
+	end, { desc = "Open URL/filepath under cursor beside it" })
 	vim.keymap.set({ "n", "x" }, "gX", function()
-		gx("vsplit")
-	end, { desc = "Open filepath under cursor in vsplit" })
+		gx(function() end)
+	end, { desc = "Open URL/filepath under cursor in this window" })
 end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
