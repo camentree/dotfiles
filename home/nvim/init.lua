@@ -335,7 +335,7 @@ do
 		vim.cmd("topleft vsplit")
 	end
 
-	local function open_target_filepath(target, place_window)
+	local function open_target_filepath(target)
 		local path, line, col = target:match("^(.-):(%d+):(%d+)$")
 		if not path then
 			path, line = target:match("^(.-):(%d+)$")
@@ -347,7 +347,7 @@ do
 		path = path or target
 		if path ~= "" then
 			local resolved = resolve_path(path)
-			place_window()
+			focus_window_beside()
 			vim.cmd.edit(vim.fn.fnameescape(resolved))
 		end
 		if line then
@@ -401,7 +401,7 @@ do
 		return line:sub(start_col, end_col)
 	end
 
-	local function gx(place_window)
+	vim.keymap.set({ "n", "x" }, "gx", function()
 		local target = find_target_under_cursor()
 		if not target or target == "" then
 			return
@@ -409,16 +409,9 @@ do
 		if classify_target(target) == "url" then
 			open_target_url(target)
 		else
-			open_target_filepath(target, place_window)
+			open_target_filepath(target)
 		end
-	end
-
-	vim.keymap.set({ "n", "x" }, "gx", function()
-		gx(focus_window_beside)
 	end, { desc = "Open URL/filepath under cursor beside it" })
-	vim.keymap.set({ "n", "x" }, "gX", function()
-		gx(function() end)
-	end, { desc = "Open URL/filepath under cursor in this window" })
 end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
