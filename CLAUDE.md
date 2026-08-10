@@ -1,5 +1,3 @@
-user.nix:5
-user.nix:5
 # Dotfiles
 
 Declarative Mac config via Nix (nix-darwin + home-manager). This repo **is** the source of truth for the user's machines — packages, macOS defaults, dotfiles, and Claude Code settings.
