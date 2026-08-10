@@ -1,6 +1,6 @@
 ---
 name: todo
-description: Maintains ~/Documents/notes/ToDo.md. Branches on the date at the top of the file - if it is today, the file gets a light refresh (calendar meetings, reviewable PRs) plus whatever the argument asks for; if it is an older date, the day rolls over - the old file is archived, To Do drops into Up Next, meetings and PRs are rebuilt, and a new schedule is laid out. A Linear ID or URL adds or updates a ticket in Up Next; a time and title like "12pm josh" adds a meeting; the word "schedule" rebuilds the Schedule block alone.
+description: Maintains ~/Documents/notes/ToDo.md. Branches on the date at the top of the file - if it is today, the file gets a light refresh (calendar meetings, reviewable PRs) plus whatever the argument asks for; if it is an older date, the day rolls over - the old file is archived, Done is emptied, To Do drops into Up Next, meetings and PRs are rebuilt, and a new schedule is laid out over whatever is schedulable in In Review, To Do, and Up Next. A Linear ID or URL adds or updates a ticket in Up Next; a time and title like "12pm josh" adds a meeting; the word "schedule" rebuilds the Schedule block alone.
 ---
 
 # Todo
@@ -21,12 +21,16 @@ Preserve every section not named as written-to. Never reorder or reformat entrie
 ```
 ## Today — YYYY-MM-DD
 
+### Done
+### In Review
 ### To Do
 ### Up Next
 ### Meetings
 ### Reviewable PRs
 ### Schedule
 ```
+
+`### Done`, `### In Review`, `### To Do`, and `### Up Next` all hold tickets in the [entry format](#entry-format) — the same entry moves between them as the work progresses, and Camen does the moving. `### Done` is cleared by the new-day rollover and written by nothing else.
 
 Times are 12-hour, zero-padded, no colon, no meridiem: `0900`, `1200`, `0130`. Sort on the real 24-hour value, so `0130` follows `1200`.
 
@@ -50,7 +54,7 @@ The date at the top is today. Do both of these, then whatever the argument asked
 - **Meetings** — check the personal calendar for events not already in the file and add them. Don't remove anything already there.
 - **Reviewable PRs** — [rebuild the section](#reviewable-prs).
 
-`### To Do`, `### Up Next`, and `### Schedule` stay untouched unless the argument says otherwise.
+`### Done`, `### In Review`, `### To Do`, `### Up Next`, and `### Schedule` stay untouched unless the argument says otherwise.
 
 ---
 
@@ -62,9 +66,11 @@ The date at the top is older than today. Run these in order.
 
 **2. Bump the date** to today.
 
-**3. Roll To Do down.** Move every `### To Do` entry, verbatim and in order, to the end of `### Up Next`. `### To Do` ends up empty.
+**3. Empty Done.** Yesterday's finished work is in the archive now; the section starts the day blank.
 
-**4. Rebuild Meetings.** Clear the section. Ask, as a single message with no tool calls, and wait: **"What work meetings do you have today?"** Then add his answer plus timed events from the personal calendar between 09:00 and 17:00, sorted by time. The work Google account isn't reachable, so his reply is the only source for work meetings.
+**4. Roll To Do down.** Move every `### To Do` entry, with its status line, verbatim and in order, to the end of `### Up Next`. `### To Do` ends up empty. `### In Review` doesn't move — work sitting in review stays there until Camen moves it himself, and it stays schedulable.
+
+**5. Rebuild Meetings.** Clear the section, notes and all. Ask, as a single message with no tool calls, and wait: **"What work meetings do you have today?"** Then add his answer plus timed events from the personal calendar between 09:00 and 17:00, sorted by time. The work Google account isn't reachable, so his reply is the only source for work meetings.
 
 ```
 ### Meetings
@@ -73,13 +79,13 @@ The date at the top is older than today. Run these in order.
 - [ ] 0130 doctor
 ```
 
-**5. Rebuild Reviewable PRs.** See [Reviewable PRs](#reviewable-prs).
+**6. Rebuild Reviewable PRs.** See [Reviewable PRs](#reviewable-prs).
 
-**6. Top up Up Next.** See [Up Next](#up-next).
+**7. Top up Up Next.** See [Up Next](#up-next).
 
-**7. Lay out the Schedule.** See [Rebuild the schedule](#rebuild-the-schedule).
+**8. Lay out the Schedule.** See [Rebuild the schedule](#rebuild-the-schedule).
 
-**8. Promote the day's work.** Every Up Next entry that the new schedule names moves — verbatim — into `### To Do`, in schedule order. It leaves Up Next.
+**9. Promote the day's work.** Every Up Next entry the new schedule names moves — verbatim, status line included — into `### To Do`, in schedule order, and leaves Up Next. Scheduled In Review entries stay where they are.
 
 ---
 
@@ -124,22 +130,22 @@ Candidates are Linear issues assigned to Camen that haven't been started — his
 
 `mcp__linear__list_issues` with `assignee: "me"`, or the same view at https://linear.app/august-health/my-issues/assigned.
 
-Drop anything blocked, anything already in `### To Do`, and anything already in `### Up Next`. Add the top 3 by priority, then by due date, in the [entry format](#entry-format).
+Drop anything blocked and anything the file already has in `### Done`, `### In Review`, `### To Do`, or `### Up Next`. Add the top 3 by priority, then by due date, in the [entry format](#entry-format).
 
 ## Add a ticket
 
 Fetch the issue with `mcp__linear__get_issue` and write it to `### Up Next` in the [entry format](#entry-format).
 
-If the ticket is **already in Up Next**, merge rather than duplicate: refresh the title, priority, size, and branch from Linear, and keep his status line and every checkbox exactly as he left them. Otherwise append at the end of the section.
+If the ticket is **already in the file** — any of Done, In Review, To Do, or Up Next — merge rather than duplicate, and leave it in the section it's in. Refresh the title, priority, size, and branch from Linear; keep his status line, every checkbox, and everything nested under the steps exactly as he left them. Only a ticket the file doesn't have yet gets appended to the end of Up Next.
 
 ## Entry format
 
 ```
+*not started*
 - [(ext) (feature) Add financial start date to admission history endpoints](https://linear.app/august-health/issue/INT-675/...)
     - priority: high
     - size: x-small
     - `camen/int-675-add-financial-start-date-to-admission-history-endpoints`
-    - *not started*
     - [ ] plan
     - [ ] implement
     - [ ] self-review
@@ -147,6 +153,10 @@ If the ticket is **already in Up Next**, merge rather than duplicate: refresh th
 ```
 
 Every line is required except the PR link. Add `- [ ] merge [PR](github-url)` in place of `- [ ] merge PR` only when an open PR already references the branch.
+
+**status line** — the `*italic*` line immediately above the bullet, no blank line between them. It is Camen's running note on where the work stands (`*planning*`, `*waiting on review*`, `*pause on this until talking through it with James*`). It belongs to the entry: whenever an entry moves, the status line moves with it, unedited. Only a brand-new entry gets one written for it, and that one is `*not started*`.
+
+**steps** — `plan`, `implement`, `self-review`, `merge PR`, in that order, always all four. Camen checks them off and nests notes under them as he goes; an entry that has been worked on will have earlier steps checked and sub-bullets under them. Never drop a step, reorder them, or touch what's nested underneath.
 
 **team label** — from the issue's Linear team. `ext` for Integrations & Insights (INT), `mov` for Billing / Move-ins (BILL). He is not on both teams, so one of the two always applies; if the team is genuinely something else, use the first three letters of the team name, lowercased.
 
@@ -204,7 +214,11 @@ Hourly blocks from `max(now, 0900)` to `1700`, using the meetings already in the
 
 **Reviewing PRs is work like anything else** and belongs on the schedule most days, preferably first thing — it shares the orient block well. Skip it only when `### Reviewable PRs` is empty or everything in it is already checked off.
 
-Draw the rest from `### To Do` and `### Up Next`, reading each entry's status line (the `*italic*` line), priority, size, and any Linear due date. Order with judgment: overdue and due-today items early, items with a non-code dependency early enough for it to resolve, PR-comment responses as mid-day fill, group work in the same repo. A status line that says to hold off (*pause on this until…*) is binding.
+Draw the rest from `### In Review`, `### To Do`, and `### Up Next` — work in review is schedulable, and usually cheap: responding to comments on a PR that's otherwise finished.
+
+Read each entry's status line, priority, size, unchecked steps, and any Linear due date. **The status line outranks the size.** An x-large ticket sitting at *just needs the last review comment addressed* is a half-hour of work, and a small one at *waiting on review* isn't work at all today. Size only tells you what's left when the status line doesn't.
+
+Order with judgment: overdue and due-today items early, items with a non-code dependency early enough for it to resolve, PR-comment responses as mid-day fill, group work in the same repo. A status line that says to hold off (*pause on this until…*) is binding.
 
 Invoked on its own as `/todo schedule`, this touches nothing else and doesn't ask about meetings — it reads them from the file.
 
@@ -216,7 +230,7 @@ Short. What changed in the file, and anything worth knowing that isn't in it —
 
 - Read-only with respect to Linear and GitHub. The only writes are ToDo.md and the archive copy.
 - No emoji. Linear IDs as plain text; the link carries the target.
-- `### To Do` is Camen's. The only time this skill writes it is the new-day rollover — emptying it in step 3, filling it in step 8. Never reword an entry it moves.
+- Camen moves entries between Done, In Review, To Do, and Up Next himself. The skill only ever does so on the new-day rollover — emptying Done, dropping To Do into Up Next, and promoting the day's scheduled work back up. `### In Review` it never writes at all. Never reword, reorder, or restructure an entry it moves.
 
 ## Failure modes
 

@@ -31,7 +31,7 @@ Look for PR instructions in, in order of precedence:
 2. `CLAUDE.md` in the project
 3. The repo's PR template (`pull_request_template.md`, `.github/pull_request_template.md`)
 
-**Follow them exactly.** They cover description structure, title format, labels, assignee, and any generated sections (deployment notes fetched from elsewhere, etc.). Read the template even when CLAUDE.md describes it — CLAUDE.md usually says "keep the template's sections," which means you need the template to know what they are.
+**Follow them exactly.** They cover description structure, title format, labels, and assignee. Read the template even when CLAUDE.md describes it — CLAUDE.md usually says "keep the template's sections," which means you need the template to know what they are.
 
 ### If the project documents nothing
 

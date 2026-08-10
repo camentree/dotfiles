@@ -37,11 +37,15 @@ Say what you're doing at each step. Don't batch them silently.
 
 **If a page exists** (`~/Documents/notes/explain/<ticket>.html`), read it and skip to step 2 — it already covers current behavior, constraints, and open questions. You'll be appending to it.
 
-**If none exists, run `/explain <ticket>` to create it.** Orientation and planning are different jobs, and a plan built without the first one is built on a shaky model. Come back here when the page exists.
+**If none exists, run `/explain <ticket>` to create it.** Orientation and planning are different jobs, and a plan built without the first one is built on a shaky model. Come back here when the page exists. There is no shortcut — orienting well enough yourself does not substitute, because the page is what Camen reads to catch up, and a plan he can't check is a plan he has to take on faith.
 
-Skip that only for work Camen already knows cold. Then: read the ticket, identify the layers affected, and find the closest existing implementation to mirror. Consult `CLAUDE.md` and `CLAUDE.local.md`.
+**Either way, name the page — path and date — before anything else, then `open` it.** Camen can't see the filesystem, so a page he isn't told about is a page he doesn't know exists, and orientation drawn from it reads as if it were worked out this session. This holds every time the page is written or found, not only here.
+
+Then read the ticket, identify the layers affected, and find the closest existing implementation to mirror. Consult `CLAUDE.md` and `CLAUDE.local.md`.
 
 Report back in under ten lines: the layers, the two or three canonical files, and the existing thing this should copy.
+
+**Then end the turn and wait.** Say the page is ready, give the path, say you'll wait for him. Camen reads the page before he can answer anything, so a question that arrives before he's read it is one he has to answer blind. Ask nothing and start no step until he comes back and says he's ready. If questions are queued, say how many — nothing about what they are.
 
 ### 2. Resolve the open questions
 

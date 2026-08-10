@@ -157,15 +157,26 @@ Each server opens with the context already pinned to the diff, so the user isn't
 memory. For every commit, inject a `thread` comment at the line the reviewer commented on:
 
 ```bash
-npx difit <sha>~1 <sha> --no-open --keep-alive --comment '{"type":"thread","filePath":"<path>","position":{"side":"new","line":<n>},"body":"<annotation>"}'
+npx difit <sha> <sha>~1 --no-open --keep-alive --comment '{"type":"thread","filePath":"<path>","position":{"side":"new","line":<n>},"body":"<annotation>"}'
 ```
+
+Target first, base second. Reversed, difit reports "No differences found" and serves an empty page.
+Don't pipe the command through `head`/`tail` — that kills the server as soon as it prints.
+
+`line` must be a line the commit itself added or changed on the new side, read off that commit's own
+hunk headers rather than carried over from where the reviewer commented upstream. Anchoring to a
+context line kills the process. `--comment` also dies on a commit carrying a very large generated
+diff, a regenerated `openapi.json` being the usual one — when a server won't stay up, relaunch it
+bare and put that annotation in the hand-off text instead.
 
 The annotation carries, in this order: the reviewer's comment verbatim and who wrote it, why they
 asked, what was decided and by whom (backgrounded as trivial / approved in the medium round /
 planned together), and what changed.
 
-Print one line per commit: sha, subject, difit URL, and the comment it answers. Send a single macOS
-notification when all servers are up.
+Print one line per commit: sha, subject, difit URL, and the comment it answers. Print the whole
+`http://localhost:<port>` every time — the terminal turns a full URL into something clickable, and a
+bare port is a retype. Never print the port on its own, and never collapse several servers into a
+range like "ports 4966-4969". Send a single macOS notification when all servers are up.
 
 Then wait. Green lights come per commit, not all at once — the user reviews one difit, says go, and
 that commit's sha is posted in reply to its comment while they move to the next.
