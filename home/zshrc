@@ -55,16 +55,20 @@ function wk () {
   local repo_root=$(_wk-repo-root)
   [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
   local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
+  local subdir=$(git rev-parse --show-prefix)
 
   case "$mode" in
     switch)
       local existing=$(git worktree list --porcelain | awk -v b="refs/heads/$branch" '
         $1=="worktree" { p=$2 }
         $1=="branch" && $2==b { print p; exit }')
-      if [ -n "$existing" ]; then cd "$existing"; return 0; fi
+      if [ -n "$existing" ]; then
+        cd "$existing/$subdir" 2>/dev/null || cd "$existing"
+        return 0
+      fi
       if [ "$branch" = "$(_wk-default-branch)" ]; then
         git -C "$repo_root" checkout "$branch" || return 1
-        cd "$repo_root"
+        cd "$repo_root/$subdir" 2>/dev/null || cd "$repo_root"
         return 0
       fi
       git worktree add "$worktree_path" "$branch" || return 1
@@ -101,8 +105,7 @@ function wk () {
     ln -sf "$share_source" "$share_target"
   done
 
-  local rel="${PWD#$repo_root/}"
-  cd "$worktree_path/$rel" 2>/dev/null || cd "$worktree_path"
+  cd "$worktree_path/$subdir" 2>/dev/null || cd "$worktree_path"
 }
 function _wk-ls () {
   git worktree list --porcelain | awk '/^branch / { sub(/^refs\/heads\//, "", $2); print $2 }'
