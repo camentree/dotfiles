@@ -1104,7 +1104,7 @@ require("lazy").setup({
 				autoImportBuilds = "all",
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
 				bloopJvmProperties = {
-					"-Xmx8g",
+					"-Xmx16g",
 					"-Xss4m",
 					"-XX:MaxInlineLevel=20",
 					"-XX:+UseZGC",
