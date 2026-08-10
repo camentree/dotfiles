@@ -1136,6 +1136,15 @@ require("lazy").setup({
 					require("metals").initialize_or_attach(metals_config)
 				end,
 			})
+			vim.api.nvim_create_user_command("RestartMetals", function()
+				require("metals").restart_metals()
+			end, { desc = "Restart the Metals language server" })
+			vim.api.nvim_create_user_command("RestartBloop", function()
+				require("metals").restart_build_server()
+			end, { desc = "Restart the Bloop build server" })
+			vim.api.nvim_create_user_command("MetalStatus", function()
+				require("metals").info()
+			end, { desc = "Open the Metals info window" })
 			if sbt_build_file then
 				vim.schedule(function()
 					vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
