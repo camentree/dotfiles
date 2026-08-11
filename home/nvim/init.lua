@@ -1126,6 +1126,7 @@ require("lazy").setup({
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
 				autoImportBuilds = "all",
+				verboseCompilation = true,
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
 				bloopJvmProperties = {
 					"-Xmx16g",
@@ -1742,6 +1743,10 @@ require("lazy").setup({
 			vim.keymap.set("n", "z3", function()
 				ufo.closeFoldsWith(3)
 			end, { desc = "Fold to level 3" })
+
+			vim.keymap.set("n", "<leader>tf", function()
+				vim.wo.foldcolumn = vim.wo.foldcolumn == "0" and "auto:9" or "0"
+			end, { desc = "[T]oggle [f]old column" })
 
 			vim.api.nvim_create_autocmd("FileType", {
 				pattern = {
