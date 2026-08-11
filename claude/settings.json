@@ -99,18 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh record"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "elicitation_dialog|agent_needs_input",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
           }
         ]
       }
@@ -125,22 +114,16 @@
         ]
       }
     ],
-    "ElicitationResult": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh working"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh done"
+            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
           }
         ]
       }
@@ -150,7 +133,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
           }
         ]
       }
@@ -165,21 +152,13 @@
         ]
       }
     ],
-    "PostToolUse": [
+    "Notification": [
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "elicitation_dialog|agent_needs_input",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/format-on-edit.sh"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh working"
+            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
           }
         ]
       }
@@ -190,7 +169,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
           }
         ]
       }
@@ -200,7 +179,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh attention"
+            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/format-on-edit.sh"
           }
         ]
       }

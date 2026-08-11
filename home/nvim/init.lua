@@ -1119,14 +1119,15 @@ require("lazy").setup({
 				"autoImportBuilds"
 			)
 			metals_config.settings = {
-				showImplicitArguments = true,
-				showImplicitConversionsAndClasses = true,
-				showInferredType = true,
+				inlayHints = {
+					implicitArguments = { enable = true },
+					implicitConversions = { enable = true },
+					inferredTypes = { enable = true },
+				},
 				superMethodLensesEnabled = true,
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
 				autoImportBuilds = "all",
-				verboseCompilation = true,
 				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
 				bloopJvmProperties = {
 					"-Xmx16g",
@@ -1143,12 +1144,10 @@ require("lazy").setup({
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
 				statusBarProvider = "off",
+				globSyntax = "vscode",
 			}
 			metals_config.capabilities =
 				vim.lsp.protocol.make_client_capabilities()
-			-- Workaround for Neovim 0.12 glob parser bug with Metals file patterns
-			metals_config.capabilities.workspace.didChangeWatchedFiles.dynamicRegistration =
-				false
 			return metals_config
 		end,
 		config = function(self, metals_config)
@@ -1946,6 +1945,11 @@ require("lazy").setup({
 		"okuuva/auto-save.nvim",
 		lazy = false,
 		opts = {
+			trigger_events = {
+				immediate_save = { "QuitPre", "VimSuspend" },
+				defer_save = {},
+				cancel_deferred_save = {},
+			},
 			condition = function(buf)
 				for _, win in ipairs(vim.fn.win_findbuf(buf)) do
 					return not vim.wo[win].diff

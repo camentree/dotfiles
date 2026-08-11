@@ -33,6 +33,16 @@ function git-clean () {
   git branch | grep -v "$default\|*" | xargs git branch -D
 }
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
+function tabname () {
+  local terminal=$(ps -o tty= -p $$ | tr -d ' ')
+  printf '\033]2;%s\033\\' "$1"
+  mkdir -p "$HOME/.claude/tab-names"
+  if [ -n "$1" ]; then
+    print -r -- "$1" > "$HOME/.claude/tab-names/$terminal"
+  else
+    rm -f "$HOME/.claude/tab-names/$terminal"
+  fi
+}
 
 function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#${1:?Usage: nix-rebuild <machine-name>}" ; }
 
@@ -281,9 +291,8 @@ function _metals-doctor-reset () {
   echo "Reopen nvim to re-index."
 }
 
-# Tab titles are set manually with cmd+shift+i and left alone.
 function claude() {
-  CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 command claude "$@"
+  CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 CLAUDE_TAB_TTY=$TTY command claude "$@"
 }
 
 # Key bindings
