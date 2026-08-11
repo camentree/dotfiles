@@ -71,6 +71,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
+vim.o.foldcolumn = "auto:9"
 -- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
 vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
@@ -1650,6 +1651,34 @@ require("lazy").setup({
 			vim.keymap.set("n", "z3", function()
 				ufo.closeFoldsWith(3)
 			end, { desc = "Fold to level 3" })
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = {
+					"markdown",
+					"scala",
+					"python",
+					"sql",
+					"yaml",
+					"lua",
+				},
+				callback = function(args)
+					local provider = require("ufo.provider.treesitter")
+					local filetype = vim.bo[args.buf].filetype
+					if provider.hasProviders[filetype] == false then
+						provider.hasProviders[filetype] = nil
+					end
+				end,
+			})
+
+			vim.api.nvim_create_user_command("FoldsRetry", function()
+				local buffer = vim.api.nvim_get_current_buf()
+				local filetype = vim.bo[buffer].filetype
+				require("ufo.provider.treesitter").hasProviders[filetype] = nil
+				ufo.detach(buffer)
+				ufo.attach(buffer)
+			end, {
+				desc = "Clear ufo's treesitter fallback flag and recompute folds",
+			})
 		end,
 	},
 	-- MeanderingProgrammer/render-markdown.nvim

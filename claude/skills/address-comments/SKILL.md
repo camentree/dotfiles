@@ -157,8 +157,13 @@ Each server opens with the context already pinned to the diff, so the user isn't
 memory. For every commit, inject a `thread` comment at the line the reviewer commented on:
 
 ```bash
-npx difit <sha> <sha>~1 --no-open --keep-alive --comment '{"type":"thread","filePath":"<path>","position":{"side":"new","line":<n>},"body":"<annotation>"}'
+npx difit <sha> <sha>~1 --no-open --comment '{"type":"thread","filePath":"<path>","position":{"side":"new","line":<n>},"body":"<annotation>"}'
 ```
+
+No `--keep-alive`. Closing the tab is how the user submits: difit exits on browser disconnect and
+hands back whatever they wrote on the diff. `--keep-alive` holds the server open past that point, so
+the comments never come back and they have to retype them into chat. The cost is that each server is
+good for one look — relaunch it when they want another pass at the same commit.
 
 Target first, base second. Reversed, difit reports "No differences found" and serves an empty page.
 Don't pipe the command through `head`/`tail` — that kills the server as soon as it prints.
@@ -166,8 +171,8 @@ Don't pipe the command through `head`/`tail` — that kills the server as soon a
 `line` must be a line the commit itself added or changed on the new side, read off that commit's own
 hunk headers rather than carried over from where the reviewer commented upstream. Anchoring to a
 context line kills the process. `--comment` also dies on a commit carrying a very large generated
-diff, a regenerated `openapi.json` being the usual one — when a server won't stay up, relaunch it
-bare and put that annotation in the hand-off text instead.
+diff, a regenerated `openapi.json` being the usual one — when a server won't start, relaunch it bare
+and put that annotation in the hand-off text instead.
 
 The annotation carries, in this order: the reviewer's comment verbatim and who wrote it, why they
 asked, what was decided and by whom (backgrounded as trivial / approved in the medium round /
@@ -178,16 +183,37 @@ Print one line per commit: sha, subject, difit URL, and the comment it answers. 
 bare port is a retype. Never print the port on its own, and never collapse several servers into a
 range like "ports 4966-4969". Send a single macOS notification when all servers are up.
 
-Then wait. Green lights come per commit, not all at once — the user reviews one difit, says go, and
-that commit's sha is posted in reply to its comment while they move to the next.
+Then wait. Green lights come per commit, not all at once — the user reviews one difit, approves it,
+and that commit gets pushed and its sha posted while they move to the next.
 
-Re-derive the sha from git at posting time. They may amend or squash during review, so the value
-printed at launch is not the value to post.
+**A green light is an explicit approval written somewhere in that commit's difit comments** — `LGTM`,
+`✅`, `approved`, or anything else plainly meaning it. It can sit on any line; the marker is what
+counts, not where it landed. Comments in the same batch that ask for changes override it — address
+those and relaunch instead.
 
-Post the bare sha, nothing else. If the commit isn't on the remote yet, say so and wait — an
-unpushed sha is nothing a reviewer can click.
+**An empty comment set is never approval.** A difit server exits on browser disconnect, but it also
+exits when it crashes, when the session is torn down, or when something kills the process, and every
+one of those returns the same empty result as a deliberate close. Report that the server came back
+with nothing and wait. Never infer consent from silence, here or anywhere.
 
-Hand over links to the comments that are theirs to answer, and write nothing on them.
+On approval, in this order: push the branch, then post the sha. Re-derive the sha from git at posting
+time — they may amend or squash during review, so the value printed at launch is not the value to
+post. Post the bare sha, nothing else. If the push fails, say so and post nothing; an unpushed sha is
+nothing a reviewer can click.
+
+Then close by handing over every comment that is theirs to answer, and write nothing on them. One
+bullet each, carrying a clickable permalink, who wrote it, what it asks, and the answer you'd give —
+so they can open it and reply in their own words without rereading the thread.
+
+Build the permalink from the comment id the API already returned:
+`https://github.com/<owner>/<repo>/pull/<number>#discussion_r<comment_id>`. Print it as a bare URL on
+its own line. Markdown link syntax renders as its label in the terminal and swallows the address —
+the same reason difit URLs go out whole. Never hand over a bare `file:line`, a reviewer's name, or
+"the question about X" — anything that makes them go find the comment defeats the point. Include the
+ones that only want a reaction; a 👍 is still theirs to leave.
+
+This list is not optional and not conditional on the review going well. It ships in the same message
+as the shas, every run, even when there is exactly one comment on it.
 
 ## Constraints
 
@@ -195,7 +221,8 @@ Hand over links to the comments that are theirs to answer, and write nothing on 
   replies, no review submissions, no resolving threads, no reactions. Every sentence a reviewer reads
   is one the user wrote.
 - **Comments the user has replied to are theirs.** Don't reopen them, address them, or mention them.
-- **Commit, but never push.** One commit per comment is the job; pushing is the user's.
+- **Push only on an explicit approval marker**, and only the commit that earned it. One commit per
+  comment is the job. Silence is not approval — see the hand-off section.
 - **Don't run preflight.** The user does.
 - **Answer the comment, nothing more.** Scope creep here is the failure mode this skill exists to fix.
 - **No new helpers, layers, or doc blocks** unless the comment explicitly asked for one.
