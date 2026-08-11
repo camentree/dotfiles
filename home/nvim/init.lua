@@ -1169,6 +1169,97 @@ require("lazy").setup({
 			vim.api.nvim_create_user_command("MetalStatus", function()
 				require("metals").info()
 			end, { desc = "Open the Metals info window" })
+
+			local function bloop_pids()
+				local pids = {}
+				for _, line in
+					ipairs(
+						vim.fn.systemlist({ "pgrep", "-f", "bloop-frontend" })
+					)
+				do
+					local pid = tonumber(vim.trim(line))
+					if pid then
+						table.insert(pids, pid)
+					end
+				end
+				return pids
+			end
+
+			local function bloop_heap(pid)
+				local command = vim.fn.system({
+					"ps",
+					"-o",
+					"command=",
+					"-p",
+					tostring(pid),
+				})
+				local jcmd = command:match("^(%S+)/java%s")
+				if not jcmd then
+					return nil
+				end
+				local report = vim.fn.system({
+					jcmd .. "/jcmd",
+					tostring(pid),
+					"GC.heap_info",
+				})
+				local used, max = report:match(
+					"used (%d+)M, capacity %d+M, max capacity (%d+)M"
+				)
+				if not used then
+					return nil
+				end
+				return { used = tonumber(used), max = tonumber(max) }
+			end
+
+			vim.api.nvim_create_user_command("ScalaReset", function()
+				local pids = bloop_pids()
+				for _, pid in ipairs(pids) do
+					vim.fn.system({ "kill", "-9", tostring(pid) })
+				end
+				if #pids == 0 then
+					vim.notify("No Bloop server found; restarting Metals")
+				else
+					vim.notify(
+						("Killed Bloop (%s); restarting Metals"):format(
+							table.concat(pids, ", ")
+						)
+					)
+				end
+				require("metals").restart_metals()
+			end, { desc = "Kill the Bloop server and restart Metals" })
+
+			vim.api.nvim_create_user_command("ScalaStatus", function()
+				local lines = {}
+				local pids = bloop_pids()
+				if #pids == 0 then
+					table.insert(lines, "Bloop: not running")
+				end
+				for _, pid in ipairs(pids) do
+					local heap = bloop_heap(pid)
+					table.insert(
+						lines,
+						heap
+								and ("Bloop %d: heap %.1fg of %.1fg (%d%%)"):format(
+									pid,
+									heap.used / 1024,
+									heap.max / 1024,
+									math.floor(heap.used / heap.max * 100)
+								)
+							or ("Bloop %d: running, heap unreadable"):format(
+								pid
+							)
+					)
+				end
+				local clients = vim.lsp.get_clients({ name = "metals" })
+				table.insert(
+					lines,
+					#clients == 0 and "Metals: not attached"
+						or ("Metals: attached to %d buffer(s)"):format(
+							#vim.tbl_keys(clients[1].attached_buffers)
+						)
+				)
+				vim.notify(table.concat(lines, "\n"))
+			end, { desc = "Report Bloop memory use and Metals attachment" })
 			if sbt_build_file then
 				vim.schedule(function()
 					vim.fn.bufload(vim.fn.bufadd(sbt_build_file))

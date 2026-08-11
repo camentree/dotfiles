@@ -96,7 +96,7 @@ The pool is open, non-draft backend PRs labelled `move-ins` or `integrations` th
 ```
 gh pr list --repo augusthealth/august-backend \
   --search "is:pr is:open draft:false label:move-ins,integrations -review:approved -author:@me" \
-  --limit 50 --json number,title,author,createdAt,url,reviewDecision,reviewRequests,latestReviews,labels
+  --limit 50 --json number,title,author,url,labels
 ```
 
 Every PR the search returns goes in the file — no cap, no ranking, in the order the search returns them. Camen's own PRs are never reviewable work for him, which is what `-author:@me` takes care of.
@@ -108,15 +108,15 @@ Drop entries he has checked off (`- [x]`); keep unchecked ones that still match 
 ```
 ### Reviewable PRs
 
-- [ ] [(move-ins) (migration) display form migration](https://github.com/augusthealth/august-backend/pull/6926) jbutterfield — open 1d, no reviews
-- [ ] [support the rest of vital fields under august_field_type_latest_vital_](https://github.com/augusthealth/august-backend/pull/6909) wsu — open 3d, no reviews
+- [ ] [(move-ins) (migration) display form migration](https://github.com/augusthealth/august-backend/pull/6926) jbutterfield
+- [ ] [support the rest of vital fields under august_field_type_latest_vital_](https://github.com/augusthealth/august-backend/pull/6909) wsu
 ```
+
+Title, link, author — nothing else. No age, no review state.
 
 **title** — lowercased, exactly as GitHub has it otherwise.
 
 **author** — first initial plus last name, no space: Kevin Tham is `ktham`, Will Su is `wsu`. Take it from the author's display name; if only a login is available, use the login.
-
-**notes** — a short comma-separated trail after an em dash, covering how long it has been open and where review stands. `open 3d`, `open 2w`, `no reviews`, `1 review`, `changes requested`, `requested from you`, `you reviewed`. Only include what actually applies.
 
 ## Up Next
 
