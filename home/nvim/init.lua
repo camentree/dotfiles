@@ -519,18 +519,29 @@ vim.api.nvim_create_autocmd("FileType", {
 			if not marker then
 				return line
 			end
-			local checked = rest:match("^%[[xX]%] (.*)$")
+			local checked = rest:match("^%[[xX]%]%s?(.*)$")
 			if checked then
-				return indent .. marker .. "[ ] " .. checked
+				return indent .. marker .. checked
 			end
-			local unchecked = rest:match("^%[ %] (.*)$")
-			return indent .. marker .. "[x] " .. (unchecked or rest)
+			local unchecked = rest:match("^%[ %]%s?(.*)$")
+			if unchecked then
+				return indent .. marker .. "[x] " .. unchecked
+			end
+			return indent .. marker .. "[ ] " .. rest
 		end
-		vim.keymap.set("n", "<leader>x", function()
+		_G.cycle_markdown_todo = function()
 			vim.api.nvim_set_current_line(
 				cycle_todo(vim.api.nvim_get_current_line())
 			)
-		end, { buffer = event.buf, desc = "Toggle todo: [ ] <-> [x]" })
+		end
+		vim.keymap.set("n", "<leader>x", function()
+			vim.o.operatorfunc = "v:lua.cycle_markdown_todo"
+			return "g@l"
+		end, {
+			buffer = event.buf,
+			expr = true,
+			desc = "Cycle todo: - <-> [ ] <-> [x]",
+		})
 		vim.keymap.set("x", "<leader>x", function()
 			local first = vim.fn.line("v")
 			local last = vim.fn.line(".")
