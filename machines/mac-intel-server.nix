@@ -50,9 +50,16 @@ let
     exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
   '';
 
-  ghosttyTerminfo = pkgs.runCommand "ghostty-terminfo" { nativeBuildInputs = [ pkgs.ncurses ]; } ''
-    mkdir -p $out/share/terminfo
-    tic -x -o $out/share/terminfo ${../home/xterm-ghostty.terminfo}
+  lifeBackup = pkgs.writeShellScript "life-backup" ''
+    set -euo pipefail
+
+    cd "$HOME/Documents/Life"
+
+    git add -A
+    if ! git diff --cached --quiet; then
+        git commit -q -m "auto $(date -u +%FT%TZ)"
+    fi
+    git push -q origin main
   '';
 
   oneOffsRoot = "/Users/camen/Projects/one-offs";
@@ -193,7 +200,7 @@ in
   # Hourly commit + push of ~/Documents/Life to the private github mirror.
   # The script is a no-op when nothing has changed.
   launchd.user.agents.life-backup = {
-    command = "/bin/bash /Users/camen/life-backup.sh";
+    command = "${lifeBackup}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 3600;
@@ -273,7 +280,7 @@ in
   '';
 
   home-manager.users.camen.home.file.".terminfo" = {
-    source = "${ghosttyTerminfo}/share/terminfo";
+    source = "${pkgs.ghostty-bin.terminfo}/share/terminfo";
     recursive = true;
   };
 

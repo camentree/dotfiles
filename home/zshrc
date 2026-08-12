@@ -1,21 +1,21 @@
 # npm global prefix (for packages managed outside Nix, e.g. claude-code)
 export PATH="$HOME/.npm-global/bin:$PATH"
 
-# Nix store paths (oh-my-zsh, etc.)
-[[ -f ~/.nix-paths.sh ]] && source ~/.nix-paths.sh
+# History
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt extended_history share_history hist_expire_dups_first hist_ignore_dups hist_ignore_space hist_verify
 
-# Oh-my-zsh
-ZSH_THEME=""
-plugins=(history)
-ZSH_DISABLE_COMPFIX="true"
-DISABLE_AUTO_TITLE="true"
-source $ZSH/oh-my-zsh.sh
+# Completion
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
 # Starship prompt
 eval "$(starship init zsh)"
 
 # Aliases
-alias pyc="rm **/*.pyc; rm -rf **/__pycache__"
 alias cov-clean="rm .coverage.*"
 alias git-open="open \`git config --get remote.origin.url\`"
 alias vim="nvim"
@@ -27,23 +27,27 @@ alias gco="git checkout"
 
 # Functions
 function loadenv () { set -o allexport; source "${1:-.}/.env"; set +o allexport ; }
-function git-clean () {
-  local default=$(_wk-default-branch)
-  [ -z "$default" ] && { echo "origin/HEAD not set"; return 1; }
-  git branch | grep -v "$default\|*" | xargs git branch -D
-}
 function ls-ports () { lsof -PiTCP -sTCP:LISTEN ; }
 function nvim () { OUTER_TTY=${OUTER_TTY:-$TTY} command nvim "$@" ; }
+
+## Functions -- Claude Tab Status
+[[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"
 function tabname () {
-  printf '\033]2;%s\033\\' "$1" > "${OUTER_TTY:-$TTY}"
-  if [ -n "$1" ]; then
-    export CLAUDE_TAB_NAME="$1"
+  local tab_key="${${OUTER_TTY:-$TTY}:t}"
+  mkdir -p "$HOME/.claude/tab-names"
+  if [ -n "$*" ]; then
+    print -r -- "$*" > "$HOME/.claude/tab-names/$tab_key"
   else
-    unset CLAUDE_TAB_NAME
+    rm -f "$HOME/.claude/tab-names/$tab_key"
   fi
+  printf '\033]2;%s\033\\' "${*:-${PWD:t}}" > "${OUTER_TTY:-$TTY}"
 }
 
-function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#$1" ; }
+function nix-rebuild () {
+  local machine="$1"
+  shift
+  sudo $(which darwin-rebuild) switch --flake "$HOME/Projects/dotfiles#$machine" "$@"
+}
 
 function _confirm () {
   local reply_confirm
@@ -51,14 +55,70 @@ function _confirm () {
   [[ "$reply_confirm" == [yY]* ]]
 }
 
-function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
-function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
 function wk () {
   case "$1" in
-    ls) shift; _wk-ls "$@"; return ;;
-    rm) shift; _wk-rm "$@"; return ;;
-    clean) shift; _wk-clean "$@"; return ;;
+    ls)    shift; _wk-ls "$@" ;;
+    rm)    shift; _wk-rm "$@" ;;
+    clean) shift; _wk-clean "$@" ;;
+    *)            _wk "$@" ;;
   esac
+}
+
+function claude-move-session () {
+  local session_id="$1"
+  local target_path="${2:-$PWD}"
+  [ -z "$session_id" ] && { echo "Usage: claude-move-session <session-id> [target-path]"; return 1; }
+  local source_jsonl=$(find "$HOME/.claude/projects" -maxdepth 2 -name "${session_id}.jsonl" -print -quit 2>/dev/null)
+  [ -z "$source_jsonl" ] && { echo "Session not found: $session_id"; return 1; }
+  local source_dir="${source_jsonl:h}"
+  [[ "$target_path" != /* ]] && target_path="$PWD/$target_path"
+  target_path="${target_path%/}"
+  local encoded="${target_path//[\/.]/-}"
+  local target_dir="$HOME/.claude/projects/$encoded"
+  mkdir -p "$target_dir"
+  mv "$source_jsonl" "$target_dir/"
+  [ -d "$source_dir/${session_id}" ] && mv "$source_dir/${session_id}" "$target_dir/"
+  echo "Moved $session_id -> $encoded"
+}
+
+function va () { source .venv/bin/activate ; }
+function vn () {
+  local python="${1:-3.13}"
+  uv venv --python "$python" ".venv"
+  echo "Created .venv (python $python)"
+  va
+}
+function vdd () {
+  deactivate 2>/dev/null
+  rm -rf .venv
+  echo "Removed .venv"
+}
+
+function claude() {
+  CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 OUTER_TTY=${OUTER_TTY:-$TTY} command claude "$@"
+}
+
+# Key bindings
+bindkey "^X\\x7f" backward-kill-line
+bindkey "^X^_" redo
+
+# Up/down arrows search history by typed prefix
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey "^[[A" up-line-or-beginning-search
+bindkey "^[OA" up-line-or-beginning-search
+bindkey "^[[B" down-line-or-beginning-search
+bindkey "^[OB" down-line-or-beginning-search
+
+# Remove . from word characters so Option+Delete stops at periods
+WORDCHARS=${WORDCHARS//.}
+
+# Worktree helpers (wk)
+function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
+function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
+function _wk-path () { print -r -- "${1:h}/.${1:t}-worktrees/$2" ; }
+function _wk () {
   local mode=switch
   case "$1" in
     -b) mode=new-from-default; shift ;;
@@ -66,7 +126,7 @@ function wk () {
   esac
   local branch="$1"
   local repo_root=$(_wk-repo-root)
-  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
+  local worktree_path=$(_wk-path "$repo_root" "$branch")
   local subdir=$(git rev-parse --show-prefix)
 
   case "$mode" in
@@ -134,7 +194,7 @@ function _wk-rm () {
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
   [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
-  local worktree_path="${repo_root:h}/.${repo_root:t}-worktrees/$branch"
+  local worktree_path=$(_wk-path "$repo_root" "$branch")
   [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
   local encoded_worktree="${worktree_path//[\/.]/-}"
   for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
@@ -162,147 +222,6 @@ function _wk-clean () {
   local branch
   for branch in $branches; do _wk-rm "$branch"; done
 }
-
-function claude-move-session () {
-  local session_id="$1"
-  local target_path="${2:-$PWD}"
-  [ -z "$session_id" ] && { echo "Usage: claude-move-session <session-id> [target-path]"; return 1; }
-  local source_jsonl=$(find "$HOME/.claude/projects" -maxdepth 2 -name "${session_id}.jsonl" -print -quit 2>/dev/null)
-  [ -z "$source_jsonl" ] && { echo "Session not found: $session_id"; return 1; }
-  local source_dir="${source_jsonl:h}"
-  [[ "$target_path" != /* ]] && target_path="$PWD/$target_path"
-  target_path="${target_path%/}"
-  local encoded="${target_path//[\/.]/-}"
-  local target_dir="$HOME/.claude/projects/$encoded"
-  mkdir -p "$target_dir"
-  mv "$source_jsonl" "$target_dir/"
-  [ -d "$source_dir/${session_id}" ] && mv "$source_dir/${session_id}" "$target_dir/"
-  echo "Moved $session_id -> $encoded"
-}
-
-function va () { source .venv/bin/activate ; }
-function vn () {
-  local python="${1:-3.13}"
-  uv venv --python "$python" ".venv"
-  echo "Created .venv (python $python)"
-  source .venv/bin/activate
-}
-function vdd () {
-  deactivate 2>/dev/null
-  rm -rf .venv
-  echo "Removed .venv"
-}
-
-function _metals-server-pids () { pgrep -f 'nvim-metals/metals|scala\.meta\.metals\.Main' 2>/dev/null; }
-function _bloop-daemon-pid () { pgrep -f 'bloop\.BloopServer' 2>/dev/null | head -1; }
-function _metals-format-memory () {
-  awk -v kilobytes="${1:-0}" 'BEGIN { if (kilobytes >= 1048576) printf "%.1fG", kilobytes / 1048576; else printf "%dM", kilobytes / 1024 }'
-}
-function _metals-parent-pid () { ps -o ppid= -p "$1" | tr -d ' '; }
-function _metals-orphan-server-pids () {
-  local server_pid
-  for server_pid in $(_metals-server-pids); do
-    if [ "$(_metals-parent-pid "$server_pid")" = "1" ]; then echo "$server_pid"; fi
-  done
-}
-function _metals-live-server-pids () {
-  local server_pid
-  for server_pid in $(_metals-server-pids); do
-    if [ "$(_metals-parent-pid "$server_pid")" != "1" ]; then echo "$server_pid"; fi
-  done
-}
-
-function metals-doctor () {
-  case "$1" in
-    clean) shift; _metals-doctor-clean "$@"; return ;;
-    reset) shift; _metals-doctor-reset "$@"; return ;;
-    "") ;;
-    *) echo "Usage: metals-doctor [clean|reset]"; return 1 ;;
-  esac
-
-  local bloop_pid=$(_bloop-daemon-pid)
-  if [ -z "$bloop_pid" ]; then
-    echo "bloop   not running"
-  else
-    local bloop_heap=$(ps -o args= -p "$bloop_pid" | tr ' ' '\n' | grep -m1 '^-Xmx')
-    echo "bloop   pid $bloop_pid  up $(ps -o etime= -p "$bloop_pid" | tr -d ' ')  rss $(_metals-format-memory "$(ps -o rss= -p "$bloop_pid" | tr -d ' ')")  heap ${bloop_heap:-default (not started by metals)}"
-  fi
-
-  local server_pids=($(_metals-server-pids))
-  [ ${#server_pids} -eq 0 ] && echo "metals  not running"
-  local server_pid parent_pid workspace owner
-  for server_pid in $server_pids; do
-    parent_pid=$(_metals-parent-pid "$server_pid")
-    workspace=$(lsof -a -p "$server_pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
-    if [ "$parent_pid" = "1" ]; then owner="ORPHAN"; else owner="nvim $parent_pid"; fi
-    echo "metals  pid $server_pid  up $(ps -o etime= -p "$server_pid" | tr -d ' ')  rss $(_metals-format-memory "$(ps -o rss= -p "$server_pid" | tr -d ' ')")  $owner  ${workspace:-unknown}"
-  done
-
-  local workspace_root=$(git rev-parse --show-toplevel 2>/dev/null)
-  [ -z "$workspace_root" ] && return 0
-  local cache_dir
-  for cache_dir in $(find "$workspace_root" -maxdepth 3 -type d \( -name .metals -o -name .bloop \) 2>/dev/null); do
-    echo "cache   $(du -sh "$cache_dir" | cut -f1)  ${cache_dir#$workspace_root/}"
-  done
-}
-
-function _metals-doctor-clean () {
-  local orphan_pids=($(_metals-orphan-server-pids))
-  local live_pids=($(_metals-live-server-pids))
-  local server_pid
-
-  for server_pid in $orphan_pids; do
-    echo "Killing orphaned metals (pid $server_pid)"
-    kill "$server_pid" 2>/dev/null
-    sleep 2
-    kill -0 "$server_pid" 2>/dev/null && kill -9 "$server_pid" 2>/dev/null
-  done
-  [ ${#orphan_pids} -eq 0 ] && echo "No orphaned metals processes"
-
-  for server_pid in $live_pids; do
-    echo "Kept metals pid $server_pid — still attached to nvim; restart it there with :MetalsRestartBuildServer"
-  done
-
-  if [ -n "$(_bloop-daemon-pid)" ]; then
-    echo "Stopping bloop..."
-    bloop exit
-  else
-    echo "bloop not running"
-  fi
-}
-
-function _metals-doctor-reset () {
-  local workspace_root=$(git rev-parse --show-toplevel 2>/dev/null)
-  local live_pids=($(_metals-live-server-pids))
-  [ ${#live_pids} -gt 0 ] && { echo "Quit nvim first — metals is still attached (pid ${live_pids[1]})"; return 1; }
-
-  local index_dirs=($(find "$workspace_root" -maxdepth 3 -type d -name .metals 2>/dev/null))
-  [ ${#index_dirs} -eq 0 ] && { echo "No .metals directory under $workspace_root"; return 0; }
-
-  print -l "Will clear the Metals index in:" ${index_dirs/#/  }
-  echo "Compiled output in .bloop is kept; delete that by hand for a full recompile."
-  _confirm || return 1
-
-  _metals-doctor-clean
-
-  local index_dir
-  for index_dir in $index_dirs; do
-    rm -f "$index_dir"/metals.mv.db "$index_dir"/metals.lock.db "$index_dir"/metals.trace.db
-    echo "Cleared ${index_dir#$workspace_root/}"
-  done
-  echo "Reopen nvim to re-index."
-}
-
-function claude() {
-  CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 CLAUDE_TAB_TTY=${OUTER_TTY:-$TTY} command claude "$@"
-}
-
-# Key bindings
-bindkey "^X\\x7f" backward-kill-line
-bindkey "^X^_" redo
-
-# Remove . from word characters so Option+Delete stops at periods
-WORDCHARS=${WORDCHARS//.}
 
 # Machine-specific aliases and functions (not tracked in git)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

@@ -7,7 +7,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    parallax.url = "path:/Users/camen/Projects/parallax";
+    parallax.url = "git+ssh://git@github.com/camentree/parallax";
     parallax.inputs.nixpkgs.follows = "nixpkgs";
   };
 

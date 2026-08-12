@@ -88,10 +88,7 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": [
-      "~/",
-      "/tmp"
-    ]
+    "additionalDirectories": ["~/", "/tmp"]
   },
   "model": "claude-fable-5[1m]",
   "hooks": {
@@ -100,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
           }
         ]
       }
@@ -110,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh working"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh working"
           }
         ]
       }
@@ -120,11 +117,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
           },
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
           }
         ]
       }
@@ -134,11 +131,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh idle"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
           },
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
           }
         ]
       }
@@ -148,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh clear"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh clear"
           }
         ]
       }
@@ -159,7 +156,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
           }
         ]
       }
@@ -170,7 +167,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
           }
         ]
       }
@@ -180,7 +177,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/claude-tab.sh bell"
+            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
           }
         ]
       }
@@ -192,6 +189,14 @@
           {
             "type": "command",
             "command": "bash ~/.claude/scripts/format-on-edit.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/update-tab-status.sh working"
           }
         ]
       }

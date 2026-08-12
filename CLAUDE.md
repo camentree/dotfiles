@@ -34,7 +34,7 @@ Most files in `$HOME` are symlinks into the Nix store. Never edit `~/.zshrc`, `~
 
 ### Two flavors of dotfile management
 
-1. **Inline in `user.nix`** — for small configs Nix can render natively (git, ssh/config, tmux plugin list, the `.nix-paths.sh` bridge file).
+1. **Inline in `user.nix`** — for small configs Nix can render natively (git, ssh/config, tmux plugin list).
 2. **Plain files in `home/`** — for large or complex configs edited as regular files (zshrc, nvim init.lua, starship.toml, tmux.conf, vscode/, ghostty). `user.nix` maps each one to its destination via `home.file`.
 
 When adding a new dotfile: drop the file in `home/`, then add a `home.file.".foo" = { source = ./home/foo; force = true; };` entry in `user.nix`.

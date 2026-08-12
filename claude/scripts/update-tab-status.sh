@@ -4,23 +4,20 @@ set -uo pipefail
 IDLE_GLYPH="🔹"
 WORKING_GLYPH="🔸"
 mode="${1:-}"
-payload="$(cat)"
 
-device="${CLAUDE_TAB_TTY:-}"
-if [ ! -w "$device" ]; then
-  echo "claude-tab: CLAUDE_TAB_TTY is not a writable terminal (got '${device}') — start Claude through the 'claude' shell function in home/zshrc." >&2
-  exit 1
-fi
+device="${OUTER_TTY:-/dev/tty}"
+{ true > "$device"; } 2>/dev/null || exit 0
 
 if [ "$mode" = "bell" ]; then
   printf '\a' > "$device"
   exit 0
 fi
 
-name="${CLAUDE_TAB_NAME:-}"
+tab_key="$(basename "$device")"
+name="$(cat "$HOME/.claude/tab-names/$tab_key" 2>/dev/null)"
 if [ -z "$name" ]; then
-  working_directory="$(printf '%s' "$payload" | jq -r '.cwd // empty')"
-  name="${working_directory##*/}"
+  project_dir="${CLAUDE_PROJECT_DIR:-}"
+  name="${project_dir##*/}"
 fi
 if [ -z "$name" ]; then
   exit 0

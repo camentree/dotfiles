@@ -65,14 +65,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1786069890,
-        "narHash": "sha256-XXr+kfKrEKF9mjnK8OeFVilzzjE48oRh5ahY0ocRSYI=",
-        "path": "/Users/camen/Projects/parallax",
-        "type": "path"
+        "lastModified": 1785774136,
+        "narHash": "sha256-M2HsAxGrs6wVY0cRmgTTwk1fVgJGYG6UGczMdeI+8zs=",
+        "ref": "refs/heads/main",
+        "rev": "cfb3a40b73764ea54f1ca869d1e1234768ca0234",
+        "revCount": 195,
+        "type": "git",
+        "url": "ssh://git@github.com/camentree/parallax"
       },
       "original": {
-        "path": "/Users/camen/Projects/parallax",
-        "type": "path"
+        "type": "git",
+        "url": "ssh://git@github.com/camentree/parallax"
       }
     },
     "root": {

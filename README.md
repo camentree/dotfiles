@@ -108,7 +108,7 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 ### `mac-intel-server` only
 
 - **Remote Login** — System Settings → General → Sharing → Remote Login
-- **GPU switching** — the AMD Radeon Pro 5500M causes GPU restart storms when active headless. Disable it when running as a server: `switch-gpu-off`. Re-enable before connecting a monitor: `switch-gpu-on`. (Aliases defined in `~/.zshenv.local`.)
+- **GPU switching** — the AMD Radeon Pro 5500M causes GPU restart storms when active headless. Disable it when running as a server: `switch-gpu-off`. Re-enable before connecting a monitor: `switch-gpu-on`. (Aliases defined in `machines/mac-intel-server.nix`.)
 
 ## Tools managed outside Nix
 
