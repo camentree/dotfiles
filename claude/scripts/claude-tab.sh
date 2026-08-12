@@ -3,35 +3,13 @@ set -uo pipefail
 
 IDLE_GLYPH="🔹"
 WORKING_GLYPH="🔸"
-NAME_DIR="${HOME}/.claude/tab-names"
-
-find_terminal() {
-  local pid=$$
-  local depth=0
-  local candidate
-  while [ -n "$pid" ] && [ "$pid" -gt 1 ] && [ "$depth" -lt 12 ]; do
-    candidate="$(ps -o tty= -p "$pid" 2>/dev/null | tr -d ' ')"
-    if [ -n "$candidate" ] && [ "$candidate" != "??" ]; then
-      printf '%s' "$candidate"
-      return 0
-    fi
-    pid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')"
-    depth=$((depth + 1))
-  done
-  return 1
-}
-
 mode="${1:-}"
 payload="$(cat)"
 
-if [ -n "${CLAUDE_TAB_TTY:-}" ]; then
-  terminal="${CLAUDE_TAB_TTY#/dev/}"
-else
-  terminal="$(find_terminal)" || exit 0
-fi
-device="/dev/${terminal}"
+device="${CLAUDE_TAB_TTY:-}"
 if [ ! -w "$device" ]; then
-  exit 0
+  echo "claude-tab: CLAUDE_TAB_TTY is not a writable terminal (got '${device}') — start Claude through the 'claude' shell function in home/zshrc." >&2
+  exit 1
 fi
 
 if [ "$mode" = "bell" ]; then
@@ -39,17 +17,11 @@ if [ "$mode" = "bell" ]; then
   exit 0
 fi
 
-name_file="${NAME_DIR}/${terminal}"
-
-if [ ! -s "$name_file" ]; then
+name="${CLAUDE_TAB_NAME:-}"
+if [ -z "$name" ]; then
   working_directory="$(printf '%s' "$payload" | jq -r '.cwd // empty')"
-  if [ -n "$working_directory" ]; then
-    mkdir -p "$NAME_DIR"
-    printf '%s\n' "${working_directory##*/}" > "$name_file"
-  fi
+  name="${working_directory##*/}"
 fi
-
-name="$(cat "$name_file" 2>/dev/null)"
 if [ -z "$name" ]; then
   exit 0
 fi

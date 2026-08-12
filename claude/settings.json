@@ -3,6 +3,7 @@
     "DIRHELPER_USER_DIR_SUFFIX": "",
     "CLAUDE_AFK_TIMEOUT_MS": "2000000000"
   },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(gh issue list *)",
@@ -92,7 +93,7 @@
       "/tmp"
     ]
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -211,7 +212,8 @@
       }
     }
   },
-  "effortLevel": "medium",
+  "outputStyle": "writing-for-humans",
+  "effortLevel": "high",
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "voice": {
@@ -220,7 +222,5 @@
   },
   "autoDreamEnabled": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "outputStyle": "writing-for-humans",
-  "includeCoAuthoredBy": false
+  "voiceEnabled": true
 }
