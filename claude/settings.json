@@ -88,9 +88,12 @@
       "Bash(wget * | bash)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -218,7 +221,7 @@
     }
   },
   "outputStyle": "writing-for-humans",
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "voice": {
