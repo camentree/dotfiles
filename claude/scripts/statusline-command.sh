@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 input=$(cat)
 
-model=$(jq -r '.model.display_name'                     <<<"$input")
+model=$(jq -r '.model.display_name | sub(" *\\(.*\\)$"; "")' <<<"$input")
 effort=$(jq -r '.effort.level // empty'                 <<<"$input")
 cwd=$(jq -r '.workspace.current_dir // .cwd'            <<<"$input")
 ctx_pct=$(jq -r '.context_window.used_percentage // empty'        <<<"$input")
