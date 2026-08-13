@@ -25,6 +25,15 @@
   };
 
   # ============================================================
+  # Authentication
+  # ============================================================
+  security.pam.services.sudo_local = {
+    touchIdAuth = true;
+    watchIdAuth = true;
+    reattach = true;
+  };
+
+  # ============================================================
   # Packages — installed on every machine
   # ============================================================
   environment.systemPackages = with pkgs; [
