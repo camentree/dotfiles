@@ -37,6 +37,7 @@
   # Packages — installed on every machine
   # ============================================================
   environment.systemPackages = with pkgs; [
+    _1password-cli
     awscli2
     bloop
     coursier

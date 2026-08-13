@@ -35,6 +35,14 @@ If asked to change a setting (git config, a package, a macOS default, a keybindi
 - Prefer `WebFetch` over `curl | jq` / `curl | python` pipelines for read-only HTTP GETs — it parses JSON/HTML and avoids extra permission prompts.
 - When you produce content whose main purpose is for me to paste elsewhere — an email, a Slack/message draft, a commit message, a standalone snippet — also pipe a clean copy to `pbcopy` and tell me it's on the clipboard. Skip this for ordinary explanatory output; it's for the "here's the thing, go paste it" cases.
 
+## Secrets
+
+Secrets live in 1Password, reached through the `op` CLI. This comes up rarely — assume a command needs no credentials unless it fails for lack of one, or I've said it does. Don't wrap things in `op run` speculatively.
+
+- `op run --env-file=<file> -- <command>` resolves `op://` references into the command's environment and redacts the values from its output. Reach for this instead of asking me to paste a secret.
+- Never `op read` or `op item get` a secret — that prints it into the transcript, where it persists.
+- `op://Vault/Item/field` references are pointers, not secrets. Safe to commit; safe to put in a tracked `.env` or in `home/zshenv`. The values they point at never touch disk.
+
 ## CloudWatch Logs Insights
 
 CloudWatch Logs Insights bills on **bytes scanned across the time range**, not on rows matched — a tighter `filter` does *not* reduce cost, only a shorter time range does. The prod app log group (`/aws/eks/prod/application`, us-west-2) is huge: a single 7-day query scanned ~1.7 TB and cost ~$8.50.
