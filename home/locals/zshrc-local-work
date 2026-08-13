@@ -10,7 +10,7 @@ alias fullstack="cd $AUGUST_FULLSTACK_PATH"
 alias backend="cd $AUGUST_BACKEND_PATH/loquat"
 alias frontend="cd $AUGUST_FRONTEND_PATH"
 alias notes="cd $HOME/Documents/notes && tabname notes && nvim ToDo.md"
-alias dotfiles="cd $HOME/Projects/dotfiles"
+alias dotfiles="cd $HOME/Projects/dotfiles && tabname dotfiles && nvim"
 
 function _august-attach () {
   if [ -n "$TMUX" ]; then tmux switch-client -t "$1"
@@ -132,3 +132,27 @@ function _wkfs-rm () {
 
   rm -rf "$worktree_directory"
 }
+
+# Completions
+function _wkfs_completions () {
+  local subcommands=(
+    'ls:branches with a fullstack worktree'
+    'rm:remove both worktrees and delete the branch'
+    '-b:new branch off the default branch'
+    '-h:new branch off HEAD'
+  )
+  case "$CURRENT" in
+    2)
+      local refs=(${(f)"$(git -C "$AUGUST_BACKEND_PATH" for-each-ref --format='%(refname)' refs/heads refs/remotes/origin 2>/dev/null)"})
+      local branches=(${(u)${${refs#refs/heads/}#refs/remotes/origin/}:#HEAD})
+      _describe 'command' subcommands
+      _describe 'branch' branches
+      ;;
+    3)
+      [ "$words[2]" = rm ] || return
+      local worktrees=(${(f)"$(_wkfs-ls)"})
+      _describe 'worktree' worktrees
+      ;;
+  esac
+}
+compdef _wkfs_completions wkfs

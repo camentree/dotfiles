@@ -279,9 +279,16 @@ in
     KbdInteractiveAuthentication no
   '';
 
-  home-manager.users.camen.home.file.".terminfo" = {
-    source = "${pkgs.ghostty-bin.terminfo}/share/terminfo";
-    recursive = true;
+  home-manager.users.camen = { config, ... }: {
+    home.file.".terminfo" = {
+      source = "${pkgs.ghostty-bin.terminfo}/share/terminfo";
+      recursive = true;
+    };
+
+    home.file.".zshrc.local" = {
+      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Projects/dotfiles/home/locals/zshrc-local-server";
+      force = true;
+    };
   };
 
   # ============================================================

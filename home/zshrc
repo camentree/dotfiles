@@ -7,10 +7,11 @@ HISTSIZE=50000
 SAVEHIST=50000
 setopt extended_history share_history hist_expire_dups_first hist_ignore_dups hist_ignore_space hist_verify
 
-# Completion
+# Completions
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+compdef _wk_completions wk
 
 # Starship prompt
 eval "$(starship init zsh)"
@@ -208,6 +209,30 @@ function _wk-clean () {
   local branch
   for branch in $branches; do _wk-rm "$branch"; done
 }
+function _wk_completions () {
+  [ -n "$(_wk-repo-root)" ] || return
+  local subcommands=(
+    'ls:branches with a worktree'
+    'rm:remove a worktree and delete its branch'
+    'clean:remove every worktree in this repo'
+    '-b:new branch off the default branch'
+    '-h:new branch off HEAD'
+  )
+  case "$CURRENT" in
+    2)
+      local refs=(${(f)"$(git for-each-ref --format='%(refname)' refs/heads refs/remotes/origin 2>/dev/null)"})
+      local branches=(${(u)${${refs#refs/heads/}#refs/remotes/origin/}:#HEAD})
+      _describe 'command' subcommands
+      _describe 'branch' branches
+      ;;
+    3)
+      [ "$words[2]" = rm ] || return
+      local worktrees=(${(f)"$(_wk-ls)"})
+      _describe 'worktree' worktrees
+      ;;
+  esac
+}
+
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 

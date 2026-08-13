@@ -39,7 +39,7 @@
     };
 
     home.file.".zshrc.local" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Projects/dotfiles/home/zshrc-work";
+      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Projects/dotfiles/home/locals/zshrc-local-work";
       force = true;
     };
   };

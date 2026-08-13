@@ -30,7 +30,7 @@ line1="${gray}[${model}]${reset}"
 ctx_str=$(fmt_pct "$ctx_pct")
 [ -n "$ctx_str" ] && line1="${line1} ${gray}| ${ctx_str}${reset}"
 
-# Line 2: 5h and 7d rate-limit usage + reset times (Pro/Max only)
+# Line 2: 5h and 7d rate-limit usage + reset times
 line2=""
 if [ -n "$fivehr_pct" ]; then
   reset_t=$(date -r "$fivehr_reset" "+%-I:%M %p" 2>/dev/null)
