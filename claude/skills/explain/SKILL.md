@@ -59,6 +59,10 @@ Then `open` it.
 
 Not just the markup. The `<details>`-inside-`<p>` bug looks fine in source and visibly breaks the page.
 
+### 6. Audit the writing
+
+Invoke the `writing-audit` skill on the page. Every time, including when the draft felt clean — a page reads as obvious from inside the session that produced it, which is the whole reason the audit exists. Tell him what it changed; he'll be reading the page and shouldn't have to guess which parts moved under him.
+
 ## Style
 
 Read before writing:

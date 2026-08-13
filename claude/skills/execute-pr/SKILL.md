@@ -60,6 +60,8 @@ Fix what fails. Don't hand him compile errors to fix; fix them and say what you 
 
 Re-read your own diff against step 2's list. Every comment you wrote, every helper with one caller, every `case _` — fix it now. This pass exists because Camen otherwise finds them in difit and you both review the same code again.
 
+Then invoke the `writing-audit` skill. Not optional and not conditional on the slice having produced prose: it also catches anything you're about to ask him in step 5, and a question he can't answer stalls the handoff. Report what it found alongside the code self-check.
+
 ### 5. Walk him through the diff
 
 Before difit, explain what you wrote and why — the mechanism, the non-obvious calls, anything that diverged from the plan. He's said that with Claude writing most of the code he's learning less, and that explaining the diff afterwards is what helps.

@@ -63,6 +63,7 @@
       "Read",
       "Bash(mise where:*)",
       "Bash(npx difit *)",
+      "Bash(bash ~/.claude/scripts/writing-audit-log.sh *)",
       "Skill(keybindings-help)",
       "mcp__linear__list_issues",
       "mcp__linear__get_issue",
@@ -164,6 +165,15 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/writing-audit-log.sh"
+          }
+        ]
+      },
       {
         "matcher": "AskUserQuestion|ExitPlanMode",
         "hooks": [

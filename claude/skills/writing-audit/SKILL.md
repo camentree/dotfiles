@@ -70,6 +70,17 @@ Chat messages and ticket comments are drafted and sent in the moment, with their
 
 Terse. What was rewritten, what was kept and flagged, what `style-pass` found. One line each.
 
+Record every rewrite first, so the running history in `~/.claude/logs/writing-audit.log` stays honest. One call per artifact, where the count is edits made *within* that artifact and the reason names the file and what was wrong with it:
+
+```bash
+bash ~/.claude/scripts/writing-audit-log.sh record page 3 "claude-setup.html — fold summaries named a topic instead of standing alone"
+bash ~/.claude/scripts/writing-audit-log.sh record pr 1 "#6871 — dropped Co-Authored-By"
+```
+
+Kinds are `page`, `question`, `pr`, `commit`, `code`. A clean audit records nothing.
+
+The log is how Camen sees whether this skill earns its place, so a rewrite you don't record is one he'll conclude never happened.
+
 ```
 Rewritten
   claude-setup.html — "AC 3" replaced with the criterion it points at
