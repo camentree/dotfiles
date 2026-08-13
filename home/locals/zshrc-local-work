@@ -4,6 +4,7 @@ export AUGUST_FULLSTACK_PATH="$HOME/Projects/august-fullstack"
 export AUGUST_BACKEND_PATH="$AUGUST_FULLSTACK_PATH/august-backend"
 export AUGUST_FRONTEND_PATH="$AUGUST_FULLSTACK_PATH/august-frontend"
 export AUGUST_TOOLS_PATH="$HOME/Projects/Experimental-Tools"
+export AUGUST_AI_COMPLETIONS_PATH="$HOME/Projects/ai-completions"
 [[ -n "$AUGUST_DEFAULT_USER" ]] || print -u2 "AUGUST_DEFAULT_USER unset — set it in ~/.zshenv.local"
 
 alias fullstack="cd $AUGUST_FULLSTACK_PATH"
@@ -17,45 +18,101 @@ function _august-attach () {
   else tmux attach -t "$1"; fi
 }
 
-function august-start () {
-  local -a backend_option frontend_option tools_option
-  zparseopts -D -E -- -backend:=backend_option -frontend:=frontend_option -tools:=tools_option
-  local backend_branch="${backend_option[-1]:-master}"
-  local frontend_branch="${frontend_option[-1]:-master}"
-  local tools_branch="${tools_option[-1]:-main}"
-  local session=fullstack
-  local window="$session":full-stack
+function _august-branch () {
+  local option="$1" fallback="$2"
+  if [[ "$option" == *=* ]]; then print -r -- "${option#*=}"; else print -r -- "$fallback"; fi
+}
 
-  nc -z localhost 5432 2>/dev/null || {
-    echo "no postgres on 5432 — podman machine start && docker start db"
+function august-start () {
+  local -a arguments=("$@")
+  local -a backend_option frontend_option tools_option ai_completions_option external_api_option fullstack_option
+  zparseopts -D -E -- \
+    -backend::=backend_option \
+    -frontend::=frontend_option \
+    -tools::=tools_option \
+    -ai-completions::=ai_completions_option \
+    -external-api::=external_api_option \
+    -fullstack::=fullstack_option || return 1
+
+  local -A branches
+  [ -n "$backend_option" ]        && branches[b]=$(_august-branch "$backend_option[-1]" master)
+  [ -n "$frontend_option" ]       && branches[f]=$(_august-branch "$frontend_option[-1]" master)
+  [ -n "$tools_option" ]          && branches[t]=$(_august-branch "$tools_option[-1]" main)
+  [ -n "$ai_completions_option" ] && branches[a]=$(_august-branch "$ai_completions_option[-1]" main)
+  [ -n "$external_api_option" ]   && branches[e]=$(_august-branch "$external_api_option[-1]" master)
+
+  if [ -n "$fullstack_option" ]; then
+    local fullstack_branch=$(_august-branch "$fullstack_option[-1]" master)
+    : ${branches[b]:=$fullstack_branch}
+    : ${branches[f]:=$fullstack_branch}
+    : ${branches[e]:=$fullstack_branch}
+  fi
+
+  local -a selected=(${(ko)branches})
+  local letters="${(j::)selected}"
+  if [ -z "$letters" ]; then
+    echo "usage: august-start [--backend[=branch]] [--frontend[=branch]] [--tools[=branch]] [--ai-completions[=branch]] [--external-api[=branch]] [--fullstack[=branch]]"
     return 1
-  }
+  fi
+
+  if [ -n "${branches[b]}" ] || [ -n "${branches[e]}" ]; then
+    nc -z localhost 5432 2>/dev/null || {
+      echo "no postgres on 5432 — podman machine start && docker start db"
+      return 1
+    }
+  fi
+
+  local -A directories=(
+    a "$AUGUST_AI_COMPLETIONS_PATH"
+    b "$AUGUST_BACKEND_PATH"
+    e "$AUGUST_BACKEND_PATH"
+    f "$AUGUST_FRONTEND_PATH"
+    t "$AUGUST_TOOLS_PATH"
+  )
+
+  local terminal_letter argument
+  for argument in $arguments; do
+    case "${argument%%=*}" in
+      --backend|--fullstack) terminal_letter=b ;;
+      --frontend)            terminal_letter=f ;;
+      --tools)               terminal_letter=t ;;
+      --ai-completions)      terminal_letter=a ;;
+      --external-api)        terminal_letter=e ;;
+      *) continue ;;
+    esac
+    break
+  done
+
+  local session=fullstack
+  local window="$session":dev-servers
 
   if tmux has-session -t "$session" 2>/dev/null; then
     _august-attach "$session"
     return
   fi
 
-  tmux new-session -d -s "$session" -n full-stack -c "$AUGUST_FULLSTACK_PATH"
+  tmux new-session -d -s "$session" -n dev-servers -c "${directories[$terminal_letter]}"
+  tmux set-option -t "$session" set-titles-string "dev servers ($letters)"
   tmux setw -t "$window" pane-border-status top
   tmux setw -t "$window" main-pane-width 55%
   tmux select-pane -t "$window" -T terminal
+  tmux send-keys -t "$window" "wk ${branches[$terminal_letter]}" C-m
 
-  tmux split-window -h -t "$window" -c "$AUGUST_BACKEND_PATH"
-  tmux select-pane -t "$window".2 -T "loquat :9000"
-  tmux send-keys -t "$window".2 "wk $backend_branch && cd loquat && sbt run" C-m
-
-  tmux split-window -v -t "$window".2 -c "$AUGUST_BACKEND_PATH"
-  tmux select-pane -t "$window".3 -T "api-integrations :9003"
-  tmux send-keys -t "$window".3 "wk $backend_branch && cd loquat && sbt 'apiIntegrations/run'" C-m
-
-  tmux split-window -v -t "$window".3 -c "$AUGUST_FRONTEND_PATH"
-  tmux select-pane -t "$window".4 -T "frontend :3000"
-  tmux send-keys -t "$window".4 "wk $frontend_branch && yarn install && yarn start" C-m
-
-  tmux split-window -v -t "$window".4 -c "$AUGUST_TOOLS_PATH"
-  tmux select-pane -t "$window".5 -T "experimental-tools :5173"
-  tmux send-keys -t "$window".5 "wk $tools_branch && yarn install && yarn dev" C-m
+  local letter title start_command
+  local split=-h
+  for letter in $selected; do
+    case "$letter" in
+      a) title="ai-completions :8080"     start_command="pnpm install && pnpm dev" ;;
+      b) title="loquat :9000"             start_command="cd loquat && sbt run" ;;
+      e) title="api-integrations :9003"   start_command="cd loquat && sbt 'apiIntegrations/run'" ;;
+      f) title="frontend :3000"           start_command="yarn install && yarn start" ;;
+      t) title="experimental-tools :5173" start_command="yarn install && yarn dev" ;;
+    esac
+    tmux split-window "$split" -t "$window" -c "${directories[$letter]}"
+    tmux select-pane -t "$window" -T "$title"
+    tmux send-keys -t "$window" "wk ${branches[$letter]} && $start_command" C-m
+    split=-v
+  done
 
   tmux select-layout -t "$window" main-vertical
   tmux select-pane -t "$window".1
@@ -65,7 +122,7 @@ function august-start () {
 function august-stop () {
   tmux kill-session -t fullstack 2>/dev/null
   local port
-  for port in 9000 9003 3000 5173; do
+  for port in 9000 9003 3000 5173 8080; do
     kill $(lsof -ti tcp:$port -sTCP:LISTEN) 2>/dev/null
   done
 }

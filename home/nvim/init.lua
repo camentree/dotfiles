@@ -1650,6 +1650,12 @@ require("lazy").setup({
 			)
 			vim.keymap.set(
 				"n",
+				"zz",
+				"za",
+				{ desc = "Toggle fold under cursor", remap = true }
+			)
+			vim.keymap.set(
+				"n",
 				"z0",
 				ufo.closeAllFolds,
 				{ desc = "Fold to level 0 (close all)", nowait = true }
