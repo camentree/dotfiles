@@ -10,6 +10,7 @@ machines/           ← Per-machine modules (hostname, packages, machine-only co
 home/               ← Plain dotfiles. Edit directly, then rebuild.
 claude/             ← Claude Code settings and instructions (symlinked into ~/.claude/).
 setup.sh            ← First-time bootstrap for a new Mac.
+SHORTCUTS.md        ← iCloud links for Shortcuts.app, which Nix can't install.
 ```
 
 ### What goes where
