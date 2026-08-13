@@ -40,6 +40,7 @@
     _1password-cli
     awscli2
     bloop
+    blueutil
     coursier
     curl
     fd
