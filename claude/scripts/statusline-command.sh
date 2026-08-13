@@ -23,29 +23,33 @@ fi
 
 fmt_pct() { [ -n "$1" ] && printf "%.0f%%" "$1"; }
 
-# Line 1: [model (effort)]  branch | ctx%
-[ -n "$effort" ] && model="${model} (${effort})"
-line1="${gray}[${model}]${reset}"
-[ -n "$branch" ]  && line1="${line1} ${teal}${github_icon} ${branch}${reset}"
-ctx_str=$(fmt_pct "$ctx_pct")
-[ -n "$ctx_str" ] && line1="${line1} ${gray}| ${ctx_str}${reset}"
+# Line 1: branch
+line1=""
+[ -n "$branch" ] && line1="${teal}${github_icon} ${branch}${reset}"
 
-# Line 2: 5h and 7d rate-limit usage + reset times
-line2=""
+# Line 2: model (effort) | ctx%
+[ -n "$effort" ] && model="${model} (${effort})"
+line2="${gray}${model}${reset}"
+ctx_str=$(fmt_pct "$ctx_pct")
+[ -n "$ctx_str" ] && line2="${line2} ${gray}| ${ctx_str}${reset}"
+
+# Line 3: 5h and 7d rate-limit usage + reset times
+line3=""
 if [ -n "$fivehr_pct" ]; then
   reset_t=$(date -r "$fivehr_reset" "+%-I:%M %p" 2>/dev/null)
-  line2="${gray}5h: $(fmt_pct "$fivehr_pct") (${reset_t})${reset}"
+  line3="${gray}5h: $(fmt_pct "$fivehr_pct") (${reset_t})${reset}"
 fi
 if [ -n "$sevenday_pct" ]; then
   reset_t=$(date -r "$sevenday_reset" "+%b %d" 2>/dev/null)
   seg="${gray}7d: $(fmt_pct "$sevenday_pct") (${reset_t})${reset}"
-  if [ -n "$line2" ]; then
-    line2="${line2} ${gray}| ${reset}${seg}"
+  if [ -n "$line3" ]; then
+    line3="${line3} ${gray}| ${reset}${seg}"
   else
-    line2="$seg"
+    line3="$seg"
   fi
 fi
 
-printf "%b\n" "$line1"
-[ -n "$line2" ] && printf "%b\n" "$line2"
+[ -n "$line1" ] && printf "%b\n" "$line1"
+printf "%b\n" "$line2"
+[ -n "$line3" ] && printf "%b\n" "$line3"
 exit 0
