@@ -79,13 +79,17 @@ Per `format.md`, none of these is a flat list. Files fold per layer with the lay
 
 Now that slices exist, collapse the orientation sections — he's planning, not orienting.
 
-### 6. Iterate
+### 6. Audit
+
+Invoke the `writing-audit` skill on the page. Every time, including when the draft felt clean — a plan reads as obvious from inside the session that produced it, which is the whole reason the audit exists. It also covers the open questions, and a question he can't parse costs him a round trip before he can start thinking about the answer. Tell him what it changed.
+
+### 7. Iterate
 
 Open the page. He clicks `comment` on anything he wants changed, hits Copy, pastes back.
 
 Work his notes one at a time. Regenerate the page when done — don't hand-patch the HTML.
 
-### 7. Close out
+### 8. Close out
 
 Say the plan is ready and the next step is `/plan-pr` on PR 1. End the session.
 
