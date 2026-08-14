@@ -69,11 +69,15 @@ Regenerate the page rather than hand-patching the HTML, and carry every other se
 
 Don't write code into the plan. The plan is the contract; code is its implementation.
 
-### 5. Iterate
+### 5. Audit
+
+Invoke the `writing-audit` skill on the page. Every time, including when the draft felt clean — a plan reads as obvious from inside the session that produced it, which is the whole reason the audit exists. It also covers anything you're about to ask him, and a question he can't parse costs him a round trip before he can start thinking about the answer. Tell him what it changed.
+
+### 6. Iterate
 
 Open the page. He comments via the comments layer and pastes back. Work them one at a time.
 
-### 6. Close out
+### 7. Close out
 
 Say the next step is `/execute-pr` on this slice. End the session.
 
