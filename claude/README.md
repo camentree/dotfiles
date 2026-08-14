@@ -15,19 +15,17 @@ We have a couple methods for affecting claude code's output
     - artifacts.md
       - _artifact creation rules_
       - automatic
-        - sometimes injected by claude after writing an artifact (/writing-audit)
+        - can be injected by agent after writing an artifact (/writing-audit)
       - by user
         - /explain
         - /plan-feature
         - /plan-pr
-        - /execute-pr
-        - /address-comments
     - conversation.md
       - _style rules for conversation prose Camen engages with — explanations, findings, questions_
       - automatic
         - always imported by CLAUDE.md when session starts
-        - sometimes injected by claude when responding to camen (writing-for-humans output style)
-        - sometimes injected by claude after responding with something Camen should engage with (/writing-audit)
+        - can be injected by agent when responding to camen (writing-for-humans output style)
+        - can be injected by agent after responding with something Camen should engage with (/writing-audit)
       - by user
         - /explain
         - /plan-feature
@@ -37,7 +35,7 @@ We have a couple methods for affecting claude code's output
     - as-me.md
       - _style rules for prose written as Camen_
       - automatic
-        - sometimes injected by claude when auditing a PR description or commit message (/writing-audit)
+        - can be injected by agent when auditing a PR description or commit message (/writing-audit)
       - by user
         - /open-pr
     - code.md
@@ -100,12 +98,6 @@ We have a couple methods for affecting claude code's output
       - always run on Stop and PostToolUse events
     - by user
       - none
-  - comment-check.sh
-    - _warns when a code edit adds comments_
-    - automatic
-      - always run on PostToolUse for Write/Edit
-    - by user
-      - none
   - writing-audit-log.sh
     - _keeps the audit log_
     - automatic
@@ -133,7 +125,6 @@ We have a couple methods for affecting claude code's output
     style-pass/SKILL.md      
 scripts/
   writing-gate.sh          
-  comment-check.sh         
   writing-audit-log.sh     
 settings.json
 
