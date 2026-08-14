@@ -33,7 +33,7 @@ We have a couple methods for affecting claude code's output
       - /writing-audit (can be injected by claude when auditing a PR description or commit message)
     - code.md
       - _style rules for code_
-      - /execute-pr, before the first file (injected by user when called)
+      - /execute-pr (injected by user when called; read again right before code gets written)
       - /style-pass (injected by user when called)
   - output-styles/writing-for-humans.md
     - _always-on style rules; the only lever for chat_
