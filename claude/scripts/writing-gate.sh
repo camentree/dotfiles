@@ -62,7 +62,7 @@ case "$event" in
 		echo "$((blocks + 1))" >"$state/blocks"
 
 		jq -n \
-			--arg reason "This session wrote ${total} characters of prose (HTML or markdown) and the writing audit has not run since. Invoke the writing-audit skill on what was written (it dispatches the cold-reader agent), then stop. If ending unaudited is deliberate, run: touch $state/skip" \
+			--arg reason "This session wrote ${total} characters of prose (HTML or markdown) and the writing audit has not run since. Invoke the writing-audit skill on what was written (it dispatches the prose-grader agent), then stop. If ending unaudited is deliberate, run: touch $state/skip" \
 			'{decision: "block", reason: $reason}'
 		exit 0
 		;;

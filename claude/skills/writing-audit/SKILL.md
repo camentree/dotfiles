@@ -36,11 +36,11 @@ The fix is never to delete the citation. Say the thing in plain words, move the 
 
 Also check what `format.md` governs: does the collapsed page stand alone, does any summary only name a topic, does anything have to be expanded in the happy path.
 
-Then dispatch the `cold-reader` agent on the page's uncollapsed body, per `references/cold-reader.md`. The pass above shares the session context that made the prose opaque, so it will read its own shorthand as clear; the cold read is the actual test for that failure. Hand it only the text, fix what it flags, and don't argue with it.
+Then dispatch the `prose-grader` agent on the page's uncollapsed body, per `references/prose-grader.md`. The pass above shares the session context that made the prose opaque, so it will read its own shorthand as clear; the cold read is the actual test for that failure. Hand it only the text, fix what it flags, and don't argue with it.
 
 ### 2. Anything asking him a question
 
-Rewrite per `questions.md`, then dispatch the `cold-reader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
+Rewrite per `questions.md`, then dispatch the `prose-grader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
 
 ### 3. Code and code comments
 
@@ -52,7 +52,7 @@ For this branch's PRs (`gh pr view`). Template sections are structure, not verbo
 
 Check specifically for `Co-Authored-By` lines and any mention of AI generation. Both are banned by the output style, and both get added by default, so this is where they get caught.
 
-If the description was drafted or reworked this session, dispatch the `cold-reader` agent on the drafted body before showing him old → new — its readers weren't in the session either.
+If the description was drafted or reworked this session, dispatch the `prose-grader` agent on the drafted body before showing him old → new — its readers weren't in the session either.
 
 ### 5. Unpushed commit messages
 
@@ -91,7 +91,7 @@ Rewritten
   claude-setup.html — three fold summaries were topic labels, now stand alone
   PR #6871 — dropped Co-Authored-By, tightened What changed
 
-Cold reader
+Prose grader
   1 question failed: stakes unclear on the tenant-scoping ask. Rewritten, passed on re-run.
 
 Kept and flagged

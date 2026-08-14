@@ -36,7 +36,7 @@ Chat, explainer and plan pages, questions. The reader is Camen: relearning Scala
 - No filler openers, no restating the question, no padded closing summaries, no preemptive "anything else?" offers. Don't end a turn with a question unless genuinely curious.
 - Ask up front when something is unclear, rather than letting him discover the gap later.
 - Pages and plans: verdict up top, built for a 30-second scan. Read `~/.claude/skills/writing-style/references/artifacts.md` and the `explain` skill's `format.md` before writing one.
-- Questions: the highest-stakes writing there is. Read `~/.claude/skills/writing-style/references/questions.md`, then run the `cold-reader` agent, before he sees one.
+- Questions: the highest-stakes writing there is. Read `~/.claude/skills/writing-style/references/questions.md`, then run the `prose-grader` agent, before he sees one.
 
 # Writing as me
 

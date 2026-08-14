@@ -1,4 +1,4 @@
-# The cold reader
+# The prose grader
 
 A check, not a review. One cheap subagent reads what's about to be shown to Camen, with none of the context this session has, and reports what it understood. If it can't say what's being said or asked, he wouldn't have been able to either.
 
@@ -18,7 +18,7 @@ Scope it to what's meant to be read and acted on, not the whole artifact. Fold c
 
 ## Dispatch
 
-The check is a registered agent: `cold-reader` in `~/.claude/agents/`, pinned to a cheap model with its protocol as its system prompt. Invoke it by name and give it **only the text**: no repo path, no ticket link, no session summary. Withholding context is the entire mechanism, and leaking it in to be helpful destroys the check — the agent reports any leak it notices in its `context_leak` field, and a non-empty one means the dispatch was bad, not the text.
+The check is a registered agent: `prose-grader` in `~/.claude/agents/`, pinned to a cheap model with its protocol as its system prompt. Invoke it by name and give it **only the text**: no repo path, no ticket link, no session summary. Withholding context is the entire mechanism, and leaking it in to be helpful destroys the check — the agent reports any leak it notices in its `context_leak` field, and a non-empty one means the dispatch was bad, not the text.
 
 It returns structured fields: a restatement in its own words, every lookup it would have needed, whether each question's stakes are clear, and the sentences it had to read twice.
 

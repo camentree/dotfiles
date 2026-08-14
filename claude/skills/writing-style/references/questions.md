@@ -77,4 +77,4 @@ Same facts, same citations, no lookups needed to understand the ask.
 
 ## Before he sees it
 
-Run the cold reader (`cold-reader.md`) before any gate that asks him something with real setup. One cheap subagent sees the questions and nothing else and reports what it thinks is being asked. If it can't say, or says the wrong thing, the question gets rewritten first.
+Run the prose grader (`prose-grader.md`) before any gate that asks him something with real setup. One cheap subagent sees the questions and nothing else and reports what it thinks is being asked. If it can't say, or says the wrong thing, the question gets rewritten first.
