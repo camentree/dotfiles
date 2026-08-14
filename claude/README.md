@@ -1,4 +1,4 @@
-# Claude Code Style Configuration
+# Claude Code Style Configurationv
 
 We have a couple methods for affecting claude code's output
 

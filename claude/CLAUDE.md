@@ -30,6 +30,7 @@ If asked to change a setting (git config, a package, a macOS default, a keybindi
 
 ## Shell conventions
 
+- **Edit files with the Edit/Write tools, never with `sed`, `awk`, or inline python rewrites.** Tool edits show me a clean diff and run the edit hooks; shell rewrites do neither.
 - **Research** — prefer `WebFetch` / `WebSearch` directly over spawning a research agent that runs its own curl/python.
 - Always use explicit HTTP method flags with curl (`curl -X GET`, `curl -X POST`) so permission rules can distinguish read-only from mutating requests.
 - Prefer `WebFetch` over `curl | jq` / `curl | python` pipelines for read-only HTTP GETs — it parses JSON/HTML and avoids extra permission prompts.
