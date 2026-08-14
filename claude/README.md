@@ -17,7 +17,7 @@ We have a couple methods for affecting claude code's output
       - /explain (called by user)
       - /plan-feature (called by user)
       - /plan-pr (called by user)
-      - when /writing-audit audits a page (writing-audit/SKILL.md, step 1)
+      - /writing-audit (sometimes injected by claude when auditing a finished page)
     - conversation.md
       - _style rules for conversation prose Camen engages with — explanations, findings, questions_
       - /explain (called by user)
@@ -25,12 +25,12 @@ We have a couple methods for affecting claude code's output
       - /plan-pr (called by user)
       - /execute-pr (called by user)
       - /address-comments (called by user)
-      - when about to send Camen something to engage with (output-styles/writing-for-humans.md, "Writing to me")
-      - when /writing-audit audits a question (writing-audit/SKILL.md, step 2)
+      - writing-for-humans output style (sometimes injected by claude when writing something for Camen to engage with)
+      - /writing-audit (sometimes injected by claude when auditing a question)
     - as-me.md
       - _style rules for prose written as Camen_
       - /open-pr (called by user)
-      - when /writing-audit audits a PR description or commit message (writing-audit/SKILL.md, steps 4-5)
+      - /writing-audit (sometimes injected by claude when auditing a PR description or commit message)
     - code.md
       - _style rules for code_
       - /execute-pr, before the first file (called by user)
@@ -44,9 +44,9 @@ We have a couple methods for affecting claude code's output
 2. agents
   - prose-grader.md
     - _grades prose with no session context; reports what it couldn't understand_
-    - when /writing-audit grades a page, question, or PR description (writing-audit/SKILL.md, steps 1-2 and 4)
-    - when a real question is about to reach Camen (output-styles/writing-for-humans.md, "Writing to me")
-    - ad hoc, when its description fits the task at hand (agents/prose-grader.md, description field)
+    - /writing-audit (sometimes called by claude when grading a page, question, or PR description)
+    - writing-for-humans output style (sometimes called by claude before a real question reaches Camen)
+    - ad hoc (sometimes called by claude when its description fits the task)
 3. skills
   - writing-audit
     - _rewrites finished prose against the references; wraps prose-grader_
@@ -60,11 +60,11 @@ We have a couple methods for affecting claude code's output
   - style-pass
     - _reviews and fixes the working diff against code.md_
     - /execute-pr (called by user)
-    - when /writing-audit reaches its code step (writing-audit/SKILL.md, step 3)
+    - /writing-audit (sometimes called by claude when the audit reaches code)
     - typed directly (called by user)
   - writing-style
     - _index of the references_
-    - when defining or polishing a style (writing-style/SKILL.md, description field)
+    - ad hoc (sometimes called by claude when defining or polishing a style)
 4. tool hooks
   - writing-gate.sh
     - _blocks ending a session with 4000+ unaudited chars of .html/.md_
