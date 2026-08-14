@@ -20,6 +20,8 @@ We have a couple methods for affecting claude code's output
         - /explain
         - /plan-feature
         - /plan-pr
+        - /execute-pr
+        - /address-comments
     - conversation.md
       - _style rules for conversation prose Camen engages with — explanations, findings, questions_
       - automatic
