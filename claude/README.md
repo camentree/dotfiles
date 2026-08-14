@@ -13,28 +13,28 @@ We have a couple methods for affecting claude code's output
 1. context-injection
   - writing-style/references
     - artifacts.md
-      - _style rules for how artifacts should be created_
-      - /explain (called by user)
-      - /plan-feature (called by user)
-      - /plan-pr (called by user)
-      - /writing-audit (sometimes injected by claude when auditing a finished page)
+      - _artifact creation rules_
+      - /explain (injected by user when called)
+      - /plan-feature (injected by user when called)
+      - /plan-pr (injected by user when called)
+      - /writing-audit (can be injected by claude after writing an artifact)
     - conversation.md
       - _style rules for conversation prose Camen engages with — explanations, findings, questions_
-      - /explain (called by user)
-      - /plan-feature (called by user)
-      - /plan-pr (called by user)
-      - /execute-pr (called by user)
-      - /address-comments (called by user)
-      - writing-for-humans output style (sometimes injected by claude when writing something for Camen to engage with)
-      - /writing-audit (sometimes injected by claude when auditing a question)
+      - /explain (injected by user when called)
+      - /plan-feature (injected by user when called)
+      - /plan-pr (injected by user when called)
+      - /execute-pr (injected by user when called)
+      - /address-comments (injected by user when called)
+      - writing-for-humans output style (can be injected by claude when responding to camen)
+      - /writing-audit (can be injected by claude after responding to Camen with something he should engage with)
     - as-me.md
       - _style rules for prose written as Camen_
-      - /open-pr (called by user)
-      - /writing-audit (sometimes injected by claude when auditing a PR description or commit message)
+      - /open-pr (injected by user when called)
+      - /writing-audit (can be injected by claude when auditing a PR description or commit message)
     - code.md
       - _style rules for code_
-      - /execute-pr, before the first file (called by user)
-      - /style-pass (called by user)
+      - /execute-pr, before the first file (injected by user when called)
+      - /style-pass (injected by user when called)
   - output-styles/writing-for-humans.md
     - _always-on style rules; the only lever for chat_
     - every session's system prompt (deterministic)
@@ -44,27 +44,27 @@ We have a couple methods for affecting claude code's output
 2. agents
   - prose-grader.md
     - _grades prose with no session context; reports what it couldn't understand_
-    - /writing-audit (sometimes called by claude when grading a page, question, or PR description)
-    - writing-for-humans output style (sometimes called by claude before a real question reaches Camen)
-    - ad hoc (sometimes called by claude when its description fits the task)
+    - /writing-audit (can be called by claude when grading a page, a PR description, or something Camen should engage with)
+    - writing-for-humans output style (can be called by claude before a real question reaches Camen)
+    - ad hoc (can be called by claude when its description fits the task)
 3. skills
   - writing-audit
     - _rewrites finished prose against the references; wraps prose-grader_
     - writing-gate.sh (deterministic)
-    - /explain (called by user)
-    - /open-pr (called by user)
-    - /execute-pr (called by user)
-    - /plan-feature (called by user)
-    - /plan-pr (called by user)
-    - typed directly (called by user)
+    - /explain (injected by user when called)
+    - /open-pr (injected by user when called)
+    - /execute-pr (injected by user when called)
+    - /plan-feature (injected by user when called)
+    - /plan-pr (injected by user when called)
+    - typed directly (injected by user when called)
   - style-pass
     - _reviews and fixes the working diff against code.md_
-    - /execute-pr (called by user)
-    - /writing-audit (sometimes called by claude when the audit reaches code)
-    - typed directly (called by user)
+    - /execute-pr (injected by user when called)
+    - /writing-audit (can be called by claude when the audit reaches code)
+    - typed directly (injected by user when called)
   - writing-style
     - _index of the references_
-    - ad hoc (sometimes called by claude when defining or polishing a style)
+    - ad hoc (can be called by claude when defining or polishing a style)
 4. tool hooks
   - writing-gate.sh
     - _blocks ending a session with 4000+ unaudited chars of .html/.md_
@@ -75,7 +75,7 @@ We have a couple methods for affecting claude code's output
   - writing-audit-log.sh
     - _keeps the audit log_
     - PreToolUse on Skill (deterministic)
-    - `writing-audits` alias (called by user)
+    - `writing-audits` alias (injected by user when called)
 
 
 ## Structure

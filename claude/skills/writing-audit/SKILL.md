@@ -1,6 +1,6 @@
 ---
 name: writing-audit
-description: Audit and fix the writing a piece of work leaves behind — explainer and plan pages, PR descriptions, unpushed commit messages, and any question about to be put to Camen — against the writing-style references. Use before opening or un-drafting a PR, at the end of an implementation loop, or when he asks to audit writing.
+description: Audit and fix the writing a piece of work leaves behind — explainer and plan pages, PR descriptions, unpushed commit messages, and any response Camen is meant to engage with, questions above all — against the writing-style references. Use before opening or un-drafting a PR, at the end of an implementation loop, after answering or explaining something to him, or when he asks to audit writing.
 argument-hint: (no args — audits the pages, diff, and PRs for the current branch)
 ---
 
@@ -40,9 +40,9 @@ Then dispatch the `prose-grader` agent on the page's uncollapsed body. The pass 
 
 **Dispatching the grader, here and everywhere below:** hand it only the text — no repo path, no ticket link, no session summary. Withholding context is the entire mechanism; a non-empty `context_leak` in its report means the dispatch was bad, not the text. Act on every field: a wrong or vague restatement means rewrite and re-grade, each `lookups_needed` becomes plain words with the citation moved to a fold, `stakes_clear: false` gets the stakes added, and a sentence in `reread_sentences` gets rewritten, not defended. Don't argue with it — you wrote the text and you're grading the report on it. It judges comprehension only, never correctness or style.
 
-### 2. Anything asking him a question
+### 2. Anything he's meant to engage with
 
-Rewrite per `conversation.md`, then dispatch the `prose-grader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
+The response about to be handed to him — findings, options weighed, explanations, and questions above all. Rewrite per `conversation.md`, then dispatch the `prose-grader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
 
 ### 3. Code and code comments
 
@@ -62,7 +62,7 @@ Only if they haven't been pushed. Never rewrite pushed history. Same `Co-Authore
 
 ## Out of scope, deliberately
 
-Chat messages and ticket comments are drafted and sent in the moment, with their references loaded at the time, and they leave this branch. They aren't part of a change's leftover writing.
+Already-sent chat messages and ticket comments were drafted in the moment, with their references loaded at the time, and they leave this branch. They aren't part of a change's leftover writing — only the response about to go out (item 2) is in scope.
 
 ## How to act
 
