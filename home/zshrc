@@ -30,6 +30,8 @@ alias writing-audits="bash ~/.claude/scripts/writing-audit-log.sh show"
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
 bindkey "^X^_" redo
+bindkey "^[[1;5D" backward-word
+bindkey "^[[1;5C" forward-word
 
 # Up/down arrows search history by typed prefix
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search

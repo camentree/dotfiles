@@ -48,3 +48,8 @@ keybind = cmd+shift+i=text:tabname\x20
 
 keybind = cmd+z=unbind
 keybind = cmd+shift+z=unbind
+
+keybind = alt+backspace=text:\x17
+keybind = ctrl+backspace=text:\x17
+keybind = alt+left=text:\x1b[1;5D
+keybind = alt+right=text:\x1b[1;5C

@@ -418,17 +418,8 @@ vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
 vim.keymap.set("i", "<C-Right>", "<C-o>e<Right>", { desc = "Word forward" })
-vim.keymap.set("i", "<M-b>", "<C-o>b", { desc = "Word back (Option+Left)" })
-vim.keymap.set(
-	"i",
-	"<M-f>",
-	"<C-o>e<Right>",
-	{ desc = "Word forward (Option+Right)" }
-)
 vim.keymap.set("i", "<C-a>", "<C-o>g0", { desc = "Line start (Cmd+Left)" })
 vim.keymap.set("i", "<C-e>", "<C-o>g$", { desc = "Line end (Cmd+Right)" })
-vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word back" })
-vim.keymap.set("i", "<A-BS>", "<C-w>", { desc = "Delete word back (Option)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>o", { desc = "New line below" })
 vim.keymap.set("n", "<S-CR>", "o", { desc = "New line below" })
@@ -720,6 +711,7 @@ require("lazy").setup({
 					input = {
 						keys = {
 							["<D-CR>"] = { "edit_vsplit", mode = { "n", "i" } },
+							["<c-u>"] = { "list_scroll_up", mode = "n" },
 						},
 					},
 				},
