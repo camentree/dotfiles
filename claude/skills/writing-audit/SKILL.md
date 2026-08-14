@@ -15,7 +15,7 @@ Read the reference for each surface before auditing it. Do not audit from memory
 | Surface | Reference |
 |---|---|
 | Explainer and plan pages | `~/.claude/skills/writing-style/references/artifacts.md` |
-| Questions asked of Camen | `~/.claude/skills/writing-style/references/questions.md` |
+| Prose he engages with in conversation, questions above all | `~/.claude/skills/writing-style/references/conversation.md` |
 | Page mechanics — folds, classes, diagrams | `~/.claude/skills/explain/reference/format.md` |
 | Code and code comments | `style-pass` skill — run it rather than duplicating it here |
 | PR descriptions, commit messages, review comments | `~/.claude/skills/writing-style/references/as-me.md`, plus the repo's `pull_request_template.md` |
@@ -36,11 +36,13 @@ The fix is never to delete the citation. Say the thing in plain words, move the 
 
 Also check what `format.md` governs: does the collapsed page stand alone, does any summary only name a topic, does anything have to be expanded in the happy path.
 
-Then dispatch the `prose-grader` agent on the page's uncollapsed body, per `references/prose-grader.md`. The pass above shares the session context that made the prose opaque, so it will read its own shorthand as clear; the cold read is the actual test for that failure. Hand it only the text, fix what it flags, and don't argue with it.
+Then dispatch the `prose-grader` agent on the page's uncollapsed body. The pass above shares the session context that made the prose opaque, so it will read its own shorthand as clear; the cold read is the actual test for that failure.
+
+**Dispatching the grader, here and everywhere below:** hand it only the text — no repo path, no ticket link, no session summary. Withholding context is the entire mechanism; a non-empty `context_leak` in its report means the dispatch was bad, not the text. Act on every field: a wrong or vague restatement means rewrite and re-grade, each `lookups_needed` becomes plain words with the citation moved to a fold, `stakes_clear: false` gets the stakes added, and a sentence in `reread_sentences` gets rewritten, not defended. Don't argue with it — you wrote the text and you're grading the report on it. It judges comprehension only, never correctness or style.
 
 ### 2. Anything asking him a question
 
-Rewrite per `questions.md`, then dispatch the `prose-grader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
+Rewrite per `conversation.md`, then dispatch the `prose-grader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
 
 ### 3. Code and code comments
 

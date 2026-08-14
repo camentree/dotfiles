@@ -107,6 +107,6 @@ Say the plan is ready and the next step is `/plan-pr` on PR 1. End the session.
 Read before writing:
 
 - Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
-- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the prose-grader check in `prose-grader.md`
+- Anything he'll engage with in conversation: `~/.claude/skills/writing-style/references/conversation.md`, with the `prose-grader` agent on real questions
 
 Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

@@ -1,6 +1,6 @@
 ---
 name: writing-style
-description: The canonical home for how each kind of output gets written for Camen — workflow artifacts and explainer pages, questions asked of him, and the prose-grader check. Load the matching reference before producing one of these, when he asks how something should be written, or when defining or polishing a style. Skills that produce output point here instead of restating rules.
+description: The canonical home for how each kind of output gets written for Camen — workflow artifacts and explainer pages, conversation prose he engages with, code, and prose under his name. Load the matching reference before producing one of these, when he asks how something should be written, or when defining or polishing a style. Skills that produce output point here instead of restating rules.
 argument-hint: [output type, e.g. questions — omit to list the references]
 ---
 
@@ -17,11 +17,10 @@ Everything is written either **to Camen** or **as Camen** — the output style's
 | Output | Direction | Reference |
 |---|---|---|
 | Explainer and plan pages | to him | `references/artifacts.md` |
-| Questions asked of Camen | to him | `references/questions.md` |
+| Conversation prose he engages with | to him | `references/conversation.md` |
 | HTML page mechanics — scaffold, folds, classes | to him | `~/.claude/skills/explain/reference/format.md` |
 | PR descriptions, commits, review comments, tickets | as him | `references/as-me.md` |
 | Code | as him | `references/code.md`, applied by `style-pass` |
-| The prose-grader check (mechanism, not a surface) | — | `references/prose-grader.md` |
 
 Worth writing next, when a surface starts costing rework: Slack or ticket prose if it stops fitting `as-me.md`.
 

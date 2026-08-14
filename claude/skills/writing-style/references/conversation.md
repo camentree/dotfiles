@@ -1,8 +1,19 @@
-# Questions asked of Camen
+# Prose to Camen in conversation
+
+Any conversation output he's meant to engage with — explanations, findings, options weighed, questions — as opposed to a log of what happened. If a message exists so he can think about it, it's this surface.
+
+The context-independence test in the output style is the floor. This is how it applies in conversation.
+
+## Explanations and findings
+
+- Lead with the outcome or the finding, stated plainly enough to act on having read nothing else. The reasoning follows, and only what changes his next move.
+- He's relearning Scala and still building the domain map: define idioms and domain terms on first use, in the sentence, not in a glossary he has to hold.
+- One idea at a time. A message that explains three things gets engagement on one of them, chosen by accident.
+- Anxiety check: if the message needs scrolling before its point lands, the point goes first and the rest becomes support he can choose to read.
+
+## Questions
 
 The highest-stakes prose there is. A review comment nobody can parse wastes a minute; a question nobody can parse blocks the work until he asks what it means, and he spends that round trip before he can start thinking about the answer.
-
-The context-independence test in the output style is the floor. This is how it applies to asking.
 
 ## The shape
 
@@ -77,4 +88,4 @@ Same facts, same citations, no lookups needed to understand the ask.
 
 ## Before he sees it
 
-Run the prose grader (`prose-grader.md`) before any gate that asks him something with real setup. One cheap subagent sees the questions and nothing else and reports what it thinks is being asked. If it can't say, or says the wrong thing, the question gets rewritten first.
+Dispatch the `prose-grader` agent, with only the text, before any gate that asks him something with real setup. One cheap subagent sees the questions and nothing else and reports what it thinks is being asked. If it can't say, or says the wrong thing, the question gets rewritten first.

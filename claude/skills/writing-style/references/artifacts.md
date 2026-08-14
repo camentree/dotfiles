@@ -22,4 +22,4 @@ Durable output a workflow leaves behind for Camen to read: explainers, plans, in
 
 7. **Size check before writing.** If the uncollapsed body wouldn't fit on about two screens, it's carrying agent-grade detail. Collapse it or cut it. A section that doesn't change what he does next doesn't belong in the body.
 
-8. **Anything asking for a decision** follows `questions.md` and gets the prose-grader check in `prose-grader.md` first.
+8. **Anything asking for a decision** follows `conversation.md` and gets the `prose-grader` agent first.

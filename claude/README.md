@@ -14,27 +14,27 @@ We have a couple methods for affecting claude code's output
   - writing-style/references
     - artifacts.md
       - _style rules for how artifacts should be created_
-      - /explain (user decides)
-      - /plan-feature (user decides)
-      - /plan-pr (user decides)
-      - /writing-audit (claude decides via writing-audit/SKILL.md)
-    - questions.md
-      - _style rules for how questions to Camen should be asked_
-      - /explain (user decides)
-      - /plan-feature (user decides)
-      - /plan-pr (user decides)
-      - before any question to Camen (claude decides via output-styles/writing-for-humans.md)
+      - /explain (called by user)
+      - /plan-feature (called by user)
+      - /plan-pr (called by user)
+      - /writing-audit (injected for  via writing-audit/SKILL.md)
+    - conversation.md
+      - _style rules for conversation prose Camen engages with — explanations, findings, questions_
+      - /explain (called by user)
+      - /plan-feature (called by user)
+      - /plan-pr (called by user)
+      - /execute-pr (called by user)
+      - /address-comments (called by user)
+      - before anything Camen engages with (claude decides via output-styles/writing-for-humans.md)
       - /writing-audit (claude decides via writing-audit/SKILL.md)
     - as-me.md
       - _style rules for prose written as Camen_
-      - /open-pr (user decides)
+      - /open-pr (called by user)
       - /writing-audit (claude decides via writing-audit/SKILL.md)
     - code.md
       - _style rules for code_
-      - /style-pass (user decides)
-    - prose-grader.md
-      - _protocol for grading prose without session context_
-      - /writing-audit (claude decides via writing-audit/SKILL.md)
+      - /execute-pr, before the first file (called by user)
+      - /style-pass (called by user)
   - output-styles/writing-for-humans.md
     - _always-on style rules; the only lever for chat_
     - every session's system prompt (deterministic)
@@ -51,17 +51,17 @@ We have a couple methods for affecting claude code's output
   - writing-audit
     - _rewrites finished prose against the references; wraps prose-grader_
     - writing-gate.sh (deterministic)
-    - /explain (user decides)
-    - /open-pr (user decides)
-    - /execute-pr (user decides)
-    - /plan-feature (user decides)
-    - /plan-pr (user decides)
-    - typed directly (user decides)
+    - /explain (called by user)
+    - /open-pr (called by user)
+    - /execute-pr (called by user)
+    - /plan-feature (called by user)
+    - /plan-pr (called by user)
+    - typed directly (called by user)
   - style-pass
     - _reviews and fixes the working diff against code.md_
-    - /execute-pr (user decides)
+    - /execute-pr (called by user)
     - /writing-audit (claude decides via writing-audit/SKILL.md)
-    - typed directly (user decides)
+    - typed directly (called by user)
   - writing-style
     - _index of the references_
     - defining or polishing a style (claude decides via its skill description)
@@ -75,7 +75,7 @@ We have a couple methods for affecting claude code's output
   - writing-audit-log.sh
     - _keeps the audit log_
     - PreToolUse on Skill (deterministic)
-    - `writing-audits` alias (user decides)
+    - `writing-audits` alias (called by user)
 
 
 ## Structure
@@ -90,10 +90,9 @@ We have a couple methods for affecting claude code's output
       SKILL.md               
       references/
         artifacts.md                 
-        questions.md      
+        conversation.md      
         as-me.md            
         code.md              
-        prose-grader.md      
     writing-audit/SKILL.md   
     style-pass/SKILL.md      
 scripts/

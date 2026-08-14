@@ -38,13 +38,10 @@ Data before callers, types before consumers, models before controllers, code bef
 
 For a pattern repeated across N files: do one, get it right, confirm, then apply to the rest.
 
-**Style is binding while writing, not something to fix at review.** Camen redoes work over style more than over correctness, and it's always the same two things:
+**Style is binding while writing, not something to fix at review.** Camen redoes work over style more than over correctness. Read `~/.claude/skills/writing-style/references/code.md` before the first file — it carries the full rules: comments, layers, naming, keyword arguments. On top of it, Scala-specific:
 
-- **No comments. No ScalaDoc.** Not on new public methods, not for a non-obvious constraint. Say it in chat instead.
-- **No layers he didn't ask for.** No helper, trait, or indirection for a single call site. Three similar lines beat a premature abstraction.
+- No ScalaDoc — it's a comment.
 - No `Try` / `Option` / `Either` wrapping calls that can't fail. Validate at boundaries only.
-- Names spelled out — `index` not `i`, `error` not `e`, `markdownClient` not `md`.
-- Keyword arguments at call sites past two parameters.
 - Exhaustive matches. List the enum cases; no `case _`.
 - **One thing per change.** No refactor smuggled into a feature, no rename while fixing.
 
@@ -93,7 +90,8 @@ He's said he'd like to start an implementation and have Claude finish it — it 
 
 Read before writing:
 
+- Code: `~/.claude/skills/writing-style/references/code.md`, before the first file
 - Page content and altitude: `~/.claude/skills/writing-style/references/artifacts.md`
-- Anything asked of Camen: `~/.claude/skills/writing-style/references/questions.md`, then the prose-grader check in `prose-grader.md`
+- Anything he'll engage with in conversation: `~/.claude/skills/writing-style/references/conversation.md`, with the `prose-grader` agent on real questions
 
 Do not restate those rules here. A skill that copies them drifts from them, then enforces the older version.

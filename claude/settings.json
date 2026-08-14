@@ -254,7 +254,7 @@
     }
   },
   "outputStyle": "writing-for-humans",
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "voice": {
