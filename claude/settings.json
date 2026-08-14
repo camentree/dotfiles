@@ -120,10 +120,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/writing-gate.sh"
-          },
-          {
-            "type": "command",
             "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
           },
           {
@@ -205,19 +201,6 @@
           {
             "type": "command",
             "command": "bash ~/.claude/scripts/format-on-edit.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/writing-gate.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/writing-gate.sh"
           }
         ]
       },

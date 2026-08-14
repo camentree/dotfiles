@@ -70,7 +70,7 @@ We have a couple methods for affecting claude code's output
   - writing-audit
     - _rewrites finished prose against the references; wraps prose-grader_
     - automatic
-      - always demanded when a session tries to stop with 4000+ unaudited chars of prose (writing-gate.sh)
+      - none
     - by user
       - /explain
       - /open-pr
@@ -92,12 +92,6 @@ We have a couple methods for affecting claude code's output
     - by user
       - none
 4. tool hooks
-  - writing-gate.sh
-    - _blocks ending a session with 4000+ unaudited chars of .html/.md_
-    - automatic
-      - always run on Stop and PostToolUse events
-    - by user
-      - none
   - writing-audit-log.sh
     - _keeps the audit log_
     - automatic
@@ -124,7 +118,6 @@ We have a couple methods for affecting claude code's output
     writing-audit/SKILL.md   
     style-pass/SKILL.md      
 scripts/
-  writing-gate.sh          
   writing-audit-log.sh     
 settings.json
 
