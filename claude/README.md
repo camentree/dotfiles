@@ -13,47 +13,66 @@ We have a couple methods for affecting claude code's output
 1. context-injection
   - writing-style/references
     - artifacts.md
-      - pages and plans: verdict up top, two screens, folds for proof
-      - called by explain, plan-feature, plan-pr, writing-audit (claude decides)
+      - _style rules for how artifacts should be created_
+      - /explain (user decides)
+      - /plan-feature (user decides)
+      - /plan-pr (user decides)
+      - /writing-audit (claude decides)
     - questions.md
-      - how to ask Camen something answerable
-      - called by any skill about to ask him something, writing-audit (claude decides)
+      - _style rules for how questions to Camen should be asked_
+      - any skill about to ask a question (claude decides)
+      - /writing-audit (claude decides)
     - as-me.md
-      - PR descriptions, commits, review comments in his voice
-      - called by open-pr, writing-audit (claude decides)
+      - _style rules for prose written as Camen_
+      - /open-pr (user decides)
+      - /writing-audit (claude decides)
     - code.md
-      - full code rules
-      - called by style-pass (claude decides)
+      - _style rules for code_
+      - /style-pass (user decides)
     - prose-grader.md
-      - when to dispatch the grader, how to act on findings
-      - called by writing-audit (claude decides)
+      - _protocol for grading prose without session context_
+      - /writing-audit (claude decides)
   - output-styles/writing-for-humans.md
-    - the always-on floor: voice, context-independence, to-Camen vs as-Camen; chat's only lever
-    - in every session's system prompt (deterministic)
+    - _always-on style rules; the only lever for chat_
+    - every session's system prompt (deterministic)
   - CLAUDE.md
-    - machine and workflow context; points at the output style
-    - loaded every session (deterministic)
+    - _user-level instructions; points at the output style_
+    - every session (deterministic)
 2. agents
   - prose-grader.md
-    - haiku, no session context, one turn; reports what it couldn't understand
-    - called by writing-audit, by any real question before Camen sees it, ad hoc (claude decides)
+    - _grades prose with no session context; reports what it couldn't understand_
+    - /writing-audit (claude decides)
+    - questions before Camen sees them (claude decides)
+    - ad hoc (claude decides)
 3. skills
   - writing-audit
-    - rewrites finished prose against the references; wraps prose-grader
-    - called by writing-gate.sh's stop block (deterministic), final steps of explain / open-pr / execute-pr / plan-feature / plan-pr (claude decides), /writing-audit (you)
+    - _rewrites finished prose against the references; wraps prose-grader_
+    - writing-gate.sh (deterministic)
+    - /explain (user decides)
+    - /open-pr (user decides)
+    - /execute-pr (user decides)
+    - /plan-feature (user decides)
+    - /plan-pr (user decides)
+    - typed directly (user decides)
   - style-pass
-    - fixes the working diff against code.md
-    - called by execute-pr and writing-audit (claude decides), /style-pass (you)
+    - _reviews and fixes the working diff against code.md_
+    - /execute-pr (user decides)
+    - /writing-audit (claude decides)
+    - typed directly (user decides)
   - writing-style
-    - index of the references
-    - called when defining or polishing a style (claude decides)
+    - _index of the references_
+    - defining or polishing a style (claude decides)
 4. tool hooks
   - writing-gate.sh
-    - Stop: blocks ending a session with 4000+ unaudited chars of .html/.md (deterministic)
+    - _blocks ending a session with 4000+ unaudited chars of .html/.md_
+    - Stop and PostToolUse events (deterministic)
   - comment-check.sh
-    - PostToolUse: warns when a code edit adds comments (deterministic)
+    - _warns when a code edit adds comments_
+    - PostToolUse on Write/Edit (deterministic)
   - writing-audit-log.sh
-    - PreToolUse: announces the audit and keeps the log behind `writing-audits` (deterministic)
+    - _keeps the audit log_
+    - PreToolUse on Skill (deterministic)
+    - `writing-audits` alias (user decides)
 
 
 ## Structure
