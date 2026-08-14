@@ -6,9 +6,9 @@ argument-hint: [output type, e.g. questions — omit to list the references]
 
 # Writing style
 
-One home for per-output writing guidance. The always-on core lives in the `writing-for-humans` output style and applies to everything without loading anything. These references carry the full per-surface treatment: formats, boundaries, worked examples.
+One home for per-output writing guidance. The `writing-for-humans` output style is the floor: a short always-on core that shapes every sentence without loading anything. These references are canon — the full per-surface treatment: formats, boundaries, worked examples.
 
-Loading one is not redundant with the core. The core sets the floor at the start of a session; a reference re-asserts it next to the work, which is where it actually binds.
+Loading one is not redundant with the floor. The floor sets the standard at the start of a session; a reference re-asserts it next to the work, which is where it actually binds.
 
 ## References
 
@@ -20,10 +20,10 @@ Everything is written either **to Camen** or **as Camen** — the output style's
 | Questions asked of Camen | to him | `references/questions.md` |
 | HTML page mechanics — scaffold, folds, classes | to him | `~/.claude/skills/explain/reference/format.md` |
 | PR descriptions, commits, review comments, tickets | as him | `references/as-me.md` |
-| Code | as him | the output style's Code section, plus `style-pass` |
+| Code | as him | `references/code.md`, applied by `style-pass` |
 | The cold-reader check (mechanism, not a surface) | — | `references/cold-reader.md` |
 
-Worth writing next, when a surface starts costing rework: code comments as their own file, and Slack or ticket prose if it stops fitting `as-me.md`.
+Worth writing next, when a surface starts costing rework: Slack or ticket prose if it stops fitting `as-me.md`.
 
 ## Contract for skills
 
@@ -35,4 +35,4 @@ Where a team has its own documented coding or writing standards, those are canon
 
 New output type means a new reference file plus a row in the table above. A reference that doesn't exist yet isn't a blocker: apply the floor and note the gap.
 
-When a change here contradicts the output-style core, update the core in the same pass. The two layers are intentionally redundant and must never diverge.
+When a rule needs changing, change it here — the references are canon and the floor stays short. Only a rule that must shape every sentence of every session earns a compressed line in the floor, and a contradiction between the two means the floor is stale, not the reference.

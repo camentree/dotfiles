@@ -20,7 +20,7 @@ Read the reference for each surface before auditing it. Do not audit from memory
 | Code and code comments | `style-pass` skill — run it rather than duplicating it here |
 | PR descriptions, commit messages, review comments | `~/.claude/skills/writing-style/references/as-me.md`, plus the repo's `pull_request_template.md` |
 
-**The floor is the `writing-for-humans` output style, and this audit is void without it.** It carries the context-independence test that item 1 leans on entirely, the voice rules, and the code rules. Confirm it's active before auditing anything. If it isn't — switched off, or you're a subagent, which don't inherit output styles — load it before proceeding. Auditing against the references alone silently drops half the standard.
+**The floor is the `writing-for-humans` output style, and this audit is void without it.** It carries the context-independence test that item 1 leans on entirely and the voice rules. Confirm it's active before auditing anything. If it isn't — switched off, or you're a subagent, which don't inherit output styles — load it before proceeding. Auditing against the references alone silently drops half the standard.
 
 **Why this file names no rules.** An audit carrying its own copy of the standard drifts from it, then quietly enforces the older, weaker version. If a rule seems missing from a reference, fix the reference, not this skill.
 
@@ -36,9 +36,11 @@ The fix is never to delete the citation. Say the thing in plain words, move the 
 
 Also check what `format.md` governs: does the collapsed page stand alone, does any summary only name a topic, does anything have to be expanded in the happy path.
 
+Then dispatch the `cold-reader` agent on the page's uncollapsed body, per `references/cold-reader.md`. The pass above shares the session context that made the prose opaque, so it will read its own shorthand as clear; the cold read is the actual test for that failure. Hand it only the text, fix what it flags, and don't argue with it.
+
 ### 2. Anything asking him a question
 
-Rewrite per `questions.md`, then run the cold reader (`references/cold-reader.md`) before he sees it. This is the one item that runs even when nothing else needs auditing.
+Rewrite per `questions.md`, then dispatch the `cold-reader` agent before he sees it. This is the one item that runs even when nothing else needs auditing.
 
 ### 3. Code and code comments
 
@@ -49,6 +51,8 @@ Run `style-pass`. It owns the diff, knows which lines are new versus pre-existin
 For this branch's PRs (`gh pr view`). Template sections are structure, not verbosity: where the repo has a PR template, every section stays, with a short `N/A` where it doesn't apply. Tighten the prose inside them; never strip the scaffold.
 
 Check specifically for `Co-Authored-By` lines and any mention of AI generation. Both are banned by the output style, and both get added by default, so this is where they get caught.
+
+If the description was drafted or reworked this session, dispatch the `cold-reader` agent on the drafted body before showing him old → new — its readers weren't in the session either.
 
 ### 5. Unpushed commit messages
 

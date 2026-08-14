@@ -43,7 +43,7 @@ If a rule can only be satisfied by editing pre-existing code, do not edit it. Re
 
 ## 4. Style
 
-The Code section of the `writing-for-humans` output style is the standard: naming, comments, added layers, keyword arguments, type hints. It's always loaded, so it isn't repeated here. If it isn't active — you're a subagent, or it's switched off — load it before judging anything.
+`~/.claude/skills/writing-style/references/code.md` is the standard: naming, comments, added layers, keyword arguments, type hints. Read it before judging anything; the output style only carries the compressed version.
 
 These are the review-only checks it doesn't cover:
 
