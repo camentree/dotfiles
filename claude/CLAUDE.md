@@ -10,7 +10,10 @@
 
 ## How to write and how to code
 
-The `writing-for-humans` output style. Always on, no invocation. Per-surface detail is in the `writing-style` skill's references.
+The `writing-for-humans` output style. Always on, no invocation. Per-surface detail is in the `writing-style` skill's references, and the two most common surfaces — conversation prose and code — load every session:
+
+@~/.claude/skills/writing-style/references/conversation.md
+@~/.claude/skills/writing-style/references/code.md
 
 ## Permissions
 

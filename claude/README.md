@@ -25,7 +25,7 @@ We have a couple methods for affecting claude code's output
     - conversation.md
       - _style rules for conversation prose Camen engages with — explanations, findings, questions_
       - automatic
-        - none
+        - every session (imported by CLAUDE.md)
       - by user
         - /explain
         - /plan-feature
@@ -46,7 +46,7 @@ We have a couple methods for affecting claude code's output
     - code.md
       - _style rules for code_
       - automatic
-        - none
+        - every session (imported by CLAUDE.md)
       - by user
         - /execute-pr (read again right before code gets written)
         - /style-pass
@@ -61,7 +61,7 @@ We have a couple methods for affecting claude code's output
     - by claude
       - none
   - CLAUDE.md
-    - _user-level instructions; points at the output style_
+    - _user-level instructions; imports conversation.md and code.md every session_
     - automatic
       - every session
     - by user
