@@ -107,7 +107,7 @@ Evolves — update as it changes.
 
 ## Output
 
-`mkdir -p ~/Documents/notes/explain` first — nothing else creates it.
+Each mode writes to its own directory under `~/Documents/notes/` — see the path table in `SKILL.md`. `mkdir -p` it first; nothing else creates it.
 
 **Start from `page.html` in this directory.** Copy it, replace `TITLE`, the eyebrow, the standfirst, the `<!-- CONTENT -->` marker, and the footer. Don't rewrite the CSS or the script — that's how pages drift apart and how the `<details>`-in-`<p>` bug comes back.
 
@@ -138,7 +138,7 @@ Camen comments in the browser and pastes back. Never ask him to hand-edit the HT
 
 ## Pages several skills write
 
-A ticket page is created by `/explain` and then grown by `/plan-feature`, `/plan-pr`, and `/execute-pr`. All pages live in `~/Documents/notes/explain/`.
+A ticket page is created by `/explain` and then grown by `/plan-feature`, `/plan-pr`, and `/execute-pr`. It stays the one file throughout, in `~/Documents/notes/tickets/`.
 
 | Section | Owner |
 |---|---|

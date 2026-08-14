@@ -13,12 +13,12 @@ Catching a shape mistake here is cheap. Catching it mid-execute means reviewing 
 
 **Don't ask a checklist.** Resolve it yourself:
 
-- No page given → most recently modified `~/Documents/notes/explain/*.html`.
+- No page given → most recently modified `~/Documents/notes/tickets/*.html`.
 - No slice given → the first slice whose Plan field is still unfilled.
 
-State what you picked in one line and start: "Planning PR 2 — repository layer, from int-631.html." He'll correct you if it's wrong. Only ask when genuinely ambiguous — two pages touched today, or every slice already planned.
+State what you picked in one line and start: "Planning PR 2 — repository layer, from int-631-wrong-current-room.html." He'll correct you if it's wrong. Only ask when genuinely ambiguous — two pages touched today, or every slice already planned.
 
-**This skill runs standalone.** Small work doesn't need `/plan-feature` first. With no page and no slices, plan the whole change as one slice from whatever context came with the invocation, and create the page at the end with just that slice in it. Don't send him back up the stack for a two-file change.
+**This skill runs standalone.** Small work doesn't need `/plan-feature` first. With no page and no slices, plan the whole change as one slice from whatever context came with the invocation, and create the page at the end with just that slice in it, named and placed the way `/explain` names a ticket page (`~/Documents/notes/tickets/<ticket-key>-<subject>.html`). Don't send him back up the stack for a two-file change.
 
 ## Read first
 

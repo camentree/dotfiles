@@ -45,13 +45,17 @@ Apply density. Expect to delete a third.
 
 ### 4. Write the file and open it
 
-| Mode | Path |
-|---|---|
-| `pull-request` | `~/Documents/notes/explain/pr-6897.html` |
-| `concept` | `~/Documents/notes/explain/snapshots.html` |
-| `ticket` | `~/Documents/notes/explain/int-631.html` |
+Each mode has its own directory. `mkdir -p` it first — nothing else creates it.
 
-Stable names, so re-running a subject overwrites rather than accumulates.
+| Mode | Path | Name |
+|---|---|---|
+| `ticket` | `~/Documents/notes/tickets/int-631-wrong-current-room.html` | Linear key, then what the ticket is about |
+| `pull-request` | `~/Documents/notes/prs/pr-6897-august-backend-idempotent-external-charges.html` | `pr-`, the number, the repo it's in, then the PR's title |
+| `concept` | `~/Documents/notes/concepts/snapshots.html` | What it's about |
+
+All lowercase, words joined by hyphens. The trailing title is the subject in four or five words — short enough to read in a file list, specific enough to tell two tickets apart.
+
+Stable names, so re-running a subject overwrites rather than accumulates. Re-running a ticket whose title would now read differently keeps the name it already has on disk — a renamed page is a page the planning skills can't find.
 
 Then `open` it.
 

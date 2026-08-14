@@ -9,7 +9,7 @@ Runs after `/plan-pr`. The interfaces are agreed. This session writes bodies, ve
 
 ## Input
 
-**Don't ask a checklist.** Most recently modified `~/Documents/notes/explain/*.html`, first slice with a filled Plan and no Branch. State what you picked and the branch name you'd use, then go.
+**Don't ask a checklist.** Most recently modified `~/Documents/notes/tickets/*.html`, first slice with a filled Plan and no Branch. State what you picked and the branch name you'd use, then go.
 
 **This skill runs standalone.** For small work with no page, write the code from whatever context came with the invocation and skip the page entirely — a two-file change doesn't need one.
 

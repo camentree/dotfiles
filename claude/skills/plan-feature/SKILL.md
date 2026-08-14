@@ -35,7 +35,7 @@ Say what you're doing at each step. Don't batch them silently.
 
 ### 1. Orient
 
-**If a page exists** (`~/Documents/notes/explain/<ticket>.html`), read it and skip to step 2 — it already covers current behavior, constraints, and open questions. You'll be appending to it.
+**If a page exists** (`~/Documents/notes/tickets/<ticket-key>-<subject>.html`), read it and skip to step 2 — it already covers current behavior, constraints, and open questions. You'll be appending to it.
 
 **If none exists, run `/explain <ticket>` to create it.** Orientation and planning are different jobs, and a plan built without the first one is built on a shaky model. Come back here when the page exists. There is no shortcut — orienting well enough yourself does not substitute, because the page is what Camen reads to catch up, and a plan he can't check is a plan he has to take on faith.
 
@@ -71,7 +71,7 @@ Show the slicing. He confirms or restructures.
 
 ### 5. Write into the work page
 
-`~/Documents/notes/explain/<ticket>.html`. The page exists with its orientation sections — **append, don't replace.**
+The same `~/Documents/notes/tickets/` page you read in step 1 — **append, don't replace**, and don't rename it.
 
 You own three sections: **Files**, **PR slices**, **Decisions**. You also append to **Open questions**. Everything else belongs to `/explain` — carry it through untouched.
 

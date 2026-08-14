@@ -28,7 +28,7 @@ Read the reference for each surface before auditing it. Do not audit from memory
 
 ### 1. Pages this work produced
 
-Anything in `~/Documents/notes/explain/` touched by this work: explainers, ticket pages, plans. Audited first, because this is where the damage is worst and least visible.
+Anything in `~/Documents/notes/tickets/`, `prs/`, or `concepts/` touched by this work: explainers, ticket pages, plans. Audited first, because this is where the damage is worst and least visible.
 
 The failure to hunt for is prose that is terse, precise, correct, and undecipherable to anyone who wasn't in the session. It passes every voice rule, which is why it survives. Run the context-independence test against every line: an identifier as a sentence's subject, a term coined mid-session used as shared vocabulary, a pointer standing in for what it says, a claim whose stakes are never stated.
 
