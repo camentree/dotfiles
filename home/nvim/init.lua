@@ -1865,7 +1865,13 @@ require("lazy").setup({
 		lazy = false,
 		opts = {
 			trigger_events = {
-				immediate_save = { "InsertLeave", "QuitPre", "VimSuspend" },
+				immediate_save = {
+					"InsertLeave",
+					"BufLeave",
+					"FocusLost",
+					"QuitPre",
+					"VimSuspend",
+				},
 				defer_save = {},
 				cancel_deferred_save = {},
 			},
