@@ -1,5 +1,5 @@
 export PATH="$HOME/.npm-global/bin:$PATH"
-export DOTFILES="${${:-$HOME/.zshrc}:A:h:h}"
+export DOTFILES_PATH="${${:-$HOME/.zshrc}:A:h:h}"
 
 # History
 HISTFILE="$HOME/.zsh_history"
@@ -52,7 +52,9 @@ function nvim () { OUTER_TTY=${OUTER_TTY:-$TTY} command nvim "$@" ; }
 function va () { source .venv/bin/activate ; }
 function vn () { uv venv --python "${1:-3.13}" ".venv" ; echo "Created .venv" ; va ; }
 function vdd () { deactivate 2>/dev/null ; rm -rf .venv ; echo "Removed .venv" ; }
-function nix-rebuild () { sudo $(which darwin-rebuild) switch --flake "$DOTFILES#$1" "${@:2}" ; }
+function nix-rebuild () {
+  sudo $(which darwin-rebuild) switch --flake "$DOTFILES_PATH#$NIX_MACHINE" "$@"
+}
 function airpods-max () { blueutil --connect 08:FF:44:49:DD:C8 --wait-connect 08:FF:44:49:DD:C8 10 ; }
 ## Functions -- Claude Tab Status
 [[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"

@@ -6,6 +6,8 @@
 {
   nixpkgs.hostPlatform = "aarch64-darwin";
 
+  environment.variables.NIX_MACHINE = "mac-arm-work";
+
   # Work packages
   environment.systemPackages = with pkgs; [
     buf

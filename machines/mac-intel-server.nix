@@ -121,6 +121,8 @@ in
   networking.hostName = "mac-intel-server";
   networking.computerName = "mac-intel-server";
 
+  environment.variables.NIX_MACHINE = "mac-intel-server";
+
   # DHCP hands out only the router as a resolver, so any hiccup there fails
   # every lookup outright -- Home Assistant integrations then time out and mark
   # their entities unavailable, which Apple Home shows as "No Response". The
