@@ -1,0 +1,12 @@
+export NOTEBOOK_PATH="$HOME/Documents/Life/notebook.md"
+export TODO_PATH="$HOME/Documents/Life/todo.md"
+alias dotfiles="cd ~/Projects/dotfiles/"
+
+alias switch-gpu-off="sudo pmset -a gpuswitch 0"
+alias switch-gpu-on="sudo pmset -a gpuswitch 2"
+
+parallax-deploy() {
+  nix flake update parallax --flake ~/Projects/dotfiles &&
+    nix-rebuild mac-intel-server
+}
+
