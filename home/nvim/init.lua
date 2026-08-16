@@ -423,6 +423,12 @@ vim.keymap.set("i", "<C-e>", "<C-o>g$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>o", { desc = "New line below" })
 vim.keymap.set("n", "<S-CR>", "o", { desc = "New line below" })
+vim.keymap.set("t", "<S-CR>", function()
+	local channel = vim.bo.channel
+	if channel ~= 0 then
+		vim.api.nvim_chan_send(channel, "\n")
+	end
+end, { desc = "New line in the terminal program" })
 vim.keymap.set("i", "<D-S-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("n", "<D-S-CR>", "O", { desc = "New line above" })
 vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
