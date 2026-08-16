@@ -53,6 +53,7 @@ vim.o.breakindent = true
 vim.o.linebreak = true
 vim.o.showbreak = "↳ "
 vim.o.undofile = true
+vim.o.swapfile = false
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.signcolumn = "auto"
@@ -1864,10 +1865,18 @@ require("lazy").setup({
 		"okuuva/auto-save.nvim",
 		lazy = false,
 		opts = {
+			debounce_delay = 300,
 			trigger_events = {
-				immediate_save = { "InsertLeave", "QuitPre", "VimSuspend" },
-				defer_save = {},
-				cancel_deferred_save = {},
+				immediate_save = {
+					"InsertLeave",
+					"BufLeave",
+					"WinLeave",
+					"FocusLost",
+					"QuitPre",
+					"VimSuspend",
+				},
+				defer_save = { "TextChanged", "TextChangedI" },
+				cancel_deferred_save = { "InsertEnter" },
 			},
 			condition = function(buf)
 				for _, win in ipairs(vim.fn.win_findbuf(buf)) do
