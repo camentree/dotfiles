@@ -84,6 +84,21 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
 })
 
+vim.api.nvim_create_autocmd("FileChangedShell", {
+	callback = function(args)
+		if vim.bo[args.buf].modified then
+			vim.notify(
+				vim.fn.fnamemodify(args.file, ":~:.")
+					.. " changed on disk while this buffer had unsaved edits",
+				vim.log.levels.WARN
+			)
+			vim.v.fcs_choice = "ask"
+		else
+			vim.v.fcs_choice = "reload"
+		end
+	end,
+})
+
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
 	callback = function()
 		if vim.bo.buftype == "terminal" then
