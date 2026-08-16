@@ -72,6 +72,12 @@ function notes () {
 
   cd "${notebook:h}" && tabname notes && nvim "$notebook"
 }
+function todo () {
+  local todo_file="$TODO_PATH"
+  [ -n "$todo_file" ] || { print -u2 "TODO_PATH unset"; return 1 }
+
+  cd "${todo_file:h}" && tabname todo && nvim "$todo_file"
+}
 ## Functions -- Claude Tab Status
 [[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"
 
