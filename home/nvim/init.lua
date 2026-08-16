@@ -53,6 +53,7 @@ vim.o.breakindent = true
 vim.o.linebreak = true
 vim.o.showbreak = "↳ "
 vim.o.undofile = true
+vim.o.swapfile = false
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.signcolumn = "auto"
@@ -71,7 +72,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.o.foldcolumn = "auto:9"
+vim.o.foldcolumn = "0"
 -- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
 vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
@@ -81,6 +82,21 @@ vim.o.title = false
 vim.o.guicursor = "n-v-c-sm:block,i-ci-ve-t:ver25,r-cr-o:hor20"
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
+})
+
+vim.api.nvim_create_autocmd("FileChangedShell", {
+	callback = function(args)
+		if vim.bo[args.buf].modified then
+			vim.notify(
+				vim.fn.fnamemodify(args.file, ":~:.")
+					.. " changed on disk while this buffer had unsaved edits",
+				vim.log.levels.WARN
+			)
+			vim.v.fcs_choice = "ask"
+		else
+			vim.v.fcs_choice = "reload"
+		end
+	end,
 })
 
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
@@ -232,6 +248,12 @@ for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
 end
 vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
 vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
+vim.keymap.set(
+	"x",
+	"p",
+	'"_dP',
+	{ desc = "Paste over selection, keeping the clipboard" }
+)
 do
 	local url_tlds = {
 		com = true,
@@ -423,6 +445,12 @@ vim.keymap.set("i", "<C-e>", "<C-o>g$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>o", { desc = "New line below" })
 vim.keymap.set("n", "<S-CR>", "o", { desc = "New line below" })
+vim.keymap.set("t", "<S-CR>", function()
+	local channel = vim.bo.channel
+	if channel ~= 0 then
+		vim.api.nvim_chan_send(channel, "\n")
+	end
+end, { desc = "New line in the terminal program" })
 vim.keymap.set("i", "<D-S-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("n", "<D-S-CR>", "O", { desc = "New line above" })
 vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
@@ -1864,10 +1892,18 @@ require("lazy").setup({
 		"okuuva/auto-save.nvim",
 		lazy = false,
 		opts = {
+			debounce_delay = 300,
 			trigger_events = {
-				immediate_save = { "InsertLeave", "QuitPre", "VimSuspend" },
-				defer_save = {},
-				cancel_deferred_save = {},
+				immediate_save = {
+					"InsertLeave",
+					"BufLeave",
+					"WinLeave",
+					"FocusLost",
+					"QuitPre",
+					"VimSuspend"
+				},
+				defer_save = { "TextChanged", "TextChangedI" },
+				cancel_deferred_save = { "InsertEnter" },
 			},
 			condition = function(buf)
 				for _, win in ipairs(vim.fn.win_findbuf(buf)) do
