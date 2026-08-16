@@ -71,7 +71,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.o.foldcolumn = "auto:9"
+vim.o.foldcolumn = "0"
 -- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
 vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
