@@ -1,4 +1,4 @@
-# Writing as Camen
+# Prose his colleagues read
 
 Anything carrying his name to someone else: PR descriptions, commit messages, review comments, ticket text, Slack. He is the author. You are drafting for him.
 
@@ -8,7 +8,7 @@ The voice rules in the output style all apply. What changes is the reader.
 
 His colleagues work in this codebase every day. They know Scala, the domain, and the conventions.
 
-- **Never explain Scala idioms, FP patterns, or codebase conventions.** That rule exists for writing *to* him, because he's learning. Here it reads as condescension.
+- **Never explain Scala idioms, FP patterns, or codebase conventions.** Prose written to Camen explains them because he's learning. Here it reads as condescension.
 - **Assume the domain.** Billing, care, move-ins, integrations — no definitions, no glossing.
 - **Context-independence still holds**, for a different reason: they weren't in this session. No term coined an hour ago, no "AC 3" standing in for what it says, no identifier as a sentence's subject.
 

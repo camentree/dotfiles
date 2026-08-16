@@ -25,7 +25,6 @@ alias g="git"
 alias gaa="git add --all"
 alias gcm="git commit -m"
 alias gco="git checkout"
-alias writing-audits="bash ~/.claude/scripts/writing-audit-log.sh show"
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line

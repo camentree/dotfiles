@@ -15,6 +15,8 @@ The `writing-for-humans` output style. Always on, no invocation. Per-surface det
 @~/.claude/skills/writing-style/references/conversation.md
 @~/.claude/skills/writing-style/references/code.md
 
+Code is held to this and to the output style, and to nothing else — don't audit it after the fact. Auditing is for prose, it's the `writing-audit` skill, and it runs when I ask for it or when a skill I started reaches a step that calls for it.
+
 ## Permissions
 
 I'm learning permission management. If you're asking for a permission and I hit "accept all," and the rule seems generically safe/reasonable (not just for this one task), ask whether I'd like to add it to my global permissions.
