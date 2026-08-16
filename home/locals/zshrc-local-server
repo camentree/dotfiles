@@ -1,7 +1,6 @@
 export NOTEBOOK_PATH="$HOME/Documents/Life/notebook.md"
 export TODO_PATH="$HOME/Documents/Life/todo.md"
 
-alias notes="cd $NOTEBOOK_PATH && tabname notes && vim"
 alias dotfiles="cd $DOTFILES_PATH && tabname dotfiles && vim"
 alias switch-gpu-off="sudo pmset -a gpuswitch 0"
 alias switch-gpu-on="sudo pmset -a gpuswitch 2"
