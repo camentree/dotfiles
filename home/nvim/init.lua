@@ -232,6 +232,12 @@ for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
 end
 vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
 vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
+vim.keymap.set(
+	"x",
+	"p",
+	'"_dP',
+	{ desc = "Paste over selection, keeping the clipboard" }
+)
 do
 	local url_tlds = {
 		com = true,
