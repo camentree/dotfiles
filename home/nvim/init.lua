@@ -72,7 +72,7 @@ vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
-vim.o.foldcolumn = "auto:9"
+vim.o.foldcolumn = "0"
 -- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
 vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
@@ -248,6 +248,12 @@ for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
 end
 vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
 vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
+vim.keymap.set(
+	"x",
+	"p",
+	'"_dP',
+	{ desc = "Paste over selection, keeping the clipboard" }
+)
 do
 	local url_tlds = {
 		com = true,
@@ -439,6 +445,12 @@ vim.keymap.set("i", "<C-e>", "<C-o>g$", { desc = "Line end (Cmd+Right)" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "De-indent" })
 vim.keymap.set("i", "<S-CR>", "<C-o>o", { desc = "New line below" })
 vim.keymap.set("n", "<S-CR>", "o", { desc = "New line below" })
+vim.keymap.set("t", "<S-CR>", function()
+	local channel = vim.bo.channel
+	if channel ~= 0 then
+		vim.api.nvim_chan_send(channel, "\n")
+	end
+end, { desc = "New line in the terminal program" })
 vim.keymap.set("i", "<D-S-CR>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("n", "<D-S-CR>", "O", { desc = "New line above" })
 vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
@@ -1888,7 +1900,7 @@ require("lazy").setup({
 					"WinLeave",
 					"FocusLost",
 					"QuitPre",
-					"VimSuspend",
+					"VimSuspend"
 				},
 				defer_save = { "TextChanged", "TextChangedI" },
 				cancel_deferred_save = { "InsertEnter" },
