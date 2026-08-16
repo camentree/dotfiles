@@ -57,6 +57,28 @@ function nix-rebuild () {
   sudo $(which darwin-rebuild) switch --flake "$DOTFILES_PATH#$NIX_MACHINE" "$@"
 }
 function airpods-max () { blueutil --connect 08:FF:44:49:DD:C8 --wait-connect 08:FF:44:49:DD:C8 10 ; }
+function notes () {
+  local notebook="$NOTEBOOK_PATH"
+  [ -n "$notebook" ] || { print -u2 "NOTEBOOK_PATH unset"; return 1 }
+
+  local heading="## $(date +%Y-%m-%d)"
+  mkdir -p "${notebook:h}"
+  [ -f "$notebook" ] || : > "$notebook"
+
+  if ! grep -qxF "$heading" "$notebook"; then
+    local prepended="${notebook}.prepending"
+    printf '%s\n\n' "$heading" | cat - "$notebook" > "$prepended" \
+      && mv "$prepended" "$notebook"
+  fi
+
+  cd "${notebook:h}" && tabname notes && nvim "$notebook"
+}
+function todo () {
+  local todo_file="$TODO_PATH"
+  [ -n "$todo_file" ] || { print -u2 "TODO_PATH unset"; return 1 }
+
+  cd "${todo_file:h}" && tabname todo && nvim "$todo_file"
+}
 ## Functions -- Claude Tab Status
 [[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"
 

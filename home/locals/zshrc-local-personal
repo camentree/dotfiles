@@ -1,4 +1,2 @@
 export NOTEBOOK_PATH="$HOME/Documents/Life/notebook.md"
 export TODO_PATH="$HOME/Documents/Life/todo.md"
-
-alias notes="cd $NOTEBOOK_PATH && tabname notes && vim" 
