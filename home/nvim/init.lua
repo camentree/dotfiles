@@ -53,6 +53,7 @@ vim.o.breakindent = true
 vim.o.linebreak = true
 vim.o.showbreak = "↳ "
 vim.o.undofile = true
+vim.o.swapfile = false
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.signcolumn = "auto"
@@ -81,6 +82,21 @@ vim.o.title = false
 vim.o.guicursor = "n-v-c-sm:block,i-ci-ve-t:ver25,r-cr-o:hor20"
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
 	command = "checktime",
+})
+
+vim.api.nvim_create_autocmd("FileChangedShell", {
+	callback = function(args)
+		if vim.bo[args.buf].modified then
+			vim.notify(
+				vim.fn.fnamemodify(args.file, ":~:.")
+					.. " changed on disk while this buffer had unsaved edits",
+				vim.log.levels.WARN
+			)
+			vim.v.fcs_choice = "ask"
+		else
+			vim.v.fcs_choice = "reload"
+		end
+	end,
 })
 
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TermOpen" }, {
@@ -1876,16 +1892,18 @@ require("lazy").setup({
 		"okuuva/auto-save.nvim",
 		lazy = false,
 		opts = {
+			debounce_delay = 300,
 			trigger_events = {
 				immediate_save = {
 					"InsertLeave",
 					"BufLeave",
+					"WinLeave",
 					"FocusLost",
 					"QuitPre",
-					"VimSuspend",
+					"VimSuspend"
 				},
-				defer_save = {},
-				cancel_deferred_save = {},
+				defer_save = { "TextChanged", "TextChangedI" },
+				cancel_deferred_save = { "InsertEnter" },
 			},
 			condition = function(buf)
 				for _, win in ipairs(vim.fn.win_findbuf(buf)) do
