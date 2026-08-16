@@ -5,17 +5,23 @@ We have a couple methods for affecting claude code's output
 1. context-injection
 2. agents
 3. skills
-4. tool hooks
 
 
 ## Paths into style
 
 1. context-injection
   - writing-style/references
+    - code.md
+      - _style rules for code_
+      - automatic
+        - always imported by CLAUDE.md when session starts
+      - by user
+        - /execute-pr (read again right before code gets written)
+        - /style-pass
     - artifacts.md
       - _artifact creation rules_
       - automatic
-        - can be injected by agent after writing an artifact (/writing-audit)
+        - none
       - by user
         - /explain
         - /plan-feature
@@ -25,26 +31,20 @@ We have a couple methods for affecting claude code's output
       - automatic
         - always imported by CLAUDE.md when session starts
         - can be injected by agent when responding to camen (writing-for-humans output style)
-        - can be injected by agent after responding with something Camen should engage with (/writing-audit)
       - by user
         - /explain
         - /plan-feature
         - /plan-pr
         - /execute-pr
         - /address-comments
-    - as-me.md
-      - _style rules for prose written as Camen_
+        - /writing-audit
+    - published.md
+      - _style rules for prose Camen publishes — PR descriptions, commits, review comments, tickets_
       - automatic
-        - can be injected by agent when auditing a PR description or commit message (/writing-audit)
+        - none
       - by user
         - /open-pr
-    - code.md
-      - _style rules for code_
-      - automatic
-        - always imported by CLAUDE.md when session starts
-      - by user
-        - /execute-pr (read again right before code gets written)
-        - /style-pass
+        - /writing-audit
   - output-styles/writing-for-humans.md
     - _always-on style rules; the only lever for chat_
     - automatic
@@ -61,14 +61,13 @@ We have a couple methods for affecting claude code's output
   - prose-grader.md
     - _grades prose with no session context; reports what it couldn't understand_
     - automatic
-      - sometimes called by claude when grading a page, a PR description, or something Camen should engage with (/writing-audit)
       - sometimes called by claude before a real question reaches Camen (writing-for-humans output style)
       - sometimes called by claude when its description fits the task (ad hoc)
     - by user
-      - none
+      - /writing-audit — on pages, PR descriptions, and anything he's meant to engage with
 3. skills
   - writing-audit
-    - _rewrites finished prose against the references; wraps prose-grader_
+    - _rewrites finished prose against the references; wraps prose-grader. Prose only — never code, never on claude's own initiative_
     - automatic
       - none
     - by user
@@ -81,7 +80,7 @@ We have a couple methods for affecting claude code's output
   - style-pass
     - _reviews and fixes the working diff against code.md_
     - automatic
-      - sometimes called by claude when the audit reaches code (/writing-audit)
+      - none
     - by user
       - /execute-pr
       - typed directly
@@ -91,13 +90,6 @@ We have a couple methods for affecting claude code's output
       - sometimes called by claude when defining or polishing a style (ad hoc)
     - by user
       - none
-4. tool hooks
-  - writing-audit-log.sh
-    - _keeps the audit log_
-    - automatic
-      - always run on PreToolUse for Skill
-    - by user
-      - `writing-audits` alias
 
 
 ## Structure
@@ -111,13 +103,10 @@ We have a couple methods for affecting claude code's output
     writing-style/
       SKILL.md               
       references/
+        code.md              
         artifacts.md                 
         conversation.md      
-        as-me.md            
-        code.md              
+        published.md             
     writing-audit/SKILL.md   
     style-pass/SKILL.md      
-scripts/
-  writing-audit-log.sh     
 settings.json
-

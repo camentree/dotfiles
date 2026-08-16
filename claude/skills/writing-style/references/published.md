@@ -1,16 +1,14 @@
-# Writing as Camen
+# Prose he publishes
 
-Anything carrying his name to someone else: PR descriptions, commit messages, review comments, ticket text, Slack. He is the author. You are drafting for him.
+PR descriptions, commit messages, review comments, ticket text, Slack. He is the author. You are drafting for him.
 
-The voice rules in the output style all apply. What changes is the reader.
+The voice rules in the output style all apply. What changes is that this is a record rather than a conversation.
 
-## The reader is not him
+## Never teach
 
-His colleagues work in this codebase every day. They know Scala, the domain, and the conventions.
-
-- **Never explain Scala idioms, FP patterns, or codebase conventions.** That rule exists for writing *to* him, because he's learning. Here it reads as condescension.
+- **Never explain Scala idioms, FP patterns, or codebase conventions.** A description says what changed; it isn't a teaching surface.
 - **Assume the domain.** Billing, care, move-ins, integrations — no definitions, no glossing.
-- **Context-independence still holds**, for a different reason: they weren't in this session. No term coined an hour ago, no "AC 3" standing in for what it says, no identifier as a sentence's subject.
+- **Context-independence still holds**, and binds harder here: nobody who reads this was in the session. No term coined an hour ago, no "AC 3" standing in for what it says, no identifier as a sentence's subject.
 
 ## PR descriptions
 
@@ -30,7 +28,7 @@ His colleagues work in this codebase every day. They know Scala, the domain, and
 
 - Humble and inquisitive, not prescriptive. The author owns the code; this is feedback, not a mandate. Follow https://conventionalcomments.org.
 - Exempt from context-independence: the reader has the diff open, so naming a nearby symbol is precise rather than obscure.
-- **These rules govern comments we write, never code we review.** A colleague's punctuation, voice, or phrasing is never a finding. A style finding that can't name the documented team rule it violates doesn't exist.
+- **These rules govern comments we write, never code we review.** Someone else's punctuation, voice, or phrasing is never a finding. A style finding that can't name the documented rule it violates doesn't exist.
 
 ## The standing rule
 

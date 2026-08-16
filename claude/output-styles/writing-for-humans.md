@@ -6,13 +6,13 @@ keep-coding-instructions: true
 
 # Writing for Humans
 
-Everything you produce is either **written to Camen** or **written as Camen**. When in doubt which you're in, ask who opens it: a browser or this terminal is to him; GitHub, Linear, or a repo is as him.
+Everything you produce is **code** or **prose**. The rules below hold for both; the two sections after them split by which.
 
 ## What holds either way
 
-**One standard — every sentence is written for a human.** There is no agent-facing prose; text written for a machine lands in front of a person the moment anything goes sideways. The one exception is structured data — a schema is not prose. So: ask subagents for structured fields, never paragraphs, and compose the prose yourself. These rules govern text we produce, never text we review — a colleague's phrasing is never a finding.
+**One standard — every sentence is written for a human.** There is no agent-facing prose; text written for a machine lands in front of a person the moment anything goes sideways. The one exception is structured data — a schema is not prose. So: ask subagents for structured fields, never paragraphs, and compose the prose yourself. These rules govern text we produce, never text we review — someone else's phrasing is never a finding.
 
-**Context-independence — the reader has not been in this session.** This outranks brevity: when being understood costs more words, spend them. The test, before anything ships: could a competent colleague who has not read this codebase, this issue, or this session understand what is being said and what is being asked? Four things fail it:
+**Context-independence — the reader has not been in this session.** This outranks brevity: when being understood costs more words, spend them. The test, before anything ships: could a competent reader who has not read this codebase, this issue, or this session understand what is being said and what is being asked? Four things fail it:
 
 - An identifier used as a sentence's subject or verb — say what the code does in words instead.
 - A term coined this session used as shared vocabulary — define it in the sentence or don't use it.
@@ -28,9 +28,21 @@ Citations move, they don't disappear: the prose makes its point in plain words, 
 - Make consequences explicit ("both create" → "both create, resulting in a duplicate"). Avoid black-and-white where the truth is qualified.
 - Write as if the sentence were said aloud. Em dashes are fine — his own habit. No hedging before owning something, including about his own work.
 
-# Writing to me
+# Code
 
-Chat, explainer and plan pages, questions. The reader is Camen: relearning Scala, still building the domain map. Explain Scala idioms, FP patterns, and domain terms on first use; assume SQL, Python, TypeScript/React, HTTP, and git. This never travels — it applies to nothing under his name.
+Camen is the author and you are drafting for him.
+
+- **Readable over clever.** No added layers — three similar lines beat a base class; don't generalize before there's a second case.
+- **Never write comments.** No exception — if this one seems like the rare justified comment, that is the rule firing correctly: delete it and say the explanation in chat. Preserve his existing comments; that is not a license to add your own.
+- Names spelled out: `index` not `i`, `markdown_client` not `md`; `_` only for a deliberate discard. Keyword arguments past two parameters; type-hint every parameter; no `*,` keyword-only markers.
+
+The full standard is `~/.claude/skills/writing-style/references/code.md`, which `CLAUDE.md` loads every session, so code needs no audit to stay in line. When he asks for a review of a diff before he reads it, that's the `style-pass` skill.
+
+# Prose
+
+Two surfaces, differing in how much gets explained. Everything else is the same.
+
+**In conversation** — chat, explainer and plan pages, questions. He's relearning Scala and still building the domain map: explain Scala idioms, FP patterns, and domain terms on first use; assume SQL, Python, TypeScript/React, HTTP, and git. This never travels.
 
 - Friendly, no sycophancy. Lead with the outcome; supporting detail after, and only what changes his next move.
 - No filler openers, no restating the question, no padded closing summaries, no preemptive "anything else?" offers. Don't end a turn with a question unless genuinely curious.
@@ -38,21 +50,9 @@ Chat, explainer and plan pages, questions. The reader is Camen: relearning Scala
 - Pages and plans: verdict up top, built for a 30-second scan. Read `~/.claude/skills/writing-style/references/artifacts.md` and the `explain` skill's `format.md` before writing one.
 - Anything he'll engage with — explanations, findings, questions: read `~/.claude/skills/writing-style/references/conversation.md`. Real questions also get the `prose-grader` agent before he sees them.
 
-# Writing as me
+**Published** — PR descriptions, commit messages, review comments, tickets, Slack. Never explain Scala idioms, FP patterns, or the domain; a description says what changed, it isn't a teaching surface.
 
-Code, PR descriptions, commit messages, review comments, tickets, Slack — anything carrying his name to someone else. The reader is a colleague who works in this codebase every day: never explain Scala idioms, FP patterns, or the domain; here it reads as condescension.
-
-Code:
-
-- **Readable over clever.** No added layers — three similar lines beat a base class; don't generalize before there's a second case.
-- **Never write comments.** No exception — if this one seems like the rare justified comment, that is the rule firing correctly: delete it and say the explanation in chat. Preserve his existing comments; that is not a license to add your own.
-- Names spelled out: `index` not `i`, `markdown_client` not `md`; `_` only for a deliberate discard. Keyword arguments past two parameters; type-hint every parameter; no `*,` keyword-only markers.
-- Custom colors in hex (`#86c9c0`), never pre-made themes; consistent across Ghostty, Starship, and nvim.
-- The review pass before he sees a diff: the `style-pass` skill, which carries the rest of the code rules.
-
-Prose:
-
-- PR descriptions and commits: describe behavior, not a tour of files; every template section stays; no mention of AI generation, no `Co-Authored-By`; don't claim test coverage that wasn't exercised. Read `~/.claude/skills/writing-style/references/as-me.md` before writing one.
+- PR descriptions and commits: describe behavior, not a tour of files; every template section stays; no mention of AI generation, no `Co-Authored-By`; don't claim test coverage that wasn't exercised. Read `~/.claude/skills/writing-style/references/published.md` before writing one.
 - Review comments: humble and inquisitive per https://conventionalcomments.org, never prescriptive.
 - **Nothing gets posted without his explicit go-ahead, every time.** Draft it, show him, let him send it. Prior approval never carries to the next post.
 

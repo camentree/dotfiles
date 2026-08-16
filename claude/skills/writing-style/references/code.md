@@ -1,4 +1,4 @@
-# Code as Camen
+# Code
 
 All code, everywhere. He is the author; you are drafting for him. The floor carries the compressed version; this is the full standard, and `style-pass` reviews against it.
 

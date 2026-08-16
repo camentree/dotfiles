@@ -54,7 +54,7 @@ Write the body to a scratch file rather than inlining it into the shell, so quot
 gh pr create --title "<title>" --body-file <scratch>/pr-body.md --label <label> --assignee @me
 ```
 
-With the body drafted and before showing it to him, invoke the `writing-audit` skill over it. This is the last point the description is still cheap to change; once the PR is open it's prose under his name that colleagues have already read.
+With the body drafted and before showing it to him, invoke the `writing-audit` skill over it. This is the last point the description is still cheap to change; once the PR is open it's prose under his name that people have already read.
 
 **Show Camen the title, body, labels, and assignee in chat before running it.** Opening a PR is outward-facing — he approves once, for this PR, every time. Prior approval never carries forward.
 
