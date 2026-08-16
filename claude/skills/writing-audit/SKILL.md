@@ -21,7 +21,7 @@ Read the reference for each surface before auditing it. Do not audit from memory
 | Explainer and plan pages | `~/.claude/skills/writing-style/references/artifacts.md` |
 | Prose he engages with in conversation, questions above all | `~/.claude/skills/writing-style/references/conversation.md` |
 | Page mechanics — folds, classes, diagrams | `~/.claude/skills/explain/reference/format.md` |
-| PR descriptions, commit messages, review comments | `~/.claude/skills/writing-style/references/colleagues.md`, plus the repo's `pull_request_template.md` |
+| PR descriptions, commit messages, review comments | `~/.claude/skills/writing-style/references/published.md`, plus the repo's `pull_request_template.md` |
 
 **The floor is the `writing-for-humans` output style, and this audit is void without it.** It carries the context-independence test that item 1 leans on entirely and the voice rules. Confirm it's active before auditing anything. If it isn't — switched off, or you're a subagent, which don't inherit output styles — load it before proceeding. Auditing against the references alone silently drops half the standard.
 

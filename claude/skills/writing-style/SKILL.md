@@ -1,6 +1,6 @@
 ---
 name: writing-style
-description: The canonical home for how each kind of output gets written for Camen — code, workflow artifacts and explainer pages, conversation prose he engages with, and prose his colleagues read. Load the matching reference before producing one of these, when he asks how something should be written, or when defining or polishing a style. Skills that produce output point here instead of restating rules.
+description: The canonical home for how each kind of output gets written for Camen — code, workflow artifacts and explainer pages, conversation prose he engages with, and prose he publishes. Load the matching reference before producing one of these, when he asks how something should be written, or when defining or polishing a style. Skills that produce output point here instead of restating rules.
 argument-hint: [output type, e.g. questions — omit to list the references]
 ---
 
@@ -20,9 +20,9 @@ Everything is **code** or **prose** — the output style's two main sections. Th
 | Explainer and plan pages | `references/artifacts.md` |
 | Conversation prose he engages with | `references/conversation.md` |
 | HTML page mechanics — scaffold, folds, classes | `~/.claude/skills/explain/reference/format.md` |
-| PR descriptions, commits, review comments, tickets | `references/colleagues.md` |
+| PR descriptions, commits, review comments, tickets | `references/published.md` |
 
-Worth writing next, when a surface starts costing rework: Slack or ticket prose if it stops fitting `colleagues.md`.
+Worth writing next, when a surface starts costing rework: Slack or ticket prose if it stops fitting `published.md`.
 
 ## Contract for skills
 

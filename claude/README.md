@@ -38,8 +38,8 @@ We have a couple methods for affecting claude code's output
         - /execute-pr
         - /address-comments
         - /writing-audit
-    - colleagues.md
-      - _style rules for prose Camen's colleagues read — PR descriptions, commits, review comments, tickets_
+    - published.md
+      - _style rules for prose Camen publishes — PR descriptions, commits, review comments, tickets_
       - automatic
         - none
       - by user
@@ -106,7 +106,7 @@ We have a couple methods for affecting claude code's output
         code.md              
         artifacts.md                 
         conversation.md      
-        colleagues.md            
+        published.md             
     writing-audit/SKILL.md   
     style-pass/SKILL.md      
 settings.json
