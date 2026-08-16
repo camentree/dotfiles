@@ -1,3 +1,2 @@
 export NOTEBOOK_PATH="$HOME/Documents/Life/notebook.md"
 export TODO_PATH="$HOME/Documents/Life/todo.md"
-alias dotfiles="cd ~/Projects/dotfiles/"

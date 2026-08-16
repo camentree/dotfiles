@@ -10,7 +10,6 @@ export AUGUST_AI_COMPLETIONS_PATH="$HOME/Projects/ai-completions"
 alias fullstack="cd $AUGUST_FULLSTACK_PATH"
 alias backend="cd $AUGUST_BACKEND_PATH/loquat"
 alias frontend="cd $AUGUST_FRONTEND_PATH"
-alias dotfiles="cd $HOME/Projects/dotfiles && tabname dotfiles && nvim"
 
 function _august-attach () {
   if [ -n "$TMUX" ]; then tmux switch-client -t "$1"
