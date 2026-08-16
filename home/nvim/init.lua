@@ -130,15 +130,11 @@ vim.keymap.set("t", "<M-v>", function()
 	end
 end, { desc = "Paste clipboard with bracketed paste" })
 
--- Single Esc exits terminal mode. To send a literal Esc to the running program,
--- use <C-V><Esc>.
-vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
-
 local function terminal_mouse(lhs)
 	return function()
 		local pos = vim.fn.getmousepos()
 		if pos.winid == 0 or pos.winid == vim.api.nvim_get_current_win() then
-			return ""
+			return lhs
 		end
 		return [[<C-\><C-n>]] .. lhs
 	end
@@ -157,7 +153,7 @@ for _, lhs in ipairs({
 	vim.keymap.set("t", lhs, terminal_mouse(lhs), {
 		expr = true,
 		replace_keycodes = true,
-		desc = "Stay in terminal mode on in-window click",
+		desc = "Leave terminal mode only when clicking another window",
 	})
 end
 
