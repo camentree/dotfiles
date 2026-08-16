@@ -118,19 +118,22 @@ end, { desc = "Paste clipboard with bracketed paste" })
 -- use <C-V><Esc>.
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
+local terminal_drag_anchor = nil
+
 local function terminal_mouse(lhs)
 	return function()
 		local pos = vim.fn.getmousepos()
 		if pos.winid == 0 or pos.winid == vim.api.nvim_get_current_win() then
+			terminal_drag_anchor = pos
 			return ""
 		end
+		terminal_drag_anchor = nil
 		return [[<C-\><C-n>]] .. lhs
 	end
 end
 
 for _, lhs in ipairs({
 	"<LeftMouse>",
-	"<LeftDrag>",
 	"<LeftRelease>",
 	"<2-LeftMouse>",
 	"<3-LeftMouse>",
@@ -144,6 +147,55 @@ for _, lhs in ipairs({
 		desc = "Stay in terminal mode on in-window click",
 	})
 end
+
+local function place_cursor(position)
+	vim.api.nvim_win_set_cursor(
+		0,
+		{ position.line, math.max(position.column - 1, 0) }
+	)
+end
+
+vim.keymap.set("t", "<LeftDrag>", function()
+	local anchor = terminal_drag_anchor
+	local pos = vim.fn.getmousepos()
+	local window = vim.api.nvim_get_current_win()
+	if
+		anchor == nil
+		or anchor.line == 0
+		or pos.line == 0
+		or anchor.winid ~= window
+		or pos.winid ~= window
+	then
+		return
+	end
+	vim.cmd("stopinsert")
+	vim.schedule(function()
+		place_cursor(anchor)
+		vim.cmd("normal! v")
+		place_cursor(pos)
+	end)
+end, { desc = "Drag to select terminal output" })
+
+vim.api.nvim_create_autocmd("TermOpen", {
+	callback = function(args)
+		vim.keymap.set("x", "<LeftDrag>", function()
+			local pos = vim.fn.getmousepos()
+			if pos.line > 0 and pos.winid == vim.api.nvim_get_current_win() then
+				place_cursor(pos)
+			end
+		end, { buffer = args.buf, desc = "Extend the terminal selection" })
+
+		vim.keymap.set(
+			"x",
+			"<LeftRelease>",
+			function()
+				vim.cmd("normal! y")
+				vim.cmd("startinsert")
+			end,
+			{ buffer = args.buf, desc = "Copy the selection and resume typing" }
+		)
+	end,
+})
 
 local original_path = vim.env.PATH
 vim.api.nvim_create_autocmd("FileType", {
