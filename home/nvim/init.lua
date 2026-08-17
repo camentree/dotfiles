@@ -35,14 +35,19 @@ vim.g.have_nerd_font = true
 
 -- [[ OPTIONS ]]
 vim.schedule(function()
-	-- schedule settings after `UIEnter` to decrease startup time
 	vim.o.clipboard = "unnamedplus"
 	if os.getenv("SSH_TTY") then
 		local osc52 = require("vim.ui.clipboard.osc52")
+		local paste_from_unnamed = function()
+			return {
+				vim.fn.split(vim.fn.getreg(""), "\n"),
+				vim.fn.getregtype(""),
+			}
+		end
 		vim.g.clipboard = {
 			name = "OSC 52",
 			copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
-			paste = { ["+"] = osc52.paste("+"), ["*"] = osc52.paste("*") },
+			paste = { ["+"] = paste_from_unnamed, ["*"] = paste_from_unnamed },
 		}
 	end
 end)
@@ -73,7 +78,6 @@ vim.o.shiftwidth = 2
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldcolumn = "0"
--- nvim ships linematch:40 by default; drop it so the value below isn't a duplicate.
 vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
 vim.o.termguicolors = true
@@ -194,10 +198,7 @@ vim.diagnostic.config({
 	float = { border = "rounded", source = "if_many" },
 	underline = { severity = { min = vim.diagnostic.severity.WARN } },
 	virtual_text = false,
-	-- Full-text diagnostics on their own lines below the code (Neovim 0.11+).
-	-- Swap in `{ current_line = true }` to limit to the cursor's line only.
 	virtual_lines = false,
-	-- virtual_lines = { current_line = true },
 	jump = { on_jump = "float" },
 })
 
@@ -234,14 +235,12 @@ vim.keymap.set({ "n", "v" }, "<Down>", "gj", { desc = "Down by display line" })
 vim.keymap.set({ "n", "v" }, "<Up>", "gk", { desc = "Up by display line" })
 vim.keymap.set({ "n", "v" }, "<Home>", "g0", { desc = "Display line start" })
 vim.keymap.set({ "n", "v" }, "<End>", "g$", { desc = "Display line end" })
-vim.keymap.set("n", "<D-z>", "u", { desc = "Undo" })
-vim.keymap.set("i", "<D-z>", "<C-o>u", { desc = "Undo" })
-vim.keymap.set("v", "<D-z>", "<Esc>u", { desc = "Undo" })
-for _, redo_key in ipairs({ "<D-S-z>", "<D-Z>" }) do
-	vim.keymap.set("n", redo_key, "<C-r>", { desc = "Redo" })
-	vim.keymap.set("i", redo_key, "<C-o><C-r>", { desc = "Redo" })
-	vim.keymap.set("v", redo_key, "<Esc><C-r>", { desc = "Redo" })
-end
+vim.keymap.set("n", "<F16>", "u", { desc = "Undo" })
+vim.keymap.set("i", "<F16>", "<C-o>u", { desc = "Undo" })
+vim.keymap.set("v", "<F16>", "<Esc>u", { desc = "Undo" })
+vim.keymap.set("n", "<F17>", "<C-r>", { desc = "Redo" })
+vim.keymap.set("i", "<F17>", "<C-o><C-r>", { desc = "Redo" })
+vim.keymap.set("v", "<F17>", "<Esc><C-r>", { desc = "Redo" })
 vim.keymap.set({ "n", "x" }, "d", '"_d', { desc = "Delete without yanking" })
 vim.keymap.set({ "n", "x", "o" }, "D", "d", { desc = "Delete and yank" })
 vim.keymap.set(
@@ -447,19 +446,19 @@ vim.keymap.set("t", "<S-CR>", function()
 		vim.api.nvim_chan_send(channel, "\n")
 	end
 end, { desc = "New line in the terminal program" })
-vim.keymap.set("i", "<D-S-CR>", "<C-o>O", { desc = "New line above" })
-vim.keymap.set("n", "<D-S-CR>", "O", { desc = "New line above" })
-vim.keymap.set("i", "<D-CR>", "<C-o>O", { desc = "New line above" })
+vim.keymap.set("i", "<F14>", "<C-o>O", { desc = "New line above" })
+vim.keymap.set("n", "<F14>", "O", { desc = "New line above" })
+vim.keymap.set("i", "<F13>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
-vim.keymap.set("n", "<D-/>", "gcc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("n", "<F18>", "gcc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set(
 	"i",
-	"<D-/>",
+	"<F18>",
 	"<C-o>gcc",
 	{ remap = true, desc = "Toggle comment" }
 )
-vim.keymap.set("v", "<D-/>", "gc", { remap = true, desc = "Toggle comment" })
+vim.keymap.set("v", "<F18>", "gc", { remap = true, desc = "Toggle comment" })
 vim.keymap.set("v", "Y", function()
 	vim.cmd('normal! "+y')
 	vim.fn.setreg(
@@ -734,7 +733,7 @@ require("lazy").setup({
 				win = {
 					input = {
 						keys = {
-							["<D-CR>"] = { "edit_vsplit", mode = { "n", "i" } },
+							["<F13>"] = { "edit_vsplit", mode = { "n", "i" } },
 							["<c-u>"] = { "list_scroll_up", mode = "n" },
 						},
 					},
@@ -753,7 +752,7 @@ require("lazy").setup({
 						win = {
 							list = {
 								keys = {
-									["<D-CR>"] = "edit_vsplit",
+									["<F13>"] = "edit_vsplit",
 									["<C-b>"] = "close",
 								},
 							},
@@ -1894,11 +1893,10 @@ require("lazy").setup({
 					"InsertLeave",
 					"BufLeave",
 					"WinLeave",
-					"FocusLost",
 					"QuitPre",
-					"VimSuspend"
+					"VimSuspend",
 				},
-				defer_save = { "TextChanged", "TextChangedI" },
+				defer_save = { "TextChanged" },
 				cancel_deferred_save = { "InsertEnter" },
 			},
 			condition = function(buf)

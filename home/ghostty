@@ -41,13 +41,13 @@ confirm-close-surface = false
 keybind = cmd+up=text:\x1b[1;5H
 keybind = cmd+down=text:\x1b[1;5F
 
-# Disable default toggle_fullscreen
-keybind = cmd+enter=unbind
+keybind = cmd+enter=text:\x1b[1;2P
+keybind = cmd+shift+enter=text:\x1b[1;2Q
+keybind = cmd+z=text:\x1b[1;2S
+keybind = cmd+shift+z=text:\x1b[15;2~
+keybind = cmd+slash=text:\x1b[17;2~
 
 keybind = cmd+shift+i=text:tabname\x20
-
-keybind = cmd+z=unbind
-keybind = cmd+shift+z=unbind
 
 keybind = alt+backspace=text:\x17
 keybind = ctrl+backspace=text:\x17

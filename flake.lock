@@ -65,11 +65,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785774136,
-        "narHash": "sha256-M2HsAxGrs6wVY0cRmgTTwk1fVgJGYG6UGczMdeI+8zs=",
+        "lastModified": 1786977729,
+        "narHash": "sha256-l66uERIsMRAao5UYmwvQC+kL2MJK+I29NqDri/nRnmM=",
         "ref": "refs/heads/main",
-        "rev": "cfb3a40b73764ea54f1ca869d1e1234768ca0234",
-        "revCount": 195,
+        "rev": "8e285b52fc5e2fe905282d698f3178e117f286c1",
+        "revCount": 234,
         "type": "git",
         "url": "ssh://git@github.com/camentree/parallax"
       },
