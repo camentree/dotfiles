@@ -49,6 +49,25 @@ vim.schedule(function()
 			copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
 			paste = { ["+"] = paste_from_unnamed, ["*"] = paste_from_unnamed },
 		}
+	else
+		local copy_to_pasteboard = function(lines)
+			vim.system({ "pbcopy" }, { stdin = table.concat(lines, "\n") })
+				:wait()
+		end
+		local paste_from_pasteboard = function()
+			return vim.split(vim.fn.system("pbpaste"), "\n")
+		end
+		vim.g.clipboard = {
+			name = "pbcopy",
+			copy = {
+				["+"] = copy_to_pasteboard,
+				["*"] = copy_to_pasteboard,
+			},
+			paste = {
+				["+"] = paste_from_pasteboard,
+				["*"] = paste_from_pasteboard,
+			},
+		}
 	end
 end)
 vim.o.number = true
