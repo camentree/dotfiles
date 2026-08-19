@@ -450,6 +450,67 @@ do
 		end
 	end, { desc = "Open URL/filepath under cursor beside it" })
 end
+
+do
+	local function command_under_cursor()
+		local line = vim.api.nvim_get_current_line()
+		local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1
+		local pos = 1
+		while true do
+			local start_idx, end_idx, command = line:find("`([^`]+)`", pos)
+			if not start_idx then
+				return nil
+			end
+			if cursor_col >= start_idx and cursor_col <= end_idx then
+				return command
+			end
+			pos = end_idx + 1
+		end
+	end
+
+	local function applescript_string(text)
+		local escaped = text:gsub("\\", "\\\\"):gsub('"', '\\"')
+		return '"' .. escaped .. '"'
+	end
+
+	vim.keymap.set("n", "<leader>r", function()
+		local command = command_under_cursor()
+		if not command then
+			return
+		end
+		local terminal = require("toggleterm.terminal").get_or_create_term(
+			1,
+			nil,
+			"horizontal"
+		)
+		if not terminal:is_open() then
+			terminal:open()
+		end
+		terminal:send(command, false)
+	end, { desc = "Run command under cursor in the terminal" })
+
+	vim.keymap.set("n", "<leader>R", function()
+		local command = command_under_cursor()
+		if not command then
+			return
+		end
+		local script = string.format(
+			[[
+tell application "Ghostty"
+	set surface_configuration to new surface configuration
+	set initial working directory of surface_configuration to %s
+	set created_tab to new tab in front window with configuration surface_configuration
+	set tab_terminal to focused terminal of created_tab
+	input text %s to tab_terminal
+	send key "enter" to tab_terminal
+end tell
+]],
+			applescript_string(vim.fn.expand("%:p:h")),
+			applescript_string(command)
+		)
+		vim.system({ "osascript", "-e", script })
+	end, { desc = "Run command under cursor in a Ghostty tab" })
+end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })
 vim.keymap.set("n", "<C-k>", "<C-u>", { desc = "Half page up" })
 vim.keymap.set("i", "<C-Left>", "<C-o>b", { desc = "Word back" })
