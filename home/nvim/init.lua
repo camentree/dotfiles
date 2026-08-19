@@ -500,9 +500,11 @@ tell application "Ghostty"
 	set surface_configuration to new surface configuration
 	set initial working directory of surface_configuration to %s
 	set created_tab to new tab in front window with configuration surface_configuration
-	set tab_terminal to focused terminal of created_tab
-	input text %s to tab_terminal
-	send key "enter" to tab_terminal
+	set tab_terminal to terminal 1 of created_tab
+	repeat until (working directory of tab_terminal) is not ""
+		delay 0.05
+	end repeat
+	input text %s & return to tab_terminal
 end tell
 ]],
 			applescript_string(vim.fn.expand("%:p:h")),
