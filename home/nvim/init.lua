@@ -468,11 +468,6 @@ do
 		end
 	end
 
-	local function applescript_string(text)
-		local escaped = text:gsub("\\", "\\\\"):gsub('"', '\\"')
-		return '"' .. escaped .. '"'
-	end
-
 	vim.keymap.set("n", "<leader>r", function()
 		local command = command_under_cursor()
 		if not command then
@@ -494,23 +489,15 @@ do
 		if not command then
 			return
 		end
-		local script = string.format(
-			[[
-tell application "Ghostty"
-	set surface_configuration to new surface configuration
-	set initial working directory of surface_configuration to %s
-	set created_tab to new tab in front window with configuration surface_configuration
-	set tab_terminal to terminal 1 of created_tab
-	repeat until (working directory of tab_terminal) is not ""
-		delay 0.05
-	end repeat
-	input text %s & return to tab_terminal
-end tell
-]],
-			applescript_string(vim.fn.expand("%:p:h")),
-			applescript_string(command)
-		)
-		vim.system({ "osascript", "-e", script })
+		vim.system({
+			"zsh",
+			"-ic",
+			string.format(
+				"ghostty-tab %s %s",
+				vim.fn.shellescape(command),
+				vim.fn.shellescape(vim.fn.expand("%:p:h"))
+			),
+		})
 	end, { desc = "Run command under cursor in a Ghostty tab" })
 end
 vim.keymap.set("n", "<C-j>", "<C-d>", { desc = "Half page down" })

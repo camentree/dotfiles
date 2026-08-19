@@ -78,6 +78,33 @@ function todo () {
 
   cd "${todo_file:h}" && tabname todo && nvim "$todo_file"
 }
+function ghostty-tab () {
+  local target_command="$1"
+  local target_directory="${2:-$PWD}"
+  [ -n "$target_command" ] || { print -u2 "usage: ghostty-tab <command> [directory]"; return 1 }
+
+  GHOSTTY_TAB_COMMAND="$target_command" \
+  GHOSTTY_TAB_DIRECTORY="$target_directory" \
+  osascript <<'APPLESCRIPT'
+set target_command to system attribute "GHOSTTY_TAB_COMMAND"
+set target_directory to system attribute "GHOSTTY_TAB_DIRECTORY"
+set ghostty_was_running to (application "Ghostty" is running)
+
+tell application "Ghostty"
+	set surface_configuration to new surface configuration
+	set initial working directory of surface_configuration to target_directory
+	set initial input of surface_configuration to target_command & return
+
+	if ghostty_was_running then
+		new tab in front window with configuration surface_configuration
+	else
+		new window with configuration surface_configuration
+	end if
+
+	activate
+end tell
+APPLESCRIPT
+}
 ## Functions -- Claude Tab Status
 [[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"
 
