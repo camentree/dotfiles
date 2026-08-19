@@ -4,6 +4,7 @@
     "CLAUDE_AFK_TIMEOUT_MS": "2000000000"
   },
   "includeCoAuthoredBy": false,
+  "remoteControlAtStartup": true,
   "permissions": {
     "allow": [
       "Bash(gh issue list *)",
