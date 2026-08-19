@@ -25,7 +25,7 @@ alias g="git"
 alias gaa="git add --all"
 alias gcm="git commit -m"
 alias gco="git checkout"
-alias dotfiles="cd $DOTFILES_PATH && tabname dotfiles && vim"
+alias dotfiles="cd $DOTFILES_PATH && tabname dotfiles"
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
