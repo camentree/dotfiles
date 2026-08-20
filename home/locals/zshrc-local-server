@@ -4,9 +4,3 @@ export TODO_PATH="$HOME/Documents/Life/todo.md"
 alias switch-gpu-off="sudo pmset -a gpuswitch 0"
 alias switch-gpu-on="sudo pmset -a gpuswitch 2"
 
-functions[nix-rebuild-tracked]=$functions[nix-rebuild]
-function nix-rebuild () {
-  nix flake update parallax --flake "$DOTFILES_PATH" || return
-  nix-rebuild-tracked "$@"
-}
-
