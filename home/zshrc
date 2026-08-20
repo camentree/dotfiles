@@ -159,6 +159,11 @@ function _confirm () {
 function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
 function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
 function _wk-path () { print -r -- "${1:h}/.${1:t}-worktrees/$2" ; }
+function _wk-existing-path () {
+  git worktree list --porcelain | awk -v branch="refs/heads/$1" '
+    $1=="worktree" { path=$2 }
+    $1=="branch" && $2==branch { print path; exit }'
+}
 function _wk () {
   local mode=switch
   case "$1" in
@@ -171,9 +176,7 @@ function _wk () {
 
   case "$mode" in
     switch)
-      local existing=$(git worktree list --porcelain | awk -v b="refs/heads/$branch" '
-        $1=="worktree" { p=$2 }
-        $1=="branch" && $2==b { print p; exit }')
+      local existing=$(_wk-existing-path "$branch")
       if [ -n "$existing" ]; then
         cd "$existing/$subdir" 2>/dev/null || cd "$existing"
         print -r -- "$PWD"
@@ -236,17 +239,20 @@ function _wk-rm () {
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
   [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
-  local worktree_path=$(_wk-path "$repo_root" "$branch")
-  [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
-  local encoded_worktree="${worktree_path//[\/.]/-}"
-  for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
-    for jsonl in "$proj_dir"/*.jsonl(N); do
-      claude-move-session "${jsonl:t:r}" "$repo_root"
+  local worktree_path=$(_wk-existing-path "$branch")
+  [ "$worktree_path" = "$repo_root" ] && { echo "$branch is checked out in the main repo — not removing"; return 1; }
+  if [ -n "$worktree_path" ]; then
+    [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
+    local encoded_worktree="${worktree_path//[\/.]/-}"
+    for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
+      for jsonl in "$proj_dir"/*.jsonl(N); do
+        claude-move-session "${jsonl:t:r}" "$repo_root"
+      done
+      rmdir "$proj_dir" 2>/dev/null
     done
-    rmdir "$proj_dir" 2>/dev/null
-  done
-  rm -rf "$worktree_path"
-  git worktree prune
+    rm -rf "$worktree_path"
+    git worktree prune
+  fi
   if git branch -q -D "$branch"; then
     echo "Removed: $branch"
   else
