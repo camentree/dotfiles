@@ -82,8 +82,9 @@ let
   };
 
   parallaxEnvironment = {
-    PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+    PATH = "/Users/camen/.npm-global/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
     HOME = "/Users/camen";
+    USER = "camen";
   };
 
   uv = "/run/current-system/sw/bin/uv";
@@ -98,6 +99,17 @@ let
       StandardErrorPath = "/tmp/parallax-${name}.stderr.log";
       EnvironmentVariables = parallaxEnvironment;
     };
+  };
+
+  parallaxCron = { name, command, schedule }: {
+    command = "${uv} run --env-file .env -- parallax ${command}";
+    serviceConfig = {
+      RunAtLoad = true;
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-${name}.stdout.log";
+      StandardErrorPath = "/tmp/parallax-${name}.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
+    } // schedule;
   };
 
   parallaxNginxConf = pkgs.writeText "parallax.nginx.conf" ''
@@ -324,51 +336,38 @@ in
     };
   };
 
-  launchd.user.agents.parallax-status = {
-    command = "${uv} run --env-file .env -- parallax status";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 1800;
-      WorkingDirectory = parallaxRoot;
-      EnvironmentVariables = parallaxEnvironment;
-    };
+  launchd.user.agents.parallax-status = parallaxCron {
+    name = "status";
+    command = "status";
+    schedule = { StartInterval = 1800; };
   };
 
-  launchd.user.agents.parallax-sync-oura = {
-    command = "${uv} run --env-file .env -- parallax sync oura";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 3600;
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-sync-oura.stdout.log";
-      StandardErrorPath = "/tmp/parallax-sync-oura.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
-    };
+  launchd.user.agents.parallax-sync-oura = parallaxCron {
+    name = "sync-oura";
+    command = "sync oura";
+    schedule = { StartInterval = 3600; };
   };
 
-  launchd.user.agents.parallax-sync-health = {
-    command = "${uv} run --env-file .env -- parallax sync health";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 3600;
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-sync-health.stdout.log";
-      StandardErrorPath = "/tmp/parallax-sync-health.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
-    };
+  launchd.user.agents.parallax-sync-health = parallaxCron {
+    name = "sync-health";
+    command = "sync health";
+    schedule = { StartInterval = 3600; };
   };
 
-  launchd.user.agents.parallax-prompt-state = {
-    command = "${uv} run --env-file .env -- parallax prompt state";
-    serviceConfig = {
+  launchd.user.agents.parallax-routines = parallaxCron {
+    name = "routines";
+    command = "run routine --due-only";
+    schedule = { StartInterval = 600; };
+  };
+
+  launchd.user.agents.parallax-prompt-state = parallaxCron {
+    name = "prompt-state";
+    command = "prompt state";
+    schedule = {
       RunAtLoad = false;
       StartCalendarInterval = lib.concatMap
         (hour: [ { Hour = hour; Minute = 0; } { Hour = hour; Minute = 30; } ])
         (lib.range 7 22);
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-prompt-state.stdout.log";
-      StandardErrorPath = "/tmp/parallax-prompt-state.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
     };
   };
 
