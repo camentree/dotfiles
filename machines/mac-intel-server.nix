@@ -63,9 +63,7 @@ let
   '';
 
   projectsRoot = "/Users/camen/Projects";
-
-  appRepositories = [ "one-offs" "parallax" "parallax-frontend" ];
-
+  appRepositories = [ "one-offs" "parallax" "todo" ];
   appDeploy = pkgs.writeShellScript "app-deploy" ''
     for repository in ${lib.concatStringsSep " " appRepositories}; do
       ( cd ${projectsRoot}/$repository && scripts/deploy ) || echo "$repository deploy failed"
@@ -73,11 +71,8 @@ let
   '';
 
   oneOffsRoot = "${projectsRoot}/one-offs";
-
   parallaxRoot = "${projectsRoot}/parallax";
-
-  todoRoot = "${projectsRoot}/parallax-frontend";
-
+  todoRoot = "${projectsRoot}/todo";
   todoEnvironment = {
     PATH = "${pkgs.nodejs_24}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
     HOME = "/Users/camen";
@@ -197,6 +192,9 @@ in
 
   environment.variables.NIX_MACHINE = "mac-intel-server";
 
+  environment.variables.PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+  environment.variables.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+
   # DHCP hands out only the router as a resolver, so any hiccup there fails
   # every lookup outright -- Home Assistant integrations then time out and mark
   # their entities unavailable, which Apple Home shows as "No Response". The
@@ -232,6 +230,7 @@ in
     google-cloud-sdk
     nginx
     ntfy-sh
+    playwright-driver.browsers
     postgres
     rsnapshot
     sqlite
