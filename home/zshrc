@@ -260,10 +260,19 @@ function _wk-rm () {
   fi
 }
 function _wk-clean () {
+  local keep_branches=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -k|--keep) [ -z "$2" ] && { echo "Usage: wk clean [-k branch]..."; return 1; }; keep_branches+=("$2"); shift 2 ;;
+      *) echo "Usage: wk clean [-k branch]..."; return 1 ;;
+    esac
+  done
   local repo_root=$(_wk-repo-root)
-  local branches=($(git worktree list --porcelain | awk -v root=$repo_root '
+  local current_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  local branches=($(git worktree list --porcelain | awk -v root=$repo_root -v current=$current_root '
     $1=="worktree" { path=$2 }
-    $1=="branch" && path!=root { sub(/^refs\/heads\//, "", $2); print $2 }'))
+    $1=="branch" && path!=root && path!=current { sub(/^refs\/heads\//, "", $2); print $2 }'))
+  branches=(${branches:|keep_branches})
   [ ${#branches} -eq 0 ] && { echo "No worktrees to remove"; return 0; }
   print -l "Will remove ${#branches} worktree(s) and force-delete their branches:" ${branches/#/  }
   _confirm || return 1
@@ -275,7 +284,7 @@ function _wk_completions () {
   local subcommands=(
     'ls:branches with a worktree'
     'rm:remove a worktree and delete its branch'
-    'clean:remove every worktree in this repo'
+    'clean:remove the other worktrees in this repo'
     '-h:new branch off HEAD'
   )
   case "$CURRENT" in
@@ -285,10 +294,21 @@ function _wk_completions () {
       _describe 'command' subcommands
       _describe 'branch' branches
       ;;
-    3)
-      [ "$words[2]" = rm ] || return
+    *)
       local worktrees=(${(f)"$(_wk-ls)"})
-      _describe 'worktree' worktrees
+      case "$words[2]" in
+        rm)
+          [ $CURRENT -eq 3 ] && _describe 'worktree' worktrees
+          ;;
+        clean)
+          if [[ "$words[CURRENT-1]" == (-k|--keep) ]]; then
+            _describe 'worktree' worktrees
+          else
+            local flags=('-k:spare a worktree')
+            _describe 'flag' flags
+          fi
+          ;;
+      esac
       ;;
   esac
 }
