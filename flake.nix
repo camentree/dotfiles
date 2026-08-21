@@ -1,5 +1,5 @@
 {
-  description = "Camen's machines";
+  description = "machines";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -7,11 +7,9 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    comin.url = "github:nlewo/comin";
-    comin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, comin, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, ... }:
     let
       homeManagerModule = {
         home-manager.useGlobalPkgs = true;
@@ -23,19 +21,16 @@
     in {
       darwinConfigurations = {
 
-        # Intel MacBook Pro — home server
         "mac-intel-server" = nix-darwin.lib.darwinSystem {
           system = "x86_64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix comin.darwinModules.comin darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix darwinModules homeManagerModule ];
         };
 
-        # Apple Silicon — personal laptop
         "mac-arm-personal" = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix darwinModules homeManagerModule ];
         };
 
-        # Apple Silicon — work laptop
         "mac-arm-work" = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           modules = [ ./os/macos.nix ./machines/mac-arm-work.nix darwinModules homeManagerModule ];
