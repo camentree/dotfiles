@@ -356,7 +356,7 @@ in
 
   launchd.user.agents.parallax-routines = parallaxCron {
     name = "routines";
-    command = "run routine --due-only";
+    command = "routines --due";
     schedule = { StartInterval = 600; };
   };
 
