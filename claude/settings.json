@@ -220,14 +220,9 @@
     }
   },
   "outputStyle": "writing-for-humans",
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
-  "voice": {
-    "enabled": true,
-    "mode": "tap"
-  },
   "autoDreamEnabled": true,
-  "agentPushNotifEnabled": true,
-  "voiceEnabled": true
+  "agentPushNotifEnabled": true
 }

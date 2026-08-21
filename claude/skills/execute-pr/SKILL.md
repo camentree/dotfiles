@@ -28,7 +28,7 @@ Say where you are, show what changed, skip the narration.
 
 ### 1. Branch
 
-Work on the current branch; don't create one. On master, stop and say to check out a branch first (`wk -b <branch>`).
+Work on the current branch; don't create one. On master, stop and say to check out a branch first (`wk <branch>`).
 
 Record it in this slice's Branch field. Collapse the finished slices above it and leave this one open — he's working here now.
 
@@ -68,7 +68,7 @@ Keep it to the interesting parts. Skip the mechanical files.
 ### 6. Hand off
 
 - `git status` and `git diff --stat` for the summary.
-- `difit --no-open`, print the URL. Don't steal focus, don't open a browser.
+- Hand off through the `difit` skill rather than invoking the binary directly — it carries the right target and the output-capture rules. Bare `difit` defaults to `HEAD`, which serves the last commit instead of the work just written. Print the URL; don't steal focus, don't open a browser.
 - Notify: `osascript -e 'display notification "PR N ready for review" with title "Claude"'`.
 - **Don't commit. Don't push. Don't open the PR.**
 

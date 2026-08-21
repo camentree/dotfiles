@@ -25,7 +25,7 @@ alias g="git"
 alias gaa="git add --all"
 alias gcm="git commit -m"
 alias gco="git checkout"
-alias dotfiles="cd $DOTFILES_PATH && tabname dotfiles && vim"
+alias dotfiles="cd $DOTFILES_PATH && tabname dotfiles"
 
 # Key bindings
 bindkey "^X\\x7f" backward-kill-line
@@ -77,6 +77,33 @@ function todo () {
   [ -n "$todo_file" ] || { print -u2 "TODO_PATH unset"; return 1 }
 
   cd "${todo_file:h}" && tabname todo && nvim "$todo_file"
+}
+function ghostty-tab () {
+  local target_command="$1"
+  local target_directory="${2:-$PWD}"
+  [ -n "$target_command" ] || { print -u2 "usage: ghostty-tab <command> [directory]"; return 1 }
+
+  GHOSTTY_TAB_COMMAND="$target_command" \
+  GHOSTTY_TAB_DIRECTORY="$target_directory" \
+  osascript <<'APPLESCRIPT'
+set target_command to system attribute "GHOSTTY_TAB_COMMAND"
+set target_directory to system attribute "GHOSTTY_TAB_DIRECTORY"
+set ghostty_was_running to (application "Ghostty" is running)
+
+tell application "Ghostty"
+	set surface_configuration to new surface configuration
+	set initial working directory of surface_configuration to target_directory
+	set initial input of surface_configuration to target_command & return
+
+	if ghostty_was_running then
+		new tab in front window with configuration surface_configuration
+	else
+		new window with configuration surface_configuration
+	end if
+
+	activate
+end tell
+APPLESCRIPT
 }
 ## Functions -- Claude Tab Status
 [[ -z "$OUTER_TTY" && -n "$TTY" ]] && rm -f "$HOME/.claude/tab-names/${TTY:t}"
@@ -132,11 +159,15 @@ function _confirm () {
 function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
 function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
 function _wk-path () { print -r -- "${1:h}/.${1:t}-worktrees/$2" ; }
+function _wk-existing-path () {
+  git worktree list --porcelain | awk -v branch="refs/heads/$1" '
+    $1=="worktree" { path=$2 }
+    $1=="branch" && $2==branch { print path; exit }'
+}
 function _wk () {
   local mode=switch
   case "$1" in
-    -b) mode=new-from-default; shift ;;
-    -h) mode=new-from-here;   shift ;;
+    -h) mode=new-from-here; shift ;;
   esac
   local branch="$1"
   local repo_root=$(_wk-repo-root)
@@ -145,9 +176,7 @@ function _wk () {
 
   case "$mode" in
     switch)
-      local existing=$(git worktree list --porcelain | awk -v b="refs/heads/$branch" '
-        $1=="worktree" { p=$2 }
-        $1=="branch" && $2==b { print p; exit }')
+      local existing=$(_wk-existing-path "$branch")
       if [ -n "$existing" ]; then
         cd "$existing/$subdir" 2>/dev/null || cd "$existing"
         print -r -- "$PWD"
@@ -159,13 +188,15 @@ function _wk () {
         print -r -- "$PWD"
         return 0
       fi
-      git worktree add "$worktree_path" "$branch" >&2 || return 1
-      ;;
-    new-from-default)
-      local default=$(_wk-default-branch)
-      [ -z "$default" ] && { echo "origin/HEAD not set — use 'wk -h $branch' instead"; return 1; }
-      git fetch origin "$default" --quiet 2>/dev/null
-      git worktree add -b "$branch" --no-track "$worktree_path" "origin/$default" >&2 || return 1
+      if git show-ref --verify --quiet "refs/heads/$branch" ||
+         git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+        git worktree add "$worktree_path" "$branch" >&2 || return 1
+      else
+        local default=$(_wk-default-branch)
+        [ -z "$default" ] && { echo "origin/HEAD not set — use 'wk -h $branch' instead"; return 1; }
+        git fetch origin "$default" --quiet 2>/dev/null
+        git worktree add -b "$branch" --no-track "$worktree_path" "origin/$default" >&2 || return 1
+      fi
       ;;
     new-from-here) git worktree add -b "$branch" "$worktree_path" >&2 || return 1 ;;
   esac
@@ -208,17 +239,20 @@ function _wk-rm () {
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
   local repo_root=$(_wk-repo-root)
   [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
-  local worktree_path=$(_wk-path "$repo_root" "$branch")
-  [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
-  local encoded_worktree="${worktree_path//[\/.]/-}"
-  for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
-    for jsonl in "$proj_dir"/*.jsonl(N); do
-      claude-move-session "${jsonl:t:r}" "$repo_root"
+  local worktree_path=$(_wk-existing-path "$branch")
+  [ "$worktree_path" = "$repo_root" ] && { echo "$branch is checked out in the main repo — not removing"; return 1; }
+  if [ -n "$worktree_path" ]; then
+    [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
+    local encoded_worktree="${worktree_path//[\/.]/-}"
+    for proj_dir in "$HOME/.claude/projects/$encoded_worktree"(N) "$HOME/.claude/projects/${encoded_worktree}-"*(N); do
+      for jsonl in "$proj_dir"/*.jsonl(N); do
+        claude-move-session "${jsonl:t:r}" "$repo_root"
+      done
+      rmdir "$proj_dir" 2>/dev/null
     done
-    rmdir "$proj_dir" 2>/dev/null
-  done
-  rm -rf "$worktree_path"
-  git worktree prune
+    rm -rf "$worktree_path"
+    git worktree prune
+  fi
   if git branch -q -D "$branch"; then
     echo "Removed: $branch"
   else
@@ -226,10 +260,19 @@ function _wk-rm () {
   fi
 }
 function _wk-clean () {
+  local keep_branches=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -k|--keep) [ -z "$2" ] && { echo "Usage: wk clean [-k branch]..."; return 1; }; keep_branches+=("$2"); shift 2 ;;
+      *) echo "Usage: wk clean [-k branch]..."; return 1 ;;
+    esac
+  done
   local repo_root=$(_wk-repo-root)
-  local branches=($(git worktree list --porcelain | awk -v root=$repo_root '
+  local current_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  local branches=($(git worktree list --porcelain | awk -v root=$repo_root -v current=$current_root '
     $1=="worktree" { path=$2 }
-    $1=="branch" && path!=root { sub(/^refs\/heads\//, "", $2); print $2 }'))
+    $1=="branch" && path!=root && path!=current { sub(/^refs\/heads\//, "", $2); print $2 }'))
+  branches=(${branches:|keep_branches})
   [ ${#branches} -eq 0 ] && { echo "No worktrees to remove"; return 0; }
   print -l "Will remove ${#branches} worktree(s) and force-delete their branches:" ${branches/#/  }
   _confirm || return 1
@@ -241,8 +284,7 @@ function _wk_completions () {
   local subcommands=(
     'ls:branches with a worktree'
     'rm:remove a worktree and delete its branch'
-    'clean:remove every worktree in this repo'
-    '-b:new branch off the default branch'
+    'clean:remove the other worktrees in this repo'
     '-h:new branch off HEAD'
   )
   case "$CURRENT" in
@@ -252,10 +294,21 @@ function _wk_completions () {
       _describe 'command' subcommands
       _describe 'branch' branches
       ;;
-    3)
-      [ "$words[2]" = rm ] || return
+    *)
       local worktrees=(${(f)"$(_wk-ls)"})
-      _describe 'worktree' worktrees
+      case "$words[2]" in
+        rm)
+          [ $CURRENT -eq 3 ] && _describe 'worktree' worktrees
+          ;;
+        clean)
+          if [[ "$words[CURRENT-1]" == (-k|--keep) ]]; then
+            _describe 'worktree' worktrees
+          else
+            local flags=('-k:spare a worktree')
+            _describe 'flag' flags
+          fi
+          ;;
+      esac
       ;;
   esac
 }

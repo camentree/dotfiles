@@ -62,7 +62,76 @@ let
     git push -q origin main
   '';
 
-  oneOffsRoot = "/Users/camen/Projects/one-offs";
+  projectsRoot = "/Users/camen/Projects";
+  appRepositories = [ "one-offs" "parallax" "todo" ];
+  appDeploy = pkgs.writeShellScript "app-deploy" ''
+    for repository in ${lib.concatStringsSep " " appRepositories}; do
+      ( cd ${projectsRoot}/$repository && scripts/deploy ) || echo "$repository deploy failed"
+    done
+  '';
+
+  oneOffsRoot = "${projectsRoot}/one-offs";
+  parallaxRoot = "${projectsRoot}/parallax";
+  todoRoot = "${projectsRoot}/todo";
+  todoEnvironment = {
+    PATH = "${pkgs.nodejs_24}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+    HOME = "/Users/camen";
+    NODE_ENV = "production";
+    DATABASE_URL = "postgres://localhost/parallax";
+    PORT = "8790";
+  };
+
+  parallaxEnvironment = {
+    PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+    HOME = "/Users/camen";
+  };
+
+  uv = "/run/current-system/sw/bin/uv";
+
+  parallaxService = name: {
+    command = "${uv} run parallax serve ${name}";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-${name}.stdout.log";
+      StandardErrorPath = "/tmp/parallax-${name}.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
+    };
+  };
+
+  parallaxNginxConf = pkgs.writeText "parallax.nginx.conf" ''
+    daemon off;
+    worker_processes 1;
+    pid /tmp/parallax-nginx.pid;
+    error_log /tmp/parallax-nginx.error.log warn;
+    events { worker_connections 64; }
+    http {
+      include ${pkgs.nginx}/conf/mime.types;
+      default_type application/octet-stream;
+      access_log off;
+      client_body_temp_path /tmp/parallax-nginx-client;
+      proxy_temp_path /tmp/parallax-nginx-proxy;
+      fastcgi_temp_path /tmp/parallax-nginx-fastcgi;
+      uwsgi_temp_path /tmp/parallax-nginx-uwsgi;
+      scgi_temp_path /tmp/parallax-nginx-scgi;
+      server {
+        listen 127.0.0.1:8788;
+        location /api/ { proxy_pass http://127.0.0.1:8787; }
+        location /webhook/ { proxy_pass http://127.0.0.1:8787; }
+        location /mcp {
+          proxy_pass http://127.0.0.1:8000;
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header Connection "";
+          proxy_buffering off;
+          proxy_cache off;
+          proxy_read_timeout 3600s;
+          proxy_send_timeout 3600s;
+        }
+      }
+    }
+  '';
 
   oneOffsNginxConf = pkgs.writeText "one-offs.nginx.conf" ''
     daemon off;
@@ -123,6 +192,9 @@ in
 
   environment.variables.NIX_MACHINE = "mac-intel-server";
 
+  environment.variables.PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+  environment.variables.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+
   # DHCP hands out only the router as a resolver, so any hiccup there fails
   # every lookup outright -- Home Assistant integrations then time out and mark
   # their entities unavailable, which Apple Home shows as "No Response". The
@@ -155,7 +227,11 @@ in
   # Server packages
   environment.systemPackages = with pkgs; [
     cloudflared
+    google-cloud-sdk
     nginx
+    ntfy-sh
+    playwright-driver.browsers
+    postgres
     rsnapshot
     sqlite
     yarn
@@ -182,20 +258,14 @@ in
     };
   };
 
-  # Read-only deploy key rather than the 1Password agent, which is unavailable
-  # to an unattended agent whenever 1Password is locked or not yet running.
-  launchd.user.agents.one-offs-pull = {
-    command = "${pkgs.git}/bin/git -C ${oneOffsRoot} pull --ff-only";
+  launchd.user.agents.app-deploy = {
+    command = "${appDeploy}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 120;
-      StandardOutPath = "/tmp/one-offs-pull.stdout.log";
-      StandardErrorPath = "/tmp/one-offs-pull.stderr.log";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-        GIT_SSH_COMMAND = "ssh -i /Users/camen/.ssh/one-offs-deploy -o IdentitiesOnly=yes";
-      };
+      StandardOutPath = "/tmp/app-deploy.stdout.log";
+      StandardErrorPath = "/tmp/app-deploy.stderr.log";
+      EnvironmentVariables = todoEnvironment;
     };
   };
 
@@ -225,6 +295,80 @@ in
       KeepAlive = true;
       StandardOutPath = "/tmp/postgresql.stdout.log";
       StandardErrorPath = "/tmp/postgresql.stderr.log";
+    };
+  };
+
+  launchd.user.agents.todo = {
+    command = "npm start";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = todoRoot;
+      StandardOutPath = "/tmp/todo.stdout.log";
+      StandardErrorPath = "/tmp/todo.stderr.log";
+      EnvironmentVariables = todoEnvironment;
+    };
+  };
+
+  launchd.user.agents.parallax-mcp = parallaxService "mcp";
+  launchd.user.agents.parallax-http = parallaxService "http";
+  launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
+
+  launchd.user.agents.parallax-nginx = {
+    command = "${pkgs.nginx}/bin/nginx -c ${parallaxNginxConf} -e /tmp/parallax-nginx.error.log";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/parallax-nginx.stdout.log";
+      StandardErrorPath = "/tmp/parallax-nginx.stderr.log";
+    };
+  };
+
+  launchd.user.agents.parallax-status = {
+    command = "${uv} run --env-file .env -- parallax status";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 1800;
+      WorkingDirectory = parallaxRoot;
+      EnvironmentVariables = parallaxEnvironment;
+    };
+  };
+
+  launchd.user.agents.parallax-sync-oura = {
+    command = "${uv} run --env-file .env -- parallax sync oura";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 3600;
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-sync-oura.stdout.log";
+      StandardErrorPath = "/tmp/parallax-sync-oura.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
+    };
+  };
+
+  launchd.user.agents.parallax-sync-health = {
+    command = "${uv} run --env-file .env -- parallax sync health";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 3600;
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-sync-health.stdout.log";
+      StandardErrorPath = "/tmp/parallax-sync-health.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
+    };
+  };
+
+  launchd.user.agents.parallax-prompt-state = {
+    command = "${uv} run --env-file .env -- parallax prompt state";
+    serviceConfig = {
+      RunAtLoad = false;
+      StartCalendarInterval = lib.concatMap
+        (hour: [ { Hour = hour; Minute = 0; } { Hour = hour; Minute = 30; } ])
+        (lib.range 7 22);
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-prompt-state.stdout.log";
+      StandardErrorPath = "/tmp/parallax-prompt-state.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
     };
   };
 
@@ -364,6 +508,9 @@ in
     ha-start = "sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
     ha-restart = "sudo launchctl bootout system/org.nixos.home-assistant && sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
     ha-log = "tail -f /tmp/home-assistant.stderr.log";
+
+    deploy-log = "tail -f /tmp/app-deploy.stdout.log /tmp/app-deploy.stderr.log";
+    deploy-now = "launchctl kickstart -k gui/$UID/org.nixos.app-deploy";
 
     backup-now = "${rsnapshotRun} -V daily";
     backup-test = "${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest";

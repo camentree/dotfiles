@@ -58,32 +58,11 @@
         "type": "github"
       }
     },
-    "parallax": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1785774136,
-        "narHash": "sha256-M2HsAxGrs6wVY0cRmgTTwk1fVgJGYG6UGczMdeI+8zs=",
-        "ref": "refs/heads/main",
-        "rev": "cfb3a40b73764ea54f1ca869d1e1234768ca0234",
-        "revCount": 195,
-        "type": "git",
-        "url": "ssh://git@github.com/camentree/parallax"
-      },
-      "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/camentree/parallax"
-      }
-    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
-        "nixpkgs": "nixpkgs",
-        "parallax": "parallax"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
