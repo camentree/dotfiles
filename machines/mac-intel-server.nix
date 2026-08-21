@@ -89,6 +89,26 @@ let
 
   uv = "/run/current-system/sw/bin/uv";
 
+  healthcheckKeyPath = "/Users/camen/.config/healthchecks/ping-key";
+
+  healthcheckPing = pkgs.writeShellScript "healthcheck-ping" ''
+    slug="$1"
+    outcome="$2"
+    detail="$3"
+    [ -r ${healthcheckKeyPath} ] || exit 0
+    ${pkgs.curl}/bin/curl -fsS -m 10 --retry 3 -o /dev/null \
+      --data-raw "$detail" \
+      "https://hc-ping.com/$(< ${healthcheckKeyPath})/$slug/$outcome?create=1" || true
+  '';
+
+  monitoredCommand = name: command:
+    "${pkgs.writeShellScript "${name}-monitored" ''
+      ${command}
+      status=$?
+      ${healthcheckPing} ${name} "$status"
+      exit "$status"
+    ''}";
+
   parallaxService = name: {
     command = "${uv} run parallax serve ${name}";
     serviceConfig = {
@@ -102,7 +122,8 @@ let
   };
 
   parallaxCron = { name, command, schedule }: {
-    command = "${uv} run --env-file .env -- parallax ${command}";
+    command = monitoredCommand "parallax-${name}"
+      "${uv} run --env-file .env -- parallax ${command}";
     serviceConfig = {
       RunAtLoad = true;
       WorkingDirectory = parallaxRoot;
@@ -271,7 +292,7 @@ in
   };
 
   launchd.user.agents.app-deploy = {
-    command = "${appDeploy}";
+    command = monitoredCommand "app-deploy" "${appDeploy}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 120;
@@ -284,7 +305,7 @@ in
   # Hourly commit + push of ~/Documents/Life to the private github mirror.
   # The script is a no-op when nothing has changed.
   launchd.user.agents.life-backup = {
-    command = "${lifeBackup}";
+    command = monitoredCommand "life-backup" "${lifeBackup}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 3600;
@@ -378,7 +399,7 @@ in
   # interval (daily) does the actual rsync; weekly/monthly only rotate, so
   # they must fire *before* daily on overlapping days for correct rotation.
   launchd.user.agents.rsnapshot-daily = {
-    command = "${rsnapshotRun} daily";
+    command = monitoredCommand "rsnapshot-daily" "${rsnapshotRun} daily";
     serviceConfig = {
       StartCalendarInterval = [ { Hour = 3; Minute = 30; } ];
       StandardOutPath = "/tmp/rsnapshot.daily.stdout.log";
@@ -391,7 +412,7 @@ in
   };
 
   launchd.user.agents.rsnapshot-weekly = {
-    command = "${rsnapshotRun} weekly";
+    command = monitoredCommand "rsnapshot-weekly" "${rsnapshotRun} weekly";
     serviceConfig = {
       StartCalendarInterval = [ { Weekday = 0; Hour = 3; Minute = 10; } ];
       StandardOutPath = "/tmp/rsnapshot.weekly.stdout.log";
@@ -404,7 +425,7 @@ in
   };
 
   launchd.user.agents.rsnapshot-monthly = {
-    command = "${rsnapshotRun} monthly";
+    command = monitoredCommand "rsnapshot-monthly" "${rsnapshotRun} monthly";
     serviceConfig = {
       StartCalendarInterval = [ { Day = 1; Hour = 3; Minute = 0; } ];
       StandardOutPath = "/tmp/rsnapshot.monthly.stdout.log";
