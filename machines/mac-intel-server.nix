@@ -109,6 +109,14 @@ let
       exit "$status"
     ''}";
 
+  cominDeployPing = pkgs.writeShellScript "comin-deploy-ping" ''
+    if [ "$COMIN_STATUS" = "done" ]; then
+      ${healthcheckPing} comin-deploy 0 "$COMIN_GIT_SHA"
+    else
+      ${healthcheckPing} comin-deploy fail "$COMIN_GIT_SHA $COMIN_ERROR_MSG"
+    fi
+  '';
+
   parallaxService = name: {
     command = "${uv} run parallax serve ${name}";
     serviceConfig = {
@@ -269,6 +277,16 @@ in
     sqlite
     yarn
   ];
+
+  services.comin = {
+    enable = true;
+    remotes = [{
+      name = "origin";
+      url = "https://github.com/camentree/dotfiles.git";
+      branches.main.name = "master";
+    }];
+    postDeploymentCommand = "${cominDeployPing}";
+  };
 
   # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
   launchd.user.agents.cloudflared = {
