@@ -92,7 +92,6 @@
     "defaultMode": "auto",
     "additionalDirectories": ["~/", "/tmp"]
   },
-  "model": "opus[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -110,6 +109,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/scripts/update-tab-status.sh working"
+          },
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"Outcome first, fewest words, no filler openers or closing recaps. Write so someone who wasn'\\''t in this session understands it. Never add comments to code.\"}}'"
           }
         ]
       }
@@ -204,6 +207,11 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "enableWorkflows": false,
+  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/scripts/statusline-command.sh"
@@ -222,7 +230,17 @@
   "outputStyle": "writing-for-humans",
   "effortLevel": "high",
   "promptSuggestionEnabled": false,
+  "awaySummaryEnabled": false,
+  "askUserQuestionTimeout": "never",
+  "dialogExpiry": "never",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
-  "agentPushNotifEnabled": true
+  "theme": "dark-daltonized",
+  "editorMode": "normal",
+  "fileCheckpointingEnabled": true,
+  "remoteControlAtStartup": true,
+  "crossSessionInbound": "accept",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": false,
+  "useAutoModeDuringPlan": true
 }
