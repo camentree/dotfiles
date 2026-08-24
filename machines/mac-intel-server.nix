@@ -1,13 +1,72 @@
-# ============================================================
-# Intel MacBook Pro — home server
-# ============================================================
 { pkgs, lib, ... }:
 
 let
-  postgres = pkgs.postgresql.withPackages (p: [ p.pgvector ]);
+  # paths
+  homeDirectory = "/Users/camen";
+  documentsDirectory = "${homeDirectory}/Documents";
+  projectsDirectory = "${homeDirectory}/Projects";
 
+  oneOffsRoot = "${projectsDirectory}/one-offs";
+  parallaxRoot = "${projectsDirectory}/parallax";
+  todoRoot = "${projectsDirectory}/todo";
+  homeAssistantRoot = "${projectsDirectory}/home-assistant";
+
+  # environments
+  systemPath = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+
+  baseEnvironment = {
+    PATH = systemPath;
+    HOME = homeDirectory;
+    USER = "camen";
+  };
+
+  parallaxEnvironment = baseEnvironment // {
+    PATH = "${homeDirectory}/.npm-global/bin:${systemPath}";
+  };
+
+  todoEnvironment = baseEnvironment // {
+    PATH = "${pkgs.nodejs_24}/bin:${systemPath}";
+    NODE_ENV = "production";
+    DATABASE_URL = "postgres://localhost/parallax";
+    PORT = "8790";
+  };
+
+  uv = "/run/current-system/sw/bin/uv";
+
+  # failure alerts
+  ntfyTokenPath = "${homeDirectory}/.ntfy/token";
+  ntfyUrl = "http://127.0.0.1:2586";
+  ntfyHealthTopic = "server-health";
+
+  ntfyAlert = pkgs.writeShellScript "ntfy-alert" ''
+    title="$1"
+    message="$2"
+    [ -r ${ntfyTokenPath} ] || exit 0
+    ${pkgs.curl}/bin/curl -fsS -m 10 --retry 3 -o /dev/null \
+      -H "Authorization: Bearer $(< ${ntfyTokenPath})" \
+      -H "Title: $title" \
+      --data-raw "$message" \
+      "${ntfyUrl}/${ntfyHealthTopic}" || true
+  '';
+
+  monitoredCommand = name: command:
+    "${pkgs.writeShellScript "${name}-monitored" ''
+      output=$(mktemp)
+      trap 'rm -f "$output"' EXIT
+      ${command} > "$output" 2>&1
+      status=$?
+      cat "$output"
+      if [ "$status" -ne 0 ]; then
+        ${ntfyAlert} "${name} failed" "exit $status
+$(tail -c 500 "$output")"
+      fi
+      exit "$status"
+    ''}";
+
+  # postgres
+  postgres = pkgs.postgresql.withPackages (p: [ p.pgvector ]);
   postgresLauncher = pkgs.writeShellScript "postgres-launch" ''
-    PGDATA=/Users/camen/.postgres
+    PGDATA=${homeDirectory}/.postgres
     [ -f "$PGDATA/PG_VERSION" ] || ${postgres}/bin/initdb -D "$PGDATA"
     if [ -f "$PGDATA/postmaster.pid" ] && \
        ! ps -p "$(head -1 "$PGDATA/postmaster.pid")" -o comm= | grep -q postgres; then
@@ -16,16 +75,12 @@ let
     exec ${postgres}/bin/postgres -D "$PGDATA"
   '';
 
-  # nixpkgs marks rsnapshot linux-only, but it's a pure-Perl rsync wrapper
-  # that runs fine on darwin; widen meta.platforms instead of allowing
-  # unsupported systems globally.
+  # local backups
+  # nixpkgs marks rsnapshot linux-only erroneously
   rsnapshot = pkgs.rsnapshot.overrideAttrs (old: {
     meta = old.meta // { platforms = old.meta.platforms ++ lib.platforms.darwin; };
   });
-
-  rsnapshotBackupRoot = "/Users/camen/Backups/rsnapshot";
-
-  # rsnapshot's config format is tab-delimited; the \t escapes render real tabs.
+  rsnapshotBackupRoot = "${homeDirectory}/Backups/rsnapshot";
   rsnapshotConf = pkgs.writeText "rsnapshot.conf" (
     "config_version\t1.2\n" +
     "snapshot_root\t${rsnapshotBackupRoot}/\n" +
@@ -41,52 +96,54 @@ let
     "lockfile\t${rsnapshotBackupRoot}/rsnapshot.pid\n" +
     "exclude\t.DS_Store\n" +
     "exclude\t*.icloud\n" +
-    "backup\t/Users/camen/Documents/\tdocuments/\n"
+    "backup\t${documentsDirectory}/\tdocuments/\n"
   );
-
   rsnapshotRun = pkgs.writeShellScript "rsnapshot-run" ''
     set -euo pipefail
     mkdir -p ${rsnapshotBackupRoot}
     exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
   '';
 
-  lifeBackup = pkgs.writeShellScript "life-backup" ''
-    set -euo pipefail
+  backupNow = pkgs.writeShellScriptBin "backup-now" ''
+    exec ${rsnapshotRun} -V daily
+  '';
+  backupTest = pkgs.writeShellScriptBin "backup-test" ''
+    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest
+  '';
 
-    cd "$HOME/Documents/Life"
+  # The lowest interval (daily) does the actual rsync; weekly/monthly only
+  # rotate, so they must fire *before* daily on overlapping days for correct
+  # rotation.
+  rsnapshotAgent = interval: schedule: {
+    command = monitoredCommand "rsnapshot-${interval}" "${rsnapshotRun} ${interval}";
+    serviceConfig = {
+      StartCalendarInterval = [ schedule ];
+      StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
+      StandardErrorPath = "/tmp/rsnapshot.${interval}.stderr.log";
+      EnvironmentVariables = baseEnvironment;
+    };
+  };
 
-    git add -A
-    if ! git diff --cached --quiet; then
-        git commit -q -m "auto $(date -u +%FT%TZ)"
+  # applications
+  appDeploy = repository: pkgs.writeShellScript "deploy-${repository}" ''
+    script=${projectsDirectory}/${repository}/scripts/deploy
+    if [ ! -x "$script" ]; then
+      echo "${repository}: $script is missing or not executable"
+      exit 1
     fi
-    git push -q origin main
+    exec "$script"
   '';
-
-  projectsRoot = "/Users/camen/Projects";
-  appRepositories = [ "one-offs" "parallax" "todo" ];
-  appDeploy = pkgs.writeShellScript "app-deploy" ''
-    for repository in ${lib.concatStringsSep " " appRepositories}; do
-      ( cd ${projectsRoot}/$repository && scripts/deploy ) || echo "$repository deploy failed"
-    done
-  '';
-
-  oneOffsRoot = "${projectsRoot}/one-offs";
-  parallaxRoot = "${projectsRoot}/parallax";
-  todoRoot = "${projectsRoot}/todo";
-  todoEnvironment = {
-    PATH = "${pkgs.nodejs_24}/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-    HOME = "/Users/camen";
-    NODE_ENV = "production";
-    DATABASE_URL = "postgres://localhost/parallax";
-    PORT = "8790";
+  deployAgent = repository: environment: {
+    command = monitoredCommand "deploy-${repository}" "${appDeploy repository}";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 120;
+      WorkingDirectory = "${projectsDirectory}/${repository}";
+      StandardOutPath = "/tmp/deploy-${repository}.stdout.log";
+      StandardErrorPath = "/tmp/deploy-${repository}.stderr.log";
+      EnvironmentVariables = environment;
+    };
   };
-
-  parallaxEnvironment = {
-    PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-    HOME = "/Users/camen";
-  };
-
-  uv = "/run/current-system/sw/bin/uv";
 
   parallaxService = name: {
     command = "${uv} run parallax serve ${name}";
@@ -100,21 +157,24 @@ let
     };
   };
 
-  parallaxNginxConf = pkgs.writeText "parallax.nginx.conf" ''
+  # One nginx for both sites; cloudflared routes each hostname to its port.
+  nginxConf = pkgs.writeText "nginx.conf" ''
     daemon off;
     worker_processes 1;
-    pid /tmp/parallax-nginx.pid;
-    error_log /tmp/parallax-nginx.error.log warn;
+    pid /tmp/nginx.pid;
+    error_log /tmp/nginx.error.log warn;
     events { worker_connections 64; }
     http {
       include ${pkgs.nginx}/conf/mime.types;
+      types { application/manifest+json webmanifest; }
       default_type application/octet-stream;
       access_log off;
-      client_body_temp_path /tmp/parallax-nginx-client;
-      proxy_temp_path /tmp/parallax-nginx-proxy;
-      fastcgi_temp_path /tmp/parallax-nginx-fastcgi;
-      uwsgi_temp_path /tmp/parallax-nginx-uwsgi;
-      scgi_temp_path /tmp/parallax-nginx-scgi;
+      client_body_temp_path /tmp/nginx-client;
+      proxy_temp_path /tmp/nginx-proxy;
+      fastcgi_temp_path /tmp/nginx-fastcgi;
+      uwsgi_temp_path /tmp/nginx-uwsgi;
+      scgi_temp_path /tmp/nginx-scgi;
+
       server {
         listen 127.0.0.1:8788;
         location /api/ { proxy_pass http://127.0.0.1:8787; }
@@ -130,25 +190,7 @@ let
           proxy_send_timeout 3600s;
         }
       }
-    }
-  '';
 
-  oneOffsNginxConf = pkgs.writeText "one-offs.nginx.conf" ''
-    daemon off;
-    worker_processes 1;
-    pid /tmp/one-offs-nginx.pid;
-    error_log /tmp/one-offs-nginx.error.log warn;
-    events { worker_connections 64; }
-    http {
-      include ${pkgs.nginx}/conf/mime.types;
-      types { application/manifest+json webmanifest; }
-      default_type application/octet-stream;
-      access_log off;
-      client_body_temp_path /tmp/one-offs-nginx-client;
-      proxy_temp_path /tmp/one-offs-nginx-proxy;
-      fastcgi_temp_path /tmp/one-offs-nginx-fastcgi;
-      uwsgi_temp_path /tmp/one-offs-nginx-uwsgi;
-      scgi_temp_path /tmp/one-offs-nginx-scgi;
       server {
         listen 127.0.0.1:8789;
         # cloudflared speaks plain http to us, so an absolute redirect would
@@ -185,47 +227,22 @@ let
   '';
 in
 {
-  nixpkgs.hostPlatform = "x86_64-darwin";
+  # ===== machine =====
 
+  nixpkgs.hostPlatform = "x86_64-darwin";
   networking.hostName = "mac-intel-server";
   networking.computerName = "mac-intel-server";
-
   environment.variables.NIX_MACHINE = "mac-intel-server";
-
   environment.variables.PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
   environment.variables.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
-  # DHCP hands out only the router as a resolver, so any hiccup there fails
-  # every lookup outright -- Home Assistant integrations then time out and mark
-  # their entities unavailable, which Apple Home shows as "No Response". The
-  # router stays first so local hostnames still resolve.
+  # Fix for home-assistant
   networking.knownNetworkServices = [ "Wi-Fi" "USB 10/100/1000 LAN" ];
   networking.dns = [ "192.168.0.1" "1.1.1.1" "8.8.8.8" ];
 
-  system.defaults.screensaver.askForPassword = lib.mkForce false;
-
-  # Disable iCloud "Optimize Mac Storage" so Documents/Desktop files stay fully
-  # downloaded locally — otherwise macOS may evict them to .icloud placeholder
-  # stubs, which rsnapshot would back up instead of the real content.
-  system.defaults.CustomUserPreferences = {
-    "com.apple.bird" = {
-      optimize-storage = false;
-    };
-  };
-
-  # XProtect definitions and Rapid Security Responses install without rebooting,
-  # so they're safe to automate; full OS updates stay manual so the server never
-  # restarts itself unattended.
-  system.defaults.CustomSystemPreferences = {
-    "/Library/Preferences/com.apple.SoftwareUpdate" = {
-      ConfigDataInstall = true;
-      CriticalUpdateInstall = true;
-    };
-  };
-  system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
-
-  # Server packages
   environment.systemPackages = with pkgs; [
+    backupNow
+    backupTest
     cloudflared
     google-cloud-sdk
     nginx
@@ -237,189 +254,6 @@ in
     yarn
   ];
 
-  # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
-  launchd.user.agents.cloudflared = {
-    command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config /Users/camen/.cloudflared/config.yml run";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/cloudflared.stdout.log";
-      StandardErrorPath = "/tmp/cloudflared.stderr.log";
-    };
-  };
-
-  launchd.user.agents.one-offs = {
-    command = "${pkgs.nginx}/bin/nginx -c ${oneOffsNginxConf} -e /tmp/one-offs-nginx.error.log";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/one-offs-nginx.stdout.log";
-      StandardErrorPath = "/tmp/one-offs-nginx.stderr.log";
-    };
-  };
-
-  launchd.user.agents.app-deploy = {
-    command = "${appDeploy}";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 120;
-      StandardOutPath = "/tmp/app-deploy.stdout.log";
-      StandardErrorPath = "/tmp/app-deploy.stderr.log";
-      EnvironmentVariables = todoEnvironment;
-    };
-  };
-
-  # Hourly commit + push of ~/Documents/Life to the private github mirror.
-  # The script is a no-op when nothing has changed.
-  launchd.user.agents.life-backup = {
-    command = "${lifeBackup}";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 3600;
-      StandardOutPath = "/tmp/life-backup.stdout.log";
-      StandardErrorPath = "/tmp/life-backup.stderr.log";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  # Data dir lives at ~/.postgres; bootstrap runs initdb on first launch.
-  # Launcher clears a stale postmaster.pid (e.g. after an unclean shutdown)
-  # only when no live postgres owns it — guards against the PID-reuse case.
-  launchd.user.agents.postgresql = {
-    command = "${postgresLauncher}";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/postgresql.stdout.log";
-      StandardErrorPath = "/tmp/postgresql.stderr.log";
-    };
-  };
-
-  launchd.user.agents.todo = {
-    command = "npm start";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = todoRoot;
-      StandardOutPath = "/tmp/todo.stdout.log";
-      StandardErrorPath = "/tmp/todo.stderr.log";
-      EnvironmentVariables = todoEnvironment;
-    };
-  };
-
-  launchd.user.agents.parallax-mcp = parallaxService "mcp";
-  launchd.user.agents.parallax-http = parallaxService "http";
-  launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
-
-  launchd.user.agents.parallax-nginx = {
-    command = "${pkgs.nginx}/bin/nginx -c ${parallaxNginxConf} -e /tmp/parallax-nginx.error.log";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/parallax-nginx.stdout.log";
-      StandardErrorPath = "/tmp/parallax-nginx.stderr.log";
-    };
-  };
-
-  launchd.user.agents.parallax-status = {
-    command = "${uv} run --env-file .env -- parallax status";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 1800;
-      WorkingDirectory = parallaxRoot;
-      EnvironmentVariables = parallaxEnvironment;
-    };
-  };
-
-  launchd.user.agents.parallax-sync-oura = {
-    command = "${uv} run --env-file .env -- parallax sync oura";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 3600;
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-sync-oura.stdout.log";
-      StandardErrorPath = "/tmp/parallax-sync-oura.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
-    };
-  };
-
-  launchd.user.agents.parallax-sync-health = {
-    command = "${uv} run --env-file .env -- parallax sync health";
-    serviceConfig = {
-      RunAtLoad = true;
-      StartInterval = 3600;
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-sync-health.stdout.log";
-      StandardErrorPath = "/tmp/parallax-sync-health.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
-    };
-  };
-
-  launchd.user.agents.parallax-prompt-state = {
-    command = "${uv} run --env-file .env -- parallax prompt state";
-    serviceConfig = {
-      RunAtLoad = false;
-      StartCalendarInterval = lib.concatMap
-        (hour: [ { Hour = hour; Minute = 0; } { Hour = hour; Minute = 30; } ])
-        (lib.range 7 22);
-      WorkingDirectory = parallaxRoot;
-      StandardOutPath = "/tmp/parallax-prompt-state.stdout.log";
-      StandardErrorPath = "/tmp/parallax-prompt-state.stderr.log";
-      EnvironmentVariables = parallaxEnvironment;
-    };
-  };
-
-  # ============================================================
-  # rsnapshot — local versioned backup of ~/Documents (iCloud)
-  # ============================================================
-  # Hardlink-deduplicated snapshots under ~/Backups/rsnapshot. The lowest
-  # interval (daily) does the actual rsync; weekly/monthly only rotate, so
-  # they must fire *before* daily on overlapping days for correct rotation.
-  launchd.user.agents.rsnapshot-daily = {
-    command = "${rsnapshotRun} daily";
-    serviceConfig = {
-      StartCalendarInterval = [ { Hour = 3; Minute = 30; } ];
-      StandardOutPath = "/tmp/rsnapshot.daily.stdout.log";
-      StandardErrorPath = "/tmp/rsnapshot.daily.stderr.log";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  launchd.user.agents.rsnapshot-weekly = {
-    command = "${rsnapshotRun} weekly";
-    serviceConfig = {
-      StartCalendarInterval = [ { Weekday = 0; Hour = 3; Minute = 10; } ];
-      StandardOutPath = "/tmp/rsnapshot.weekly.stdout.log";
-      StandardErrorPath = "/tmp/rsnapshot.weekly.stderr.log";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  launchd.user.agents.rsnapshot-monthly = {
-    command = "${rsnapshotRun} monthly";
-    serviceConfig = {
-      StartCalendarInterval = [ { Day = 1; Hour = 3; Minute = 0; } ];
-      StandardOutPath = "/tmp/rsnapshot.monthly.stdout.log";
-      StandardErrorPath = "/tmp/rsnapshot.monthly.stderr.log";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
-    };
-  };
-
-  # ============================================================
-  # SSH — key-only authentication
-  # ============================================================
   environment.etc."ssh/sshd_config.d/200-no-password.conf".text = ''
     PasswordAuthentication no
     KbdInteractiveAuthentication no
@@ -432,28 +266,41 @@ in
     };
 
     home.file.".zshrc.local" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Projects/dotfiles/home/locals/zshrc-local-server";
+      source = config.lib.file.mkOutOfStoreSymlink "${projectsDirectory}/dotfiles/home/locals/zshrc-local-server";
       force = true;
     };
   };
 
-  # ============================================================
-  # Keep the Mac awake (server mode)
-  # ============================================================
+  # ===== macos defaults =====
+
+  system.defaults.screensaver.askForPassword = lib.mkForce false;
+  system.defaults.CustomUserPreferences = {
+    "com.apple.bird" = {
+      optimize-storage = false;
+    };
+  };
+  system.defaults.CustomSystemPreferences = {
+    "/Library/Preferences/com.apple.SoftwareUpdate" = {
+      ConfigDataInstall = true;
+      CriticalUpdateInstall = true;
+    };
+  };
+  system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
+
   power = {
-    sleep.display = "never";         # avoid WindowServer state transitions
-    sleep.computer = "never";        # never sleep the computer
-    sleep.harddisk = "never";        # never spin down disks
-    restartAfterFreeze = true;       # auto-reboot on kernel panic
-    # restartAfterPowerFailure: not supported on laptop hardware (battery)
+    sleep.display = "never";
+    sleep.computer = "never";
+    sleep.harddisk = "never";
+    restartAfterFreeze = true;
   };
 
   # mkAfter so the screensaver override lands after os/macos.nix sets it to 300,
   # and so `asPrimaryUser` from that block is already defined.
   system.activationScripts.postActivation.text = lib.mkAfter ''
     # GPU switching is managed manually via the switch-gpu-off / switch-gpu-on
-    # shell aliases below — not set here because the dGPU causes GPU restart
-    # storms when headless, but is needed for external displays.
+    # shell aliases in home/locals/zshrc-local-server — not set here because the
+    # dGPU causes GPU restart storms when headless, but is needed for external
+    # displays.
     # Allow lid-closed operation without an external display attached.
     # Without this, closing the lid sleeps regardless of `sleep = never`.
     sudo pmset -a disablesleep 1
@@ -472,51 +319,100 @@ in
     $asPrimaryUser defaults -currentHost write com.apple.screensaver idleTime -int 0
   '';
 
-  # ============================================================
-  # Home Assistant
-  # ============================================================
-  # Runs as a LaunchDaemon (root) to bypass macOS Local Network Privacy,
-  # which silently blocks mDNS multicast for LaunchAgent processes.
-  # scripts/serve drops to user camen via sudo before launching hass.
-  launchd.daemons.home-assistant = {
-    command = "/bin/bash -c 'test -x /Users/camen/Projects/home-assistant/scripts/serve && exec /Users/camen/Projects/home-assistant/scripts/serve'";
+  # ===== shared services =====
+
+  # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
+  launchd.user.agents.cloudflared = {
+    command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config ${homeDirectory}/.cloudflared/config.yml run";
     serviceConfig = {
-      # RunAtLoad fires ~9s after boot, before Wi-Fi finishes associating, and
-      # zeroconf binds its multicast sockets once — a bind that loses that race
-      # stays broken for the life of the process. NetworkState holds the job
-      # until an interface has an address, which covers most of that gap.
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/cloudflared.stdout.log";
+      StandardErrorPath = "/tmp/cloudflared.stderr.log";
+    };
+  };
+
+  launchd.user.agents.nginx = {
+    command = "${pkgs.nginx}/bin/nginx -c ${nginxConf} -e /tmp/nginx.error.log";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/nginx.stdout.log";
+      StandardErrorPath = "/tmp/nginx.stderr.log";
+    };
+  };
+
+  launchd.user.agents.postgresql = {
+    command = "${postgresLauncher}";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/postgresql.stdout.log";
+      StandardErrorPath = "/tmp/postgresql.stderr.log";
+    };
+  };
+
+  launchd.daemons.home-assistant = {
+    command = "/bin/bash -c 'test -x ${homeAssistantRoot}/scripts/serve && exec ${homeAssistantRoot}/scripts/serve'";
+    serviceConfig = {
       KeepAlive = {
         PathState = {
-          "/Users/camen/Projects/home-assistant/scripts/serve" = true;
+          "${homeAssistantRoot}/scripts/serve" = true;
         };
         NetworkState = true;
       };
       RunAtLoad = true;
       StandardOutPath = "/tmp/home-assistant.stdout.log";
       StandardErrorPath = "/tmp/home-assistant.stderr.log";
-      WorkingDirectory = "/Users/camen/Projects/home-assistant";
-      EnvironmentVariables = {
-        PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        HOME = "/Users/camen";
-      };
+      WorkingDirectory = homeAssistantRoot;
+      EnvironmentVariables = baseEnvironment;
     };
   };
 
-  # Convenience aliases for managing Home Assistant
-  environment.shellAliases = {
-    ha-stop = "sudo launchctl bootout system/org.nixos.home-assistant";
-    ha-start = "sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
-    ha-restart = "sudo launchctl bootout system/org.nixos.home-assistant && sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist";
-    ha-log = "tail -f /tmp/home-assistant.stderr.log";
+  # ===== applications =====
 
-    deploy-log = "tail -f /tmp/app-deploy.stdout.log /tmp/app-deploy.stderr.log";
-    deploy-now = "launchctl kickstart -k gui/$UID/org.nixos.app-deploy";
+  launchd.user.agents.parallax-mcp = parallaxService "mcp";
+  launchd.user.agents.parallax-http = parallaxService "http";
+  launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
 
-    backup-now = "${rsnapshotRun} -V daily";
-    backup-test = "${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest";
-    backup-ls = "ls -lah ${rsnapshotBackupRoot}";
-
-    switch-gpu-off = "sudo pmset -a gpuswitch 0";
-    switch-gpu-on = "sudo pmset -a gpuswitch 2";
+  launchd.user.agents.todo = {
+    command = "npm start";
+    serviceConfig = {
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = todoRoot;
+      StandardOutPath = "/tmp/todo.stdout.log";
+      StandardErrorPath = "/tmp/todo.stderr.log";
+      EnvironmentVariables = todoEnvironment;
+    };
   };
+
+  # ===== deploys =====
+
+  launchd.user.agents.deploy-one-offs = deployAgent "one-offs" baseEnvironment;
+  launchd.user.agents.deploy-parallax = deployAgent "parallax" parallaxEnvironment;
+  launchd.user.agents.deploy-todo = deployAgent "todo" todoEnvironment;
+
+  # ===== scheduled jobs =====
+
+  # Which parallax jobs exist and when each is due lives in the parallax repo;
+  # this agent only asks once a minute what is due now.
+  launchd.user.agents.parallax-jobs = {
+    command = "${uv} run --env-file .env -- parallax jobs --due";
+    serviceConfig = {
+      RunAtLoad = true;
+      StartInterval = 60;
+      WorkingDirectory = parallaxRoot;
+      StandardOutPath = "/tmp/parallax-jobs.stdout.log";
+      StandardErrorPath = "/tmp/parallax-jobs.stderr.log";
+      EnvironmentVariables = parallaxEnvironment;
+    };
+  };
+
+  launchd.user.agents.rsnapshot-daily =
+    rsnapshotAgent "daily" { Hour = 3; Minute = 30; };
+  launchd.user.agents.rsnapshot-weekly =
+    rsnapshotAgent "weekly" { Weekday = 0; Hour = 3; Minute = 10; };
+  launchd.user.agents.rsnapshot-monthly =
+    rsnapshotAgent "monthly" { Day = 1; Hour = 3; Minute = 0; };
 }

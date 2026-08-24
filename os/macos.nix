@@ -44,6 +44,7 @@
     coursier
     curl
     fd
+    ffmpeg
     gh
     git
     htop

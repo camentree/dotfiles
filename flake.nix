@@ -1,5 +1,5 @@
 {
-  description = "Camen's machines";
+  description = "machines";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -21,19 +21,16 @@
     in {
       darwinConfigurations = {
 
-        # Intel MacBook Pro — home server
         "mac-intel-server" = nix-darwin.lib.darwinSystem {
           system = "x86_64-darwin";
           modules = [ ./os/macos.nix ./machines/mac-intel-server.nix darwinModules homeManagerModule ];
         };
 
-        # Apple Silicon — personal laptop
         "mac-arm-personal" = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix darwinModules homeManagerModule ];
         };
 
-        # Apple Silicon — work laptop
         "mac-arm-work" = nix-darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           modules = [ ./os/macos.nix ./machines/mac-arm-work.nix darwinModules homeManagerModule ];

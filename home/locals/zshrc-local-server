@@ -4,3 +4,15 @@ export TODO_PATH="$HOME/Documents/Life/todo.md"
 alias switch-gpu-off="sudo pmset -a gpuswitch 0"
 alias switch-gpu-on="sudo pmset -a gpuswitch 2"
 
+alias ha-stop="sudo launchctl bootout system/org.nixos.home-assistant"
+alias ha-start="sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.home-assistant.plist"
+alias ha-restart="ha-stop && ha-start"
+alias ha-log="tail -f /tmp/home-assistant.stderr.log"
+
+alias deploy-log="tail -f /tmp/deploy-*.stdout.log /tmp/deploy-*.stderr.log"
+alias deploy-now="for repository in one-offs parallax todo; do launchctl kickstart -k gui/\$UID/org.nixos.deploy-\$repository; done"
+
+alias jobs-ls="cd $HOME/Projects/parallax && uv run --env-file .env -- parallax jobs"
+alias jobs-log="tail -f /tmp/parallax-jobs.stdout.log /tmp/parallax-jobs.stderr.log"
+
+alias backup-ls="ls -lah $HOME/Backups/rsnapshot"
