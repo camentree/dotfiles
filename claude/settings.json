@@ -90,7 +90,10 @@
       "Bash(op item get *)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
   "model": "opus[1m]",
   "hooks": {
@@ -224,5 +227,6 @@
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "autoDreamEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true
 }

@@ -49,16 +49,23 @@ let
       "${ntfyUrl}/${ntfyHealthTopic}" || true
   '';
 
-  monitoredCommand = name: command:
+  monitoredCommand = name: alertAfterFailures: command:
     "${pkgs.writeShellScript "${name}-monitored" ''
       output=$(mktemp)
       trap 'rm -f "$output"' EXIT
+      failureCountFile=/tmp/${name}.failures
       ${command} > "$output" 2>&1
       status=$?
       cat "$output"
-      if [ "$status" -ne 0 ]; then
-        ${ntfyAlert} "${name} failed" "exit $status
+      if [ "$status" -eq 0 ]; then
+        rm -f "$failureCountFile"
+      else
+        failureCount=$(( $(cat "$failureCountFile" 2>/dev/null || echo 0) + 1 ))
+        echo "$failureCount" > "$failureCountFile"
+        if [ "$failureCount" -eq ${toString alertAfterFailures} ]; then
+          ${ntfyAlert} "${name} failed" "exit $status after $failureCount attempts
 $(tail -c 500 "$output")"
+        fi
       fi
       exit "$status"
     ''}";
@@ -115,7 +122,7 @@ $(tail -c 500 "$output")"
   # rotate, so they must fire *before* daily on overlapping days for correct
   # rotation.
   rsnapshotAgent = interval: schedule: {
-    command = monitoredCommand "rsnapshot-${interval}" "${rsnapshotRun} ${interval}";
+    command = monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}";
     serviceConfig = {
       StartCalendarInterval = [ schedule ];
       StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
@@ -134,7 +141,7 @@ $(tail -c 500 "$output")"
     exec "$script"
   '';
   deployAgent = repository: environment: {
-    command = monitoredCommand "deploy-${repository}" "${appDeploy repository}";
+    command = monitoredCommand "deploy-${repository}" 3 "${appDeploy repository}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 120;
