@@ -17,6 +17,8 @@ in
   # ============================================================
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono  # font for terminal / editor
+    zsh-autosuggestions
+    zsh-syntax-highlighting
   ];
 
   # ============================================================
