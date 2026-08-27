@@ -34,19 +34,34 @@ let
   uv = "/run/current-system/sw/bin/uv";
 
   # failure alerts
-  ntfyTokenPath = "${homeDirectory}/.ntfy/token";
-  ntfyUrl = "http://127.0.0.1:2586";
-  ntfyHealthTopic = "server-health";
+  emailAddress = "tree.camen@gmail.com";
+  smtpPasswordPath = "${homeDirectory}/.mail/password";
 
-  ntfyAlert = pkgs.writeShellScript "ntfy-alert" ''
-    title="$1"
-    message="$2"
-    [ -r ${ntfyTokenPath} ] || exit 0
-    ${pkgs.curl}/bin/curl -fsS -m 10 --retry 3 -o /dev/null \
-      -H "Authorization: Bearer $(< ${ntfyTokenPath})" \
-      -H "Title: $title" \
-      --data-raw "$message" \
-      "${ntfyUrl}/${ntfyHealthTopic}" || true
+  msmtprc = pkgs.writeText "msmtprc" ''
+    defaults
+    tls on
+    tls_trust_file ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+    logfile /tmp/msmtp.log
+    timeout 20
+
+    account gmail
+    host smtp.gmail.com
+    port 587
+    auth on
+    from ${emailAddress}
+    user ${emailAddress}
+    passwordeval "cat ${smtpPasswordPath}"
+
+    account default : gmail
+  '';
+
+  emailAlert = pkgs.writeShellScriptBin "email-alert" ''
+    subject="$1"
+    body="$2"
+    [ -r ${smtpPasswordPath} ] || exit 0
+    printf 'To: %s\nFrom: mac-intel-server <%s>\nSubject: [mac-intel-server] %s\n\n%s\n' \
+      "${emailAddress}" "${emailAddress}" "$subject" "$body" \
+      | ${pkgs.msmtp}/bin/msmtp -C ${msmtprc} -t || true
   '';
 
   monitoredCommand = name: alertAfterFailures: command:
@@ -63,8 +78,8 @@ let
         failureCount=$(( $(cat "$failureCountFile" 2>/dev/null || echo 0) + 1 ))
         echo "$failureCount" > "$failureCountFile"
         if [ "$failureCount" -eq ${toString alertAfterFailures} ]; then
-          ${ntfyAlert} "${name} failed" "exit $status after $failureCount attempts
-$(tail -c 500 "$output")"
+          ${emailAlert}/bin/email-alert "${name} failed" "exit $status after $failureCount attempts
+$(tail -c 8000 "$output")"
         fi
       fi
       exit "$status"
@@ -251,7 +266,9 @@ in
     backupNow
     backupTest
     cloudflared
+    emailAlert
     google-cloud-sdk
+    msmtp
     nginx
     ntfy-sh
     playwright-driver.browsers
