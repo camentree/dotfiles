@@ -90,7 +90,10 @@
       "Bash(op item get *)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
   "hooks": {
     "SessionStart": [
@@ -235,12 +238,12 @@
   "dialogExpiry": "never",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,
   "remoteControlAtStartup": true,
   "crossSessionInbound": "accept",
-  "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": false,
   "useAutoModeDuringPlan": true
 }

@@ -34,31 +34,53 @@ let
   uv = "/run/current-system/sw/bin/uv";
 
   # failure alerts
-  ntfyTokenPath = "${homeDirectory}/.ntfy/token";
-  ntfyUrl = "http://127.0.0.1:2586";
-  ntfyHealthTopic = "server-health";
+  emailAddress = "tree.camen@gmail.com";
+  smtpPasswordPath = "${homeDirectory}/.mail/password";
 
-  ntfyAlert = pkgs.writeShellScript "ntfy-alert" ''
-    title="$1"
-    message="$2"
-    [ -r ${ntfyTokenPath} ] || exit 0
-    ${pkgs.curl}/bin/curl -fsS -m 10 --retry 3 -o /dev/null \
-      -H "Authorization: Bearer $(< ${ntfyTokenPath})" \
-      -H "Title: $title" \
-      --data-raw "$message" \
-      "${ntfyUrl}/${ntfyHealthTopic}" || true
+  msmtprc = pkgs.writeText "msmtprc" ''
+    defaults
+    tls on
+    tls_trust_file ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+    logfile /tmp/msmtp.log
+    timeout 20
+
+    account gmail
+    host smtp.gmail.com
+    port 587
+    auth on
+    from ${emailAddress}
+    user ${emailAddress}
+    passwordeval "cat ${smtpPasswordPath}"
+
+    account default : gmail
   '';
 
-  monitoredCommand = name: command:
+  emailAlert = pkgs.writeShellScriptBin "email-alert" ''
+    subject="$1"
+    body="$2"
+    [ -r ${smtpPasswordPath} ] || exit 0
+    printf 'To: %s\nFrom: mac-intel-server <%s>\nSubject: [mac-intel-server] %s\n\n%s\n' \
+      "${emailAddress}" "${emailAddress}" "$subject" "$body" \
+      | ${pkgs.msmtp}/bin/msmtp -C ${msmtprc} -t || true
+  '';
+
+  monitoredCommand = name: alertAfterFailures: command:
     "${pkgs.writeShellScript "${name}-monitored" ''
       output=$(mktemp)
       trap 'rm -f "$output"' EXIT
+      failureCountFile=/tmp/${name}.failures
       ${command} > "$output" 2>&1
       status=$?
       cat "$output"
-      if [ "$status" -ne 0 ]; then
-        ${ntfyAlert} "${name} failed" "exit $status
-$(tail -c 500 "$output")"
+      if [ "$status" -eq 0 ]; then
+        rm -f "$failureCountFile"
+      else
+        failureCount=$(( $(cat "$failureCountFile" 2>/dev/null || echo 0) + 1 ))
+        echo "$failureCount" > "$failureCountFile"
+        if [ "$failureCount" -eq ${toString alertAfterFailures} ]; then
+          ${emailAlert}/bin/email-alert "${name} failed" "exit $status after $failureCount attempts
+$(tail -c 8000 "$output")"
+        fi
       fi
       exit "$status"
     ''}";
@@ -115,7 +137,7 @@ $(tail -c 500 "$output")"
   # rotate, so they must fire *before* daily on overlapping days for correct
   # rotation.
   rsnapshotAgent = interval: schedule: {
-    command = monitoredCommand "rsnapshot-${interval}" "${rsnapshotRun} ${interval}";
+    command = monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}";
     serviceConfig = {
       StartCalendarInterval = [ schedule ];
       StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
@@ -134,7 +156,7 @@ $(tail -c 500 "$output")"
     exec "$script"
   '';
   deployAgent = repository: environment: {
-    command = monitoredCommand "deploy-${repository}" "${appDeploy repository}";
+    command = monitoredCommand "deploy-${repository}" 3 "${appDeploy repository}";
     serviceConfig = {
       RunAtLoad = true;
       StartInterval = 120;
@@ -244,7 +266,9 @@ in
     backupNow
     backupTest
     cloudflared
+    emailAlert
     google-cloud-sdk
+    msmtp
     nginx
     ntfy-sh
     playwright-driver.browsers
