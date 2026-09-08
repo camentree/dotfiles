@@ -898,6 +898,20 @@ require("lazy").setup({
 				desc = "[S]earch [D]iagnostics",
 			},
 			{
+				"<leader>st",
+				function()
+					Snacks.picker.treesitter()
+				end,
+				desc = "[S]earch [T]reesitter symbols",
+			},
+			{
+				"<leader>sS",
+				function()
+					Snacks.picker.lsp_workspace_symbols()
+				end,
+				desc = "[S]earch workspace [S]ymbols",
+			},
+			{
 				"<leader>sr",
 				function()
 					Snacks.picker.resume()
@@ -1223,18 +1237,11 @@ require("lazy").setup({
 				scalafmtConfigPath = ".scalafmt.conf",
 				scalafixConfigPath = ".scalafix.conf",
 				autoImportBuilds = "all",
-				serverProperties = { "-Xmx4g", "-XX:+UseG1GC" },
-				bloopJvmProperties = {
-					"-Xmx16g",
-					"-Xss4m",
-					"-XX:MaxInlineLevel=20",
-					"-XX:+UseZGC",
-					"-XX:ZUncommitDelay=30",
-				},
+				defaultBspToBuildTool = true,
+				serverProperties = { "-Xmx6g", "-XX:+UseG1GC" },
 				startMcpServer = true,
 				mcpClient = "claude",
-				-- metals 2
-				serverVersion = "2.0.0-M16",
+				serverVersion = "1.6.8",
 			}
 			metals_config.find_root_dir_max_project_nesting = 10
 			metals_config.init_options = {
@@ -1258,9 +1265,9 @@ require("lazy").setup({
 			vim.api.nvim_create_user_command("RestartMetals", function()
 				require("metals").restart_metals()
 			end, { desc = "Restart the Metals language server" })
-			vim.api.nvim_create_user_command("RestartBloop", function()
+			vim.api.nvim_create_user_command("RestartBuildServer", function()
 				require("metals").restart_build_server()
-			end, { desc = "Restart the Bloop build server" })
+			end, { desc = "Restart the build server" })
 			vim.api.nvim_create_user_command("MetalStatus", function()
 				require("metals").info()
 			end, { desc = "Open the Metals info window" })
@@ -1269,6 +1276,15 @@ require("lazy").setup({
 				vim.schedule(function()
 					vim.fn.bufload(vim.fn.bufadd(sbt_build_file))
 				end)
+				vim.api.nvim_create_autocmd("VimLeavePre", {
+					group = nvim_metals_group,
+					callback = function()
+						vim.fn.jobstart({ "sbt", "--client", "shutdown" }, {
+							detach = true,
+							cwd = vim.fs.dirname(sbt_build_file),
+						})
+					end,
+				})
 			end
 		end,
 	},
