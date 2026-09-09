@@ -5,72 +5,6 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
-    "allow": [
-      "Bash(gh issue list *)",
-      "Bash(gh issue view *)",
-      "Bash(gh pr checks *)",
-      "Bash(gh pr diff *)",
-      "Bash(gh pr list *)",
-      "Bash(gh pr view *)",
-      "Bash(git branch *)",
-      "Bash(git diff *)",
-      "Bash(git fetch *)",
-      "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(git stash *)",
-      "Bash(git status *)",
-      "Bash(cat *)",
-      "Bash(sysctl *)",
-      "Bash(lsof *)",
-      "Bash(find *)",
-      "Bash(ls *)",
-      "Bash(wc *)",
-      "Bash(grep *)",
-      "Bash(rg *)",
-      "Bash(sed -n *)",
-      "Bash(awk *)",
-      "Bash(jq *)",
-      "Bash(head *)",
-      "Bash(tail *)",
-      "Bash(sort *)",
-      "Bash(uniq *)",
-      "Bash(tr *)",
-      "Bash(du *)",
-      "Bash(date *)",
-      "Bash(printf *)",
-      "Bash(basename *)",
-      "Bash(dirname *)",
-      "Bash(gh api *)",
-      "Bash(gh run view *)",
-      "Bash(gh run list *)",
-      "Bash(git worktree list *)",
-      "Bash(git blame *)",
-      "Bash(git rev-parse *)",
-      "Bash(docker ps *)",
-      "Bash(aws logs get-query-results *)",
-      "Bash(sbt *)",
-      "Bash(which *)",
-      "Bash(pwd)",
-      "Bash(echo *)",
-      "Bash(env *)",
-      "Bash(defaults *)",
-      "Bash(mdfind *)",
-      "Bash(npm run compile *)",
-      "Bash(curl -X GET *)",
-      "Bash(pbcopy)",
-      "WebSearch",
-      "WebFetch",
-      "Read",
-      "Bash(mise where:*)",
-      "Bash(npx difit *)",
-      "Skill(keybindings-help)",
-      "mcp__linear__list_issues",
-      "mcp__linear__get_issue",
-      "mcp__linear__list_comments",
-      "mcp__notion__notion-fetch",
-      "mcp__notion__notion-search",
-      "mcp__chrome-devtools__list_pages"
-    ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
@@ -90,135 +24,29 @@
       "Bash(op item get *)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": [
-      "~/",
-      "/tmp"
-    ]
+    "additionalDirectories": ["~/", "/tmp"]
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh working"
-          },
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"Outcome first, fewest words, no filler openers or closing recaps. Write so someone who wasn'\\''t in this session understands it. Never add comments to code.\"}}'"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh idle"
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh clear"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "elicitation_dialog|agent_needs_input",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
-        "matcher": "AskUserQuestion|ExitPlanMode",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh bell"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/format-on-edit.sh"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/update-tab-status.sh working"
+            "command": "bash ~/.claude/scripts/autonomous-guard.sh"
           }
         ]
       }
     ]
   },
-  "worktree": {
-    "baseRef": "fresh"
-  },
-  "enableWorkflows": false,
-  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/scripts/statusline-command.sh"
+    "command": "bash ~/.claude/scripts/status-line.sh"
   },
+  "outputStyle": "Concise",
+  "effortLevel": "medium",
+  "worktree": { "baseRef": "fresh" },
+  "enableWorkflows": false,
+  "workflowKeywordTriggerEnabled": false,
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
@@ -230,8 +58,6 @@
       }
     }
   },
-  "outputStyle": "writing-for-humans",
-  "effortLevel": "high",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "askUserQuestionTimeout": "never",
@@ -239,7 +65,7 @@
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "agentPushNotifEnabled": true,
-  "inputNeededNotifEnabled": true
+  "inputNeededNotifEnabled": true,
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,

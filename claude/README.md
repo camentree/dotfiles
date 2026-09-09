@@ -1,112 +1,81 @@
-# Claude Code Style Configuration
+# The harness
 
-We have a couple methods for affecting claude code's output
+Claude Code does the coding. This directory makes that safe to leave alone: one path every task walks, a plan file per task, gates where Camen is needed, and two loops that run while nobody is watching.
 
-1. context-injection
-2. agents
-3. skills
+## One task's path
 
+```
+/dispatch      worktree + background session running /task <url>
+   |
+/task
+   plan        read the task, read the code, write criteria and plan
+   |             decision left open ........ ask Camen, stop
+   |             a day of work or more ..... Camen reads the plan, stop
+   build       per group: decide tests, code, tests, loop compile / tests / run, commit
+   |
+   /verify     compile, scope, full suite, style sub-agent, criteria sub-agent
+   |             fail ....................... back to build, 3 passes max
+   /review     walkthrough as comments in difit, one server for the whole review
+   |             his comment ................ fix, reply in the thread, /verify
+   |             "good" ..................... done
+   /pr         push and open, description from the plan
+   |
+/monitor-prs   CI, conflicts, comments, close-out on merge
+                 approach questioned ........ ask Camen
+```
 
-## Paths into style
+`/task` takes a ticket URL, a file path, freeform text, or nothing and asks. Run it again on the same branch and it reads the plan and git and carries on.
 
-1. context-injection
-  - writing-style/references
-    - code.md
-      - _style rules for code_
-      - automatic
-        - always imported by CLAUDE.md when session starts
-      - by user
-        - /execute-pr (read again right before code gets written)
-        - /style-pass
-    - artifacts.md
-      - _artifact creation rules_
-      - automatic
-        - none
-      - by user
-        - /explain
-        - /plan-feature
-        - /plan-pr
-    - conversation.md
-      - _style rules for conversation prose Camen engages with — explanations, findings, questions_
-      - automatic
-        - always imported by CLAUDE.md when session starts
-        - can be injected by agent when responding to camen (writing-for-humans output style)
-      - by user
-        - /explain
-        - /plan-feature
-        - /plan-pr
-        - /execute-pr
-        - /address-comments
-        - /writing-audit
-    - published.md
-      - _style rules for prose Camen publishes — PR descriptions, commits, review comments, tickets_
-      - automatic
-        - none
-      - by user
-        - /open-pr
-        - /writing-audit
-  - output-styles/writing-for-humans.md
-    - _always-on style rules; the only lever for chat_
-    - automatic
-      - always added to the system prompt when session starts
-    - by user
-      - none
-  - CLAUDE.md
-    - _user-level instructions; imports conversation.md and code.md every session_
-    - automatic
-      - always loaded when session starts
-    - by user
-      - none
-2. agents
-  - prose-grader.md
-    - _grades prose with no session context; reports what it couldn't understand_
-    - automatic
-      - sometimes called by claude before a real question reaches Camen (writing-for-humans output style)
-      - sometimes called by claude when its description fits the task (ad hoc)
-    - by user
-      - /writing-audit — on pages, PR descriptions, and anything he's meant to engage with
-3. skills
-  - writing-audit
-    - _rewrites finished prose against the references; wraps prose-grader. Prose only — never code, never on claude's own initiative_
-    - automatic
-      - none
-    - by user
-      - /explain
-      - /open-pr
-      - /execute-pr
-      - /plan-feature
-      - /plan-pr
-      - typed directly
-  - style-pass
-    - _reviews and fixes the working diff against code.md_
-    - automatic
-      - none
-    - by user
-      - /execute-pr
-      - typed directly
-  - writing-style
-    - _index of the references_
-    - automatic
-      - sometimes called by claude when defining or polishing a style (ad hoc)
-    - by user
-      - none
+## The plan file
 
+`~/.claude/tasks/<name>.md`. Example at `example-plan.md`. Five sections:
 
-## Structure
+- the task restated, with its source and branch
+- Criteria: checkable sentences about behavior, one per line
+- Files
+- Decisions: placement, interfaces, the alternative rejected, and anything build added
+- Out of scope
 
+A criterion is what everything grades against. The build stops on it, the evaluator proves it, the reviewer reads it, and the PR's test plan is the list.
 
-- agents/
-  - prose-grader.md                                    
-  - output-styles/
-    - writing-for-humans.md   
-  skills/
-    writing-style/
-      SKILL.md               
-      references/
-        code.md              
-        artifacts.md                 
-        conversation.md      
-        published.md             
-    writing-audit/SKILL.md   
-    style-pass/SKILL.md      
-settings.json
+## Where Camen is needed
+
+- A criterion that is still a decision after reading the task and the code. Asked with a recommendation first.
+- Reading the plan, for tasks of a day or more.
+- Code review in difit, before anything is pushed. The walkthrough is comments in the diff, his comments get answered in place, and a comment saying the branch is good ends it.
+- Any review comment that questions the approach.
+- Anything that trips a cap.
+
+## Guards
+
+- Build loop, 10 passes per group, in `skills/task`. Stops and says what was tried.
+- Verify loop, 3 passes, in `skills/verify`. Same.
+- Token budget, `scripts/autonomous-guard.sh`, pre-tool-use hook. Blocks the next tool call past `CLAUDE_SESSION_BUDGET_TOKENS`. Counts input, output, and cache writes across the session and its sub-agents. Only on when dispatch sets the variable, so hand-started sessions have no cap.
+- Dispatch gates, in `routines/dispatch.md`. Free memory and a green default branch.
+
+## The loops
+
+```
+/loop 10m /monitor-prs
+/loop 30m /dispatch
+```
+
+Both live in `routines/` and are linked into `skills/` by `user.nix`, so they run by hand as slash commands too.
+
+## Self-improvement
+
+Every skill ends with: if you hit a blocker this skill didn't anticipate, solve it and update the skill. The monitor's close-out writes a retrospective per merged task and proposes the CLAUDE.md or skill change that would have prevented what went wrong. Proposals wait for Camen.
+
+## Layout
+
+```
+CLAUDE.md          who Camen is, how to write, how to code, what done means
+settings.json      deny list, the guard hook, status line
+example-plan.md    a plan file, filled in
+scripts/           autonomous guard, status line
+skills/            task, verify, review, pr, todo
+routines/          monitor-prs, dispatch
+archive/           explain, kept for later
+```
+
+Project-specific knowledge lives in each project's CLAUDE.md or CLAUDE.local.md: how to run it, how to hit it, how to seed state, where the logs are, and a `## Code style checks` section that verify reads alongside the global one.

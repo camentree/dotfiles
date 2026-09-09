@@ -83,6 +83,9 @@ if command -v mise &> /dev/null; then
   echo "Installing Node LTS..."
   mise use --global node@lts
 
+  echo "Installing difit (local diff review server)..."
+  npm install -g difit
+
   echo "Installing Java (temurin-17)..."
   mise use --global java@temurin-17.0.16+8
 
