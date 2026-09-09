@@ -77,4 +77,4 @@ skills/            task, verify, review, pr, monitor-prs, dispatch, todo
 archive/           explain, kept for later
 ```
 
-Project-specific knowledge lives in each project's CLAUDE.md or CLAUDE.local.md: how to run it, how to hit it, how to seed state, where the logs are, and a `## Code style checks` section that verify reads alongside the global one.
+Project-specific knowledge lives in each project's CLAUDE.md or CLAUDE.local.md: how to run it, how to hit it, how to seed state, where the logs are, and a `## Code style checks` section. Verify reads that section from every CLAUDE.md and CLAUDE.local.md on the path from the repo root to each changed file, so a sub-project's rules apply only inside it.
