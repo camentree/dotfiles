@@ -91,10 +91,6 @@ in
     # Ghostty terminal
     ".config/ghostty/config" = liveLink "home/ghostty";
 
-    # VSCode
-    "Library/Application Support/Code/User/settings.json"    = liveLink "home/vscode/settings.json";
-    "Library/Application Support/Code/User/keybindings.json" = liveLink "home/vscode/keybindings.json";
-
   } // (
     # settings.json is excluded here and symlinked via an activation script —
     # Claude Code's /effort et al. must be able to write it.
@@ -152,5 +148,17 @@ in
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${dotfilesRepo}/claude/settings.json \
       ${config.home.homeDirectory}/.claude/settings.json
+  '';
+
+  home.activation.vscodeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    vscodeUserDir="${config.home.homeDirectory}/Library/Application Support/Code/User"
+    for vscodeFile in settings.json keybindings.json; do
+      if [ -d "$vscodeUserDir" ] && \
+         [ "$(readlink "$vscodeUserDir/$vscodeFile")" != "${dotfilesRepo}/home/vscode/$vscodeFile" ]; then
+        $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
+          ${dotfilesRepo}/home/vscode/$vscodeFile \
+          "$vscodeUserDir/$vscodeFile"
+      fi
+    done
   '';
 }

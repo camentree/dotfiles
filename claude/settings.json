@@ -24,7 +24,10 @@
       "Bash(op item get *)"
     ],
     "defaultMode": "auto",
-    "additionalDirectories": ["~/", "/tmp"]
+    "additionalDirectories": [
+      "~/",
+      "/tmp"
+    ]
   },
   "hooks": {
     "PreToolUse": [
@@ -38,15 +41,15 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "enableWorkflows": false,
+  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/scripts/status-line.sh"
   },
-  "outputStyle": "Concise",
-  "effortLevel": "medium",
-  "worktree": { "baseRef": "fresh" },
-  "enableWorkflows": false,
-  "workflowKeywordTriggerEnabled": false,
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true
   },
@@ -58,18 +61,21 @@
       }
     }
   },
+  "outputStyle": "Concise",
+  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "askUserQuestionTimeout": "never",
   "dialogExpiry": "never",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
-  "agentPushNotifEnabled": true,
-  "inputNeededNotifEnabled": true,
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,
   "remoteControlAtStartup": true,
   "crossSessionInbound": "accept",
-  "useAutoModeDuringPlan": true
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "useAutoModeDuringPlan": true,
+  "model": "claude-fable-5-1[1m]"
 }
