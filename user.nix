@@ -112,11 +112,6 @@ in
         (lib.filesystem.listFilesRecursive ./claude)))
   ) // {
 
-    # Routines are skills kept in their own directory for legibility; link them
-    # into skills/ so they stay invocable as slash commands.
-    ".claude/skills/monitor-prs/SKILL.md" = liveLink "claude/routines/monitor-prs.md";
-    ".claude/skills/dispatch/SKILL.md"    = liveLink "claude/routines/dispatch.md";
-
     # SSH
     ".ssh/config" = {
       text = ''

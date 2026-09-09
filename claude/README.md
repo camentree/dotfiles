@@ -51,7 +51,7 @@ A criterion is what everything grades against. The build stops on it, the evalua
 - Build loop, 10 passes per group, in `skills/task`. Stops and says what was tried.
 - Verify loop, 3 passes, in `skills/verify`. Same.
 - Token budget, `scripts/autonomous-guard.sh`, pre-tool-use hook. Blocks the next tool call past `CLAUDE_SESSION_BUDGET_TOKENS`. Counts input, output, and cache writes across the session and its sub-agents. Only on when dispatch sets the variable, so hand-started sessions have no cap.
-- Dispatch gates, in `routines/dispatch.md`. Free memory and a green default branch.
+- Dispatch gates, in `skills/dispatch`. Free memory and a green default branch.
 
 ## The loops
 
@@ -60,7 +60,7 @@ A criterion is what everything grades against. The build stops on it, the evalua
 /loop 30m /dispatch
 ```
 
-Both live in `routines/` and are linked into `skills/` by `user.nix`, so they run by hand as slash commands too.
+Both are plain skills and run by hand too.
 
 ## Self-improvement
 
@@ -73,8 +73,7 @@ CLAUDE.md          who Camen is, how to write, how to code, what done means
 settings.json      deny list, the guard hook, status line
 example-plan.md    a plan file, filled in
 scripts/           autonomous guard, status line
-skills/            task, verify, review, pr, todo
-routines/          monitor-prs, dispatch
+skills/            task, verify, review, pr, monitor-prs, dispatch, todo
 archive/           explain, kept for later
 ```
 
