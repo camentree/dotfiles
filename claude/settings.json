@@ -239,7 +239,7 @@
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "agentPushNotifEnabled": true,
-  "inputNeededNotifEnabled": true
+  "inputNeededNotifEnabled": true,
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,

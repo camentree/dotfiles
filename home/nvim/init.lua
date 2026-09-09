@@ -972,7 +972,11 @@ require("lazy").setup({
 			{
 				"grr",
 				function()
-					Snacks.picker.lsp_references()
+					if next(vim.lsp.get_clients({ bufnr = 0 })) then
+						Snacks.picker.lsp_references()
+					else
+						Snacks.picker.grep_word()
+					end
 				end,
 				desc = "[G]oto [R]eferences",
 			},
@@ -986,7 +990,19 @@ require("lazy").setup({
 			{
 				"grd",
 				function()
-					Snacks.picker.lsp_definitions()
+					if next(vim.lsp.get_clients({ bufnr = 0 })) then
+						Snacks.picker.lsp_definitions()
+					else
+						Snacks.picker.grep({
+							search = function(picker)
+								return "\\b(class|trait|object|def|val|var|type|enum|given)\\s+"
+									.. picker:word()
+									.. "\\b"
+							end,
+							regex = true,
+							live = false,
+						})
+					end
 				end,
 				desc = "[G]oto [D]efinition",
 			},
@@ -1255,13 +1271,13 @@ require("lazy").setup({
 		config = function(self, metals_config)
 			local nvim_metals_group =
 				vim.api.nvim_create_augroup("nvim-metals", { clear = true })
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = self.ft,
-				group = nvim_metals_group,
-				callback = function()
+			vim.api.nvim_create_user_command(
+				"MetalsStart",
+				function()
 					require("metals").initialize_or_attach(metals_config)
 				end,
-			})
+				{ desc = "Attach the Metals language server to this workspace" }
+			)
 			vim.api.nvim_create_user_command("RestartMetals", function()
 				require("metals").restart_metals()
 			end, { desc = "Restart the Metals language server" })
@@ -1321,7 +1337,7 @@ require("lazy").setup({
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
-				scala = { lsp_format = "prefer" },
+				scala = { "scalafmt" },
 				python = { "ruff_organize_imports", "ruff_format" },
 				markdown = { "prettier" },
 				javascript = { "prettier" },
@@ -1334,6 +1350,36 @@ require("lazy").setup({
 				scss = { "prettier" },
 				html = { "prettier" },
 				yaml = { "prettier" },
+			},
+			formatters = {
+				scalafmt = {
+					command = "cs",
+					args = function(_, ctx)
+						local config = vim.fs.find(".scalafmt.conf", {
+							upward = true,
+							path = ctx.dirname,
+						})[1]
+						local version = "3.11.5"
+						if config then
+							for _, line in ipairs(vim.fn.readfile(config)) do
+								local found =
+									line:match('^%s*version%s*=%s*"?([%d%.]+)')
+								if found then
+									version = found
+									break
+								end
+							end
+						end
+						return {
+							"launch",
+							"org.scalameta:scalafmt-cli_2.13:" .. version,
+							"--",
+							"--stdin",
+							"--config",
+							config or ".scalafmt.conf",
+						}
+					end,
+				},
 			},
 		},
 	},
