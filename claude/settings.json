@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/scripts/autonomous-guard.sh"
+            "command": "bash ~/.claude/scripts/autonomous-task-guard.sh"
           }
         ]
       }

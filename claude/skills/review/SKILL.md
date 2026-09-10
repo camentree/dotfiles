@@ -31,7 +31,7 @@ curl -X POST <url>/api/comment-imports -H 'Content-Type: application/json' -d '[
 ]'
 ```
 
-Every comment you post carries `"author":"claude"`. His don't.
+Every comment you post carries `"author":"claude"`. User's doesn't.
 
 What to post, in this order:
 

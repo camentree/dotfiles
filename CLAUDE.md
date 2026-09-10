@@ -21,16 +21,12 @@ Full layout and user-facing docs: see `README.md`.
 Nothing takes effect until you rebuild. Config edits are inert otherwise.
 
 ```bash
-nix-rebuild <machine-name>          # e.g. nix-rebuild mac-arm-work
+nix-rebuild
 ```
 
 Available machines are defined in `flake.nix` → `darwinConfigurations`.
 
 The `nix-rebuild` function is defined in `home/zshrc`; it runs `darwin-rebuild switch --flake ~/Projects/dotfiles#<machine>`.
-
-### Where config lives — don't edit the symlinks
-
-Most files in `$HOME` are symlinks into the Nix store. Never edit `~/.zshrc`, `~/.config/nvim/init.lua`, `~/.claude/settings.json`, etc. directly — edit the source under this repo and rebuild. `lazy-lock.json` is the one intentional exception (symlinked via activation script to the repo file so lazy.nvim can write to it).
 
 ### Two flavors of dotfile management
 
@@ -41,7 +37,7 @@ When adding a new dotfile: drop the file in `home/`, then add a `home.file.".foo
 
 ### Adding a package
 
-- All machines → `os/macos.nix` `environment.systemPackages`
+- All macOS machines → `os/macos.nix` `environment.systemPackages`
 - One machine → `machines/<name>.nix` `environment.systemPackages`
 - Search names at <https://search.nixos.org/packages>
 
@@ -58,10 +54,10 @@ Quick sanity check without switching:
 nix flake check
 ```
 
-## Code style
+## Code style checks
 
-- **Preserve comments.** Don't strip existing comments when editing, even during restructuring. Section-header comments (`# ===== Foo =====`) are intentional structure.
-- **Custom theming, hex colors.** No pre-made themes (catppuccin etc.). Use hex (`#86c9c0`), keep Ghostty / Starship / nvim visually consistent.
+- **Add comments explaining bug fixes.** 
+- **Custom theming, hex colors.** No pre-made themes, use hex instead. Keeps applications visually consistent.
 - **Minimalism over config sprawl.** This repo should stay small and legible; avoid adding abstractions (helper functions, shared modules) until there's repeated pain.
 
 ## Gotchas

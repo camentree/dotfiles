@@ -5,7 +5,7 @@ Branch: camen/int-569-api-integrations-update-get-organization-users-endpoint-to
 
 The public endpoint that lists an organization's users returns everyone, even when the caller only has read access to one facility. Return only the users the caller's facility grants cover.
 
-## Criteria
+## Acceptance Criteria
 
 - An org-scoped caller sees every user in the organization
 - A caller scoped to facility 10 sees users with FacilityStaff at facility 10
