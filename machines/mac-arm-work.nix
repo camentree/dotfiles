@@ -17,10 +17,9 @@
     podman
     krunkit
     postgresql
-    yarn
   ];
 
-  home-manager.users.camen = { config, ... }: {
+  home-manager.users.camen = {
     # mise — version manager for node / java / sbt. Work machine only.
     # Writes ~/.config/mise/config.toml; shell activation lives in home/zshenv
     # (zsh here is a hand-managed dotfile, not home-manager's programs.zsh).
@@ -38,11 +37,6 @@
           idiomatic_version_file_enable_tools = [ "node" ];
         };
       };
-    };
-
-    home.file.".zshrc.local" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Projects/dotfiles/home/locals/zshrc-local-work";
-      force = true;
     };
   };
 }

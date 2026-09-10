@@ -37,6 +37,9 @@ in
       push.autoSetupRemote = true;
       push.default = "current";
       rerere.enabled = true;
+      # /model and /effort write into claude/settings.json; strip them on the way
+      # into the index so the file stays clean (see .gitattributes).
+      filter.claude-settings.clean = "jq --indent 2 'del(.model, .effortLevel)'";
       alias = {
         cm = "commit";
         co = "checkout";
@@ -91,6 +94,10 @@ in
     # Ghostty terminal
     ".config/ghostty/config" = liveLink "home/ghostty";
 
+    # VS Code
+    "Library/Application Support/Code/User/settings.json" = liveLink "home/vscode/settings.json";
+    "Library/Application Support/Code/User/keybindings.json" = liveLink "home/vscode/keybindings.json";
+
   } // (
     # settings.json is excluded here and symlinked via an activation script —
     # Claude Code's /effort et al. must be able to write it.
@@ -132,33 +139,18 @@ in
       '';
     };
 
+    ".ssh/authorized_keys".text = ''
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW
+    '';
+
   };
 
   # ============================================================
   # Activation scripts — for files that need to be writable
   # ============================================================
-  home.activation.sshAuthorizedKeys = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.ssh
-    $DRY_RUN_CMD chmod 700 ${config.home.homeDirectory}/.ssh
-    echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW' > ${config.home.homeDirectory}/.ssh/authorized_keys
-    $DRY_RUN_CMD chmod 600 ${config.home.homeDirectory}/.ssh/authorized_keys
-  '';
-
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${dotfilesRepo}/claude/settings.json \
       ${config.home.homeDirectory}/.claude/settings.json
-  '';
-
-  home.activation.vscodeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    vscodeUserDir="${config.home.homeDirectory}/Library/Application Support/Code/User"
-    for vscodeFile in settings.json keybindings.json; do
-      if [ -d "$vscodeUserDir" ] && \
-         [ "$(readlink "$vscodeUserDir/$vscodeFile")" != "${dotfilesRepo}/home/vscode/$vscodeFile" ]; then
-        $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
-          ${dotfilesRepo}/home/vscode/$vscodeFile \
-          "$vscodeUserDir/$vscodeFile"
-      fi
-    done
   '';
 }

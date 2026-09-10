@@ -59,7 +59,7 @@ bash setup.sh mac-arm-work    # or mac-arm-personal, mac-intel-server
 
 Restart the terminal. From then on, after any config change:
 ```bash
-nix-rebuild mac-arm-work
+nix-rebuild
 ```
 
 ## Applications to install manually

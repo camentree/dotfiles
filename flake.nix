@@ -17,23 +17,19 @@
         home-manager.backupFileExtension = "pre-nix-backup";
         home-manager.users.camen = import ./user.nix;
       };
-      darwinModules = home-manager.darwinModules.home-manager;
     in {
       darwinConfigurations = {
 
         "mac-intel-server" = nix-darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-intel-server.nix home-manager.darwinModules.home-manager homeManagerModule ];
         };
 
         "mac-arm-personal" = nix-darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix home-manager.darwinModules.home-manager homeManagerModule ];
         };
 
         "mac-arm-work" = nix-darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          modules = [ ./os/macos.nix ./machines/mac-arm-work.nix darwinModules homeManagerModule ];
+          modules = [ ./os/macos.nix ./machines/mac-arm-work.nix home-manager.darwinModules.home-manager homeManagerModule ];
         };
 
       };

@@ -517,7 +517,6 @@ vim.keymap.set("t", "<S-CR>", function()
 end, { desc = "New line in the terminal program" })
 vim.keymap.set("i", "<F14>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("n", "<F14>", "O", { desc = "New line above" })
-vim.keymap.set("i", "<F13>", "<C-o>O", { desc = "New line above" })
 vim.keymap.set("i", "<Up>", "<C-o>gk", { desc = "Move up by display line" })
 vim.keymap.set("i", "<Down>", "<C-o>gj", { desc = "Move down by display line" })
 vim.keymap.set("n", "<F18>", "gcc", { remap = true, desc = "Toggle comment" })
@@ -677,6 +676,25 @@ end
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
+local build_artifacts = {
+	".git",
+	".venv",
+	"node_modules",
+	"dist",
+	"build",
+	"target",
+	"__pycache__",
+	"*.pyc",
+	"*.egg-info",
+	"htmlcov",
+	".coverage",
+	".ipynb_checkpoints",
+	".bloop",
+	".metals",
+	".bsp",
+	".worktrees",
+}
+
 local sbt_build_file = vim.fs.joinpath(vim.uv.cwd(), "build.sbt")
 if not vim.uv.fs_stat(sbt_build_file) then
 	sbt_build_file = nil
@@ -705,57 +723,44 @@ require("lazy").setup({
 				delay = 300,
 			},
 		},
-		config = function(_, opts)
-			require("gitsigns").setup(opts)
-			-- Hunk staging keymaps
-			vim.keymap.set(
-				"n",
+		keys = {
+			{
 				"<leader>gs",
 				"<cmd>Gitsigns stage_hunk<CR>",
-				{ desc = "Git stage hunk" }
-			)
-			vim.keymap.set(
-				"v",
+				desc = "Git stage hunk",
+			},
+			{
 				"<leader>gs",
 				":Gitsigns stage_hunk<CR>",
-				{ desc = "Git stage lines" }
-			)
-			vim.keymap.set(
-				"n",
+				mode = "v",
+				desc = "Git stage lines",
+			},
+			{
 				"<leader>gr",
 				"<cmd>Gitsigns reset_hunk<CR>",
-				{ desc = "Git reset hunk" }
-			)
-			vim.keymap.set(
-				"v",
+				desc = "Git reset hunk",
+			},
+			{
 				"<leader>gr",
 				":Gitsigns reset_hunk<CR>",
-				{ desc = "Git reset lines" }
-			)
-			vim.keymap.set(
-				"n",
+				mode = "v",
+				desc = "Git reset lines",
+			},
+			{
 				"<leader>gu",
 				"<cmd>Gitsigns undo_stage_hunk<CR>",
-				{ desc = "Git undo stage hunk" }
-			)
-			vim.keymap.set(
-				"n",
+				desc = "Git undo stage hunk",
+			},
+			{
 				"<leader>gp",
 				"<cmd>Gitsigns preview_hunk<CR>",
-				{ desc = "Git preview hunk" }
-			)
-			vim.keymap.set(
-				"n",
-				"]h",
-				"<cmd>Gitsigns next_hunk<CR>",
-				{ desc = "Next git hunk" }
-			)
-			vim.keymap.set(
-				"n",
-				"[h",
-				"<cmd>Gitsigns prev_hunk<CR>",
-				{ desc = "Prev git hunk" }
-			)
+				desc = "Git preview hunk",
+			},
+			{ "]h", "<cmd>Gitsigns next_hunk<CR>", desc = "Next git hunk" },
+			{ "[h", "<cmd>Gitsigns prev_hunk<CR>", desc = "Prev git hunk" },
+		},
+		config = function(_, opts)
+			require("gitsigns").setup(opts)
 			-- Show git blame only in visual mode
 			vim.api.nvim_create_autocmd("ModeChanged", {
 				pattern = "*:[vV\x16]*",
@@ -785,7 +790,7 @@ require("lazy").setup({
 				{ "<leader>s", group = "[S]earch", mode = { "n", "v" } },
 				{ "<leader>f", group = "[F]ind (buffer)", mode = { "n", "v" } },
 				{ "<leader>t", group = "[T]oggle" },
-				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
+				{ "<leader>g", group = "[G]it", mode = { "n", "v" } },
 				{ "gr", group = "LSP Actions", mode = { "n" } },
 			},
 		},
@@ -810,7 +815,8 @@ require("lazy").setup({
 				sources = {
 					explorer = {
 						hidden = true,
-						ignored = false,
+						ignored = true,
+						exclude = build_artifacts,
 						follow_file = true,
 						auto_close = false,
 						layout = {
@@ -827,9 +833,21 @@ require("lazy").setup({
 							},
 						},
 					},
-					files = { follow = true },
-					grep = { follow = true },
-					grep_word = { follow = true },
+					files = {
+						follow = true,
+						ignored = true,
+						exclude = build_artifacts,
+					},
+					grep = {
+						follow = true,
+						ignored = true,
+						exclude = build_artifacts,
+					},
+					grep_word = {
+						follow = true,
+						ignored = true,
+						exclude = build_artifacts,
+					},
 				},
 			},
 		},
@@ -1034,27 +1052,6 @@ require("lazy").setup({
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			{
-				"mason-org/mason.nvim",
-				---@module 'mason.settings'
-				---@type MasonSettings
-				---@diagnostic disable-next-line: missing-fields
-				opts = {},
-			},
-			{
-				"WhoIsSethDaniel/mason-tool-installer.nvim",
-				opts = {
-					ensure_installed = {
-						"lua-language-server",
-						"stylua",
-						"pyright",
-						"ruff",
-						"prettier",
-						"typescript-language-server",
-						"eslint-lsp",
-					},
-				},
-			},
-			{
 				"j-hui/fidget.nvim",
 				opts = {
 					-- LSP progress is shown in the statusline instead; keep fidget
@@ -1102,47 +1099,6 @@ require("lazy").setup({
 					if
 						client
 						and client:supports_method(
-							"textDocument/documentHighlight",
-							event.buf
-						)
-					then
-						local highlight_augroup = vim.api.nvim_create_augroup(
-							"kickstart-lsp-highlight",
-							{ clear = false }
-						)
-						vim.api.nvim_create_autocmd(
-							{ "CursorHold", "CursorHoldI" },
-							{
-								buffer = event.buf,
-								group = highlight_augroup,
-								callback = vim.lsp.buf.document_highlight,
-							}
-						)
-						vim.api.nvim_create_autocmd(
-							{ "CursorMoved", "CursorMovedI" },
-							{
-								buffer = event.buf,
-								group = highlight_augroup,
-								callback = vim.lsp.buf.clear_references,
-							}
-						)
-						vim.api.nvim_create_autocmd("LspDetach", {
-							group = vim.api.nvim_create_augroup(
-								"kickstart-lsp-detach",
-								{ clear = true }
-							),
-							callback = function(event2)
-								vim.lsp.buf.clear_references()
-								vim.api.nvim_clear_autocmds({
-									group = "kickstart-lsp-highlight",
-									buffer = event2.buf,
-								})
-							end,
-						})
-					end
-					if
-						client
-						and client:supports_method(
 							"textDocument/inlayHint",
 							event.buf
 						)
@@ -1182,44 +1138,17 @@ require("lazy").setup({
 				ts_ls = {},
 				eslint = {},
 				lua_ls = {
-					on_init = function(client)
-						if client.workspace_folders then
-							local path = client.workspace_folders[1].name
-							if
-								path ~= vim.fn.stdpath("config")
-								and (
-									vim.uv.fs_stat(path .. "/.luarc.json")
-									or vim.uv.fs_stat(path .. "/.luarc.jsonc")
-								)
-							then
-								return
-							end
-						end
-
-						client.config.settings.Lua = vim.tbl_deep_extend(
-							"force",
-							client.config.settings.Lua,
-							{
-								runtime = {
-									version = "LuaJIT",
-									path = { "lua/?.lua", "lua/?/init.lua" },
-								},
-								workspace = {
-									checkThirdParty = false,
-									library = vim.tbl_extend(
-										"force",
-										vim.api.nvim_get_runtime_file("", true),
-										{
-											"${3rd}/luv/library",
-											"${3rd}/busted/library",
-										}
-									),
-								},
-							}
-						)
-					end,
 					settings = {
-						Lua = {},
+						Lua = {
+							runtime = { version = "LuaJIT" },
+							workspace = {
+								checkThirdParty = false,
+								library = vim.api.nvim_get_runtime_file(
+									"",
+									true
+								),
+							},
+						},
 					},
 				},
 			}
@@ -1388,7 +1317,6 @@ require("lazy").setup({
 		"saghen/blink.cmp",
 		event = "VimEnter",
 		version = "1.*",
-		dependencies = {},
 		---@module 'blink.cmp'
 		---@type blink.cmp.Config
 		opts = {
@@ -1436,40 +1364,6 @@ require("lazy").setup({
 				},
 			})
 			require("onedark").load()
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.strikethrough",
-				{ strikethrough = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.bold",
-				{ bold = true, fg = "#d19a66" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.italic",
-				{ italic = true, fg = "#98c379" }
-			)
-			vim.api.nvim_set_hl(0, "BlinkCmpMenu", { bg = "#1e1e1e" })
-			vim.api.nvim_set_hl(
-				0,
-				"BlinkCmpMenuSelection",
-				{ bg = "#3a3a3a", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"BlinkCmpLabelMatch",
-				{ fg = "#e5c07b", bold = true }
-			)
-			vim.api.nvim_set_hl(0, "DiffAdd", { bg = "#1e3a2a" })
-			vim.api.nvim_set_hl(
-				0,
-				"DiffDelete",
-				{ bg = "#3a1e22", fg = "#5a3a3e" }
-			)
-			vim.api.nvim_set_hl(0, "DiffChange", { bg = "#2a2e3a" })
-			vim.api.nvim_set_hl(0, "DiffText", { bg = "#3a4a6a", bold = true })
 		end,
 	},
 	-- folke/todo-comments.nvim
@@ -1666,46 +1560,6 @@ require("lazy").setup({
 					end,
 				},
 			})
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeNormal",
-				{ bg = "#7ec8e3", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeInsert",
-				{ bg = "#98c379", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeVisual",
-				{ bg = "#e5c07b", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeReplace",
-				{ bg = "#e06c75", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeCommand",
-				{ bg = "#c678dd", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineModeOther",
-				{ bg = "#98c379", fg = "#1c1a1e", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineFilename",
-				{ bg = "#1c1a1e", fg = "#b0aaa0", bold = true }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"MiniStatuslineLsp",
-				{ bg = "#1c1a1e", fg = "#86c9c0" }
-			)
 		end,
 	},
 	-- nvim-treesitter/nvim-treesitter
@@ -1731,18 +1585,7 @@ require("lazy").setup({
 			}
 			require("nvim-treesitter").install(parsers)
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = {
-					"bash",
-					"html",
-					"lua",
-					"markdown",
-					"python",
-					"scala",
-					"sql",
-					"vim",
-					"help",
-					"yaml",
-				},
+				pattern = vim.list_extend({ "help" }, parsers),
 				callback = function()
 					pcall(vim.treesitter.start)
 				end,
@@ -1800,21 +1643,11 @@ require("lazy").setup({
 				"za",
 				{ desc = "Toggle fold under cursor", remap = true }
 			)
-			vim.keymap.set(
-				"n",
-				"z0",
-				ufo.closeAllFolds,
-				{ desc = "Fold to level 0 (close all)", nowait = true }
-			)
-			vim.keymap.set("n", "z1", function()
-				ufo.closeFoldsWith(1)
-			end, { desc = "Fold to level 1" })
-			vim.keymap.set("n", "z2", function()
-				ufo.closeFoldsWith(2)
-			end, { desc = "Fold to level 2" })
-			vim.keymap.set("n", "z3", function()
-				ufo.closeFoldsWith(3)
-			end, { desc = "Fold to level 3" })
+			for level = 0, 3 do
+				vim.keymap.set("n", "z" .. level, function()
+					ufo.closeFoldsWith(level)
+				end, { desc = "Fold to level " .. level, nowait = true })
+			end
 
 			vim.keymap.set("n", "<leader>tf", function()
 				vim.wo.foldcolumn = vim.wo.foldcolumn == "0" and "auto:9" or "0"
@@ -1894,59 +1727,6 @@ require("lazy").setup({
 				concealcursor = { rendered = "n" },
 			},
 		},
-		config = function(_, opts)
-			-- Heading colors: defined once, applied to both render-markdown and treesitter
-			local heading_colors = {
-				"#86c9c0",
-				"#e06c75",
-				"#c678dd",
-				"#7ec8e3",
-				"#98c379",
-				"#e5c07b",
-			}
-			for i, color in ipairs(heading_colors) do
-				local hl = { bold = true, fg = color }
-				vim.api.nvim_set_hl(0, "RenderMarkdownH" .. i .. "Bg", hl)
-				vim.api.nvim_set_hl(
-					0,
-					"@markup.heading." .. i .. ".markdown",
-					hl
-				)
-			end
-			vim.api.nvim_set_hl(0, "RenderMarkdownCode", { bg = "#1e1e28" })
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownCodeInline",
-				{ bg = "#1e1e28", fg = "#8e82ce" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.raw.markdown_inline",
-				{ bg = "#1e1e28", fg = "#8e82ce" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.strong.markdown_inline",
-				{ bold = true, fg = "#e06c75" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"@markup.italic.markdown_inline",
-				{ italic = true, fg = "#98c379" }
-			)
-			vim.api.nvim_set_hl(0, "RenderMarkdownChecked", { fg = "#98c379" })
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownUnchecked",
-				{ fg = "#b0aaa0" }
-			)
-			vim.api.nvim_set_hl(
-				0,
-				"RenderMarkdownTodoDone",
-				{ fg = "#b0aaa0", strikethrough = true }
-			)
-			require("render-markdown").setup(opts)
-		end,
 	},
 	-- uga-rosa/ccc.nvim
 	{
@@ -1982,12 +1762,7 @@ require("lazy").setup({
 			},
 		},
 		opts = {
-			size = function(term)
-				if term.direction == "vertical" then
-					return math.floor(vim.o.columns * 0.4)
-				end
-				return 20
-			end,
+			size = 20,
 			shade_terminals = false,
 			start_in_insert = true,
 			persist_mode = false,
@@ -2187,4 +1962,43 @@ require("lazy").setup({
 	},
 })
 
-vim.api.nvim_set_hl(0, "Folded", { bg = "#1e1e28", fg = "#808080" })
+-- [[ HIGHLIGHTS ]]
+local highlights = {
+	["@markup.strikethrough"] = { strikethrough = true },
+	["@markup.bold"] = { bold = true, fg = "#d19a66" },
+	["@markup.italic"] = { italic = true, fg = "#98c379" },
+	["@markup.strong.markdown_inline"] = { bold = true, fg = "#e06c75" },
+	["@markup.italic.markdown_inline"] = { italic = true, fg = "#98c379" },
+	["@markup.raw.markdown_inline"] = { bg = "#1e1e28", fg = "#8e82ce" },
+	BlinkCmpMenu = { bg = "#1e1e1e" },
+	BlinkCmpMenuSelection = { bg = "#3a3a3a", bold = true },
+	BlinkCmpLabelMatch = { fg = "#e5c07b", bold = true },
+	DiffAdd = { bg = "#1e3a2a" },
+	DiffDelete = { bg = "#3a1e22", fg = "#5a3a3e" },
+	DiffChange = { bg = "#2a2e3a" },
+	DiffText = { bg = "#3a4a6a", bold = true },
+	Folded = { bg = "#1e1e28", fg = "#808080" },
+	MiniStatuslineModeNormal = { bg = "#7ec8e3", fg = "#1c1a1e", bold = true },
+	MiniStatuslineModeInsert = { bg = "#98c379", fg = "#1c1a1e", bold = true },
+	MiniStatuslineModeVisual = { bg = "#e5c07b", fg = "#1c1a1e", bold = true },
+	MiniStatuslineModeReplace = { bg = "#e06c75", fg = "#1c1a1e", bold = true },
+	MiniStatuslineModeCommand = { bg = "#c678dd", fg = "#1c1a1e", bold = true },
+	MiniStatuslineModeOther = { bg = "#98c379", fg = "#1c1a1e", bold = true },
+	MiniStatuslineFilename = { bg = "#1c1a1e", fg = "#b0aaa0", bold = true },
+	MiniStatuslineLsp = { bg = "#1c1a1e", fg = "#86c9c0" },
+	RenderMarkdownCode = { bg = "#1e1e28" },
+	RenderMarkdownCodeInline = { bg = "#1e1e28", fg = "#8e82ce" },
+	RenderMarkdownChecked = { fg = "#98c379" },
+	RenderMarkdownUnchecked = { fg = "#b0aaa0" },
+	RenderMarkdownTodoDone = { fg = "#b0aaa0", strikethrough = true },
+}
+local heading_colors =
+	{ "#86c9c0", "#e06c75", "#c678dd", "#7ec8e3", "#98c379", "#e5c07b" }
+for level, color in ipairs(heading_colors) do
+	highlights["RenderMarkdownH" .. level .. "Bg"] = { bold = true, fg = color }
+	highlights["@markup.heading." .. level .. ".markdown"] =
+		{ bold = true, fg = color }
+end
+for name, highlight in pairs(highlights) do
+	vim.api.nvim_set_hl(0, name, highlight)
+end

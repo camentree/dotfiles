@@ -19,7 +19,6 @@ local.sbt
 CLAUDE.local*
 .claude-scratch
 .zshenv.local
-.zshrc.local
 .prettierignore
 .worktrees/
 **/.claude/settings.local.json

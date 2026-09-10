@@ -314,7 +314,8 @@ function _wk_completions () {
 }
 
 
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+machine_zshrc="$DOTFILES_PATH/home/locals/zshrc-local-$NIX_MACHINE"
+[[ -f $machine_zshrc ]] && source $machine_zshrc
 
 zsh_plugins=/etc/profiles/per-user/camen/share
 [[ -f $zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh

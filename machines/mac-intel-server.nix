@@ -85,18 +85,6 @@ $(tail -c 8000 "$output")"
       exit "$status"
     ''}";
 
-  # postgres
-  postgres = pkgs.postgresql.withPackages (p: [ p.pgvector ]);
-  postgresLauncher = pkgs.writeShellScript "postgres-launch" ''
-    PGDATA=${homeDirectory}/.postgres
-    [ -f "$PGDATA/PG_VERSION" ] || ${postgres}/bin/initdb -D "$PGDATA"
-    if [ -f "$PGDATA/postmaster.pid" ] && \
-       ! ps -p "$(head -1 "$PGDATA/postmaster.pid")" -o comm= | grep -q postgres; then
-      rm -f "$PGDATA/postmaster.pid"
-    fi
-    exec ${postgres}/bin/postgres -D "$PGDATA"
-  '';
-
   # local backups
   # nixpkgs marks rsnapshot linux-only erroneously
   rsnapshot = pkgs.rsnapshot.overrideAttrs (old: {
@@ -249,6 +237,8 @@ $(tail -c 8000 "$output")"
   '';
 in
 {
+  imports = [ ../os/postgres.nix ];
+
   # ===== machine =====
 
   nixpkgs.hostPlatform = "x86_64-darwin";
@@ -272,10 +262,7 @@ in
     nginx
     ntfy-sh
     playwright-driver.browsers
-    postgres
     rsnapshot
-    sqlite
-    yarn
   ];
 
   environment.etc."ssh/sshd_config.d/200-no-password.conf".text = ''
@@ -283,15 +270,10 @@ in
     KbdInteractiveAuthentication no
   '';
 
-  home-manager.users.camen = { config, ... }: {
+  home-manager.users.camen = {
     home.file.".terminfo" = {
       source = "${pkgs.ghostty-bin.terminfo}/share/terminfo";
       recursive = true;
-    };
-
-    home.file.".zshrc.local" = {
-      source = config.lib.file.mkOutOfStoreSymlink "${projectsDirectory}/dotfiles/home/locals/zshrc-local-server";
-      force = true;
     };
   };
 
@@ -363,16 +345,6 @@ in
       KeepAlive = true;
       StandardOutPath = "/tmp/nginx.stdout.log";
       StandardErrorPath = "/tmp/nginx.stderr.log";
-    };
-  };
-
-  launchd.user.agents.postgresql = {
-    command = "${postgresLauncher}";
-    serviceConfig = {
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/postgresql.stdout.log";
-      StandardErrorPath = "/tmp/postgresql.stderr.log";
     };
   };
 

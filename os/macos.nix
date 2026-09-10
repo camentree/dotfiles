@@ -49,10 +49,12 @@
     git
     htop
     jq
+    lua-language-server
     neovim
     nodejs_24
     nodePackages.prettier
     pandoc
+    pyright
     python3
     ripgrep
     ruff
@@ -61,8 +63,11 @@
     stylua
     tmux
     tree-sitter
+    typescript-language-server
     uv
+    vscode-langservers-extracted
     wget
+    yarn
   ];
 
   # ============================================================
@@ -132,12 +137,10 @@
     # preferences and silently do nothing.
     asPrimaryUser="launchctl asuser $(id -u -- ${config.system.primaryUser}) sudo --user=${config.system.primaryUser} --"
 
-    # Keyboard shortcuts: Cmd+B for sidebar toggle (global, Calendar, Notion)
+    # Keyboard shortcuts: Cmd+B for sidebar toggle (global, Notion)
     $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Hide Sidebar" "@b"
     $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Show Sidebar" "@b"
     $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Toggle Sidebar" "@b"
-    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
-    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Show Calendar List" "@b"
     $asPrimaryUser defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
 
     # Keyboard modifier keys: Caps Lock → Control, Left Control → Left Command, Left Command → Left Option

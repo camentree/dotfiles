@@ -8,13 +8,12 @@ set -e
 #   1. Clone this repo:  git clone git@github.com:camentree/dotfiles.git ~/Projects/dotfiles
 #   2. Run:              cd ~/Projects/dotfiles && bash setup.sh <machine-name>
 #   3. Restart terminal
-#   4. Run:              nix-rebuild <machine-name>
 #
-# After that, just use `nix-rebuild <machine-name>` whenever you change config.
+# After that, just use `nix-rebuild` whenever you change config.
 # ============================================================
 
 THIS_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
-HOST="${1:-server}"
+HOST="${1:?usage: setup.sh <machine-name>  (see flake.nix darwinConfigurations)}"
 
 echo "=============================="
 echo " Nix setup for: $HOST"
@@ -121,5 +120,5 @@ echo "=============================="
 echo ""
 echo "Next steps:"
 echo "  1. Restart your terminal"
-echo "  2. See MANUAL_SETUP.md for what still needs manual setup"
-echo "  3. Use 'nix-rebuild $HOST' after any config change"
+echo "  2. See README.md for applications to install manually"
+echo "  3. Use 'nix-rebuild' after any config change"
