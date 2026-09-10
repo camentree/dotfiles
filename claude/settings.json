@@ -62,7 +62,6 @@
     }
   },
   "outputStyle": "Concise",
-  "effortLevel": "medium",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "askUserQuestionTimeout": "never",
@@ -76,6 +75,5 @@
   "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "useAutoModeDuringPlan": true,
-  "model": "claude-fable-5-1[1m]"
+  "useAutoModeDuringPlan": true
 }
