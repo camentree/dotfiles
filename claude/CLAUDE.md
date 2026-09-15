@@ -27,6 +27,10 @@ Edit files with the Edit and Write tools, never `sed` or inline scripts.
 
 A ticket is done when every line of its acceptance criteria list holds. A criterion is a checkable sentence about observable behavior: a fresh reader could mark it pass or fail without asking anyone. "Returns 403 for ids outside the caller's facility" is one. "Handles errors well" is not. How a criterion gets checked is the implementer's choice.
 
+## Pull request descriptions
+
+- optimize for a human quickly scanning. Short bullets are often preferred rather than prose.
+
 ## Shell
 
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
