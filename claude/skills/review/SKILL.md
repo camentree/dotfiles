@@ -17,10 +17,10 @@ If `<name>.difit.json` exists and `curl -X GET <url>/api/comments-json` answers,
 Otherwise, with the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
 
 ```
-difit @ <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked
+npx --yes difit . <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked
 ```
 
-It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
+`difit` is not installed on the machine; `npx --yes difit` is how it runs. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
 
 Post the walkthrough as comments, one request:
 
@@ -60,10 +60,12 @@ For each new comment from Camen, in its thread:
 - A question: answer it.
 - Disagreement with a decision: reply with the options and a recommendation. No code change until he answers.
 
-After a round of changes, run `/verify`. The diff in the browser reloads on its own. Go back to Wait.
+After each change, run the tests that cover it. The commit makes difit's reload button appear in his tab; he clicks it when he is ready, nothing restarts. Go back to Wait.
+
+If the server ever has to be restarted mid-review, keep the URL: add `--port <port>` from `<name>.difit.json`, drop `--clean`, restore the threads with the `curl -X POST <url>/api/comments` call above, save the new pid, and re-arm the monitor (it ends with the old server).
 
 ## Done
 
-He ends the review with a comment saying the branch is good, in any words: 👍, good, ship it. Write `<name>.comments.json` one last time, stop the monitor, `kill <pid>`, and delete `<name>.difit.json`. Do not push. That is `/pr`.
+He ends the review with a comment saying the branch is good, in any words: 👍, good, ship it. Write `<name>.comments.json` one last time, stop the monitor, `kill <pid>`, and delete `<name>.difit.json`. Then run `/verify` once over everything the review changed. Do not push. That is `/pr`.
 
-If you hit a blocker this skill didn't anticipate, solve it, then update this skill so the next run doesn't hit it.
+If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.

@@ -31,9 +31,9 @@
   },
   "files.trimTrailingWhitespace": true,
   "files.watcherExclude": {
-    "**/.bloop": true,
-    "**/.metals": true,
-    "**/target/**": true
+    "**/target/**": true,
+    "**/.bloop/**": true,
+    "**/.metals/**/*.{java,scala}": true
 },
   // explorer
   "explorer.confirmDragAndDrop": false,

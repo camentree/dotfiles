@@ -229,3 +229,5 @@ Short. What changed in the file, and anything worth knowing that isn't in it —
 ## Failure modes
 
 Never block the whole pass on one source. If `gh` isn't authed, skip Reviewable PRs. If Linear is disconnected, skip Up Next. If the calendar is unreachable, use his reply alone. Note each skip in one trailing line.
+
+If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.

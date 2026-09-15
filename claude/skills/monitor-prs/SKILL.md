@@ -19,4 +19,4 @@ End with one report grouped by PR. For each item Camen needs: the comment text q
 
 Never post prose to GitHub beyond `done in <sha>`. Never force-push.
 
-If you hit a blocker this skill didn't anticipate, solve it, then update this skill so the next run doesn't hit it.
+If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.

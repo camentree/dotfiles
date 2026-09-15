@@ -9,12 +9,12 @@ The task is the argument: a URL to fetch, a file to read, or text as given. With
 
 `<name>` is the ticket id when there is one, otherwise a short slug of the task. The plan lives at `~/.claude/tasks/<name>.md`. If it already exists, read it and the branch and carry on from wherever they are.
 
-If you hit a blocker this skill didn't anticipate, solve it, then update this skill so the next run doesn't hit it.
+If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.
 
 ## 1. Plan
 
 1. Read the task and everything it links to.
-2. Read the code it touches, the project's CLAUDE.md, and the nearest precedent for the same kind of change.
+2. Read the code it touches, the project's CLAUDE.{local}.md, and the nearest precedent for the same kind of change.
 3. Write the plan, shaped like `~/.claude/example-plan.md`. Each criterion is a checkable sentence about behavior. Include what the code forces that the task forgot. Fifteen lines is a normal plan.
 4. Ask Camen only about something that passes both tests:
    - The task, its links, and the code don't answer it.
@@ -45,8 +45,8 @@ Ten passes without a clean loop means the plan is wrong. Say what is stuck and w
 
 ## 4. Review
 
-`/review`. It starts one difit server for the branch, posts the walkthrough as comments in the diff, notifies Camen, and waits. Each comment he leaves gets a fix as its own commit and a reply in the thread, then `/verify` runs again. The review ends when he leaves a comment saying the branch is good. Nothing is pushed before that.
+`/review`. Runs until he says the branch is good.
 
 ## 5. PR
 
-`/pr`. It drafts the description from the plan file, pushes the branch, and opens the PR, or updates the existing one. Print the URL and end the turn. From here `/monitor-prs` owns the branch.
+`/pr`. Print the URL and end the turn. From here `/monitor-prs` owns the branch.

@@ -9,6 +9,7 @@ description: Start one task in its own worktree as a background session running 
 
 1. Get the branch name from the ticket.
 2. `zsh -ic 'wk <branch>'` from the repo root.
+   - Stacking on an open PR: `zsh -ic 'wk -h <branch>'` from that PR's worktree instead, and tell the task session to base its PR on the parent branch.
 3. From the worktree: `CLAUDE_SESSION_BUDGET_TOKENS=5000000 claude --bg --name <TICKET-ID> "/task <url>"`. The budget variable is what turns the token guard on. The session shows up in `claude agents`.
 4. Move the ticket to In Progress.
 
@@ -21,4 +22,4 @@ Pick nothing unless every gate holds:
 
 Then take the most important ticket and run the steps above. One task per run.
 
-If you hit a blocker this skill didn't anticipate, solve it, then update this skill so the next run doesn't hit it.
+If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.
