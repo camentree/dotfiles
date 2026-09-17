@@ -24,6 +24,12 @@ The public endpoint that lists an organization's users returns everyone, even wh
 - loquat/app/services/UserDirectoryService.scala
 - loquat/test/controllers/OrganizationUsersControllerSpec.scala
 
+## Groups
+
+- query-filter: criteria 1–5, 8 — `done <sha>` once built
+- strip-hidden-assignments: criteria 6, 7
+- pagination: criteria 9, 10
+
 ## Decisions
 
 - Filter in the query, not in memory. The endpoint paginates, and an in-memory filter would break the counts.

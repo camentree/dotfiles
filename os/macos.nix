@@ -45,7 +45,6 @@
     curl
     fd
     ffmpeg
-    gh
     git
     htop
     jq

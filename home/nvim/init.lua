@@ -1,34 +1,24 @@
---[[
---
+local build_artifacts = {
+	".git",
+	".venv",
+	"node_modules",
+	"dist",
+	"build",
+	"target",
+	"__pycache__",
+	"*.pyc",
+	"*.egg-info",
+	"htmlcov",
+	".coverage",
+	".ipynb_checkpoints",
+	".bloop",
+	".metals",
+	".bsp",
+	".worktrees",
+	".claude",
+	".ruff_cache"
+}
 
- TODO:
-- :Tutor
-- :help
-- "<space>sh" to search help documentation
-
- NOTE: remember
-- if errors, :checkhealth
-- vim.o sets simple values; vim.opt sets list/map
-- autocommands are functions that get run when something else happens
-- :%s/old/new/g to change all occurences in file
-
-
- NOTE: keymaps
-- [d and ]d     previous/next LSP diagnostic in buffer
-- gg            beginning of file
-- /             search (then `n` and `N` for next/previous)
-- <space>q      diagnostics
-- <C>           control
-- <S>           shift
-- <A>           alt
-- <CR>          enter
-- grd           go to definition of variable under cursor
-- grt           go to type of variable under cursor
-- *             highlight all occurences of word under cursor
-- grn           rename variable under cursor
- 
---]]
---
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.g.have_nerd_font = true
@@ -675,25 +665,6 @@ end
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
-
-local build_artifacts = {
-	".git",
-	".venv",
-	"node_modules",
-	"dist",
-	"build",
-	"target",
-	"__pycache__",
-	"*.pyc",
-	"*.egg-info",
-	"htmlcov",
-	".coverage",
-	".ipynb_checkpoints",
-	".bloop",
-	".metals",
-	".bsp",
-	".worktrees",
-}
 
 local sbt_build_file = vim.fs.joinpath(vim.uv.cwd(), "build.sbt")
 if not vim.uv.fs_stat(sbt_build_file) then

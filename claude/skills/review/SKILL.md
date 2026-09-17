@@ -14,13 +14,13 @@ Input: the current branch and, if there is one, its plan file under `~/.claude/t
 
 If `<name>.difit.json` exists and `curl -X GET <url>/api/comments-json` answers, the review is already running. Skip to Wait.
 
-Otherwise, with the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
+Otherwise, with the compare branch being the stack parent for a stacked branch (the plan file says which) and else the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
 
 ```
 npx --yes difit . <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked
 ```
 
-`difit` is not installed on the machine; `npx --yes difit` is how it runs. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
+`difit` is not installed on the machine; `npx --yes difit` is how it runs. Before starting, `git merge-base --is-ancestor <compare branch> HEAD` must hold; a stack parent rewritten in its own worktree silently drops the merge-base to master and the diff shows the whole stack. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
 
 Post the walkthrough as comments, one request:
 
@@ -56,7 +56,7 @@ On each event, `curl -X GET <url>/api/comments-json` and write the body to `<nam
 
 For each new comment from Camen, in its thread:
 
-- A change request: make it as a commit of its own, then reply `done in <sha>` plus one line on what changed. A reply is `{"type":"reply","author":"claude","filePath":...,"position":...,"body":...}` to the same import endpoint.
+- A change request that adds a rule the branch did not have: a commit of its own. A change to something a review commit already introduced (a rename of a rename, a reshape of the same block, reverting a behaviour a review commit added): fold it into that commit, `git commit --amend` when it is HEAD, else `git commit --fixup <sha>`, squashed at the end of the review with `GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash <compare branch>`. The branch's first commit is never amended. Either way reply `done in <sha>` plus one line on what changed. A reply is `{"type":"reply","author":"claude","filePath":...,"position":...,"body":...}` to the same import endpoint.
 - A question: answer it.
 - Disagreement with a decision: reply with the options and a recommendation. No code change until he answers.
 
@@ -64,8 +64,10 @@ After each change, run the tests that cover it. The commit makes difit's reload 
 
 If the server ever has to be restarted mid-review, keep the URL: add `--port <port>` from `<name>.difit.json`, drop `--clean`, restore the threads with the `curl -X POST <url>/api/comments` call above, save the new pid, and re-arm the monitor (it ends with the old server).
 
+A rebase under a running server drops every thread, and `POST /api/comments` with the saved export does not bring them back (it answers `merged:false`). Save `<name>.comments.json` before rebasing, then re-post the walkthrough and any of his open threads through `/api/comment-imports`. A stacked branch diffs against its parent branch, not the default branch.
+
 ## Done
 
-He ends the review with a comment saying the branch is good, in any words: 👍, good, ship it. Write `<name>.comments.json` one last time, stop the monitor, `kill <pid>`, and delete `<name>.difit.json`. Then run `/verify` once over everything the review changed. Do not push. That is `/pr`.
+He ends the review with a comment saying the branch is good, in any words: 👍, good, ship it. Write `<name>.comments.json` one last time, stop the monitor, `kill <pid>`, and delete `<name>.difit.json`. Nothing is verified or pushed here; `/task-review` runs `/verify --pre-push` and `/pr` next, and by hand you do.
 
 If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.

@@ -2,35 +2,41 @@
 
 ## One task's path
 
+Two background sessions per task, so the review never sits on top of the build's context. Steps that produce bulk run in subagents and return a paragraph; steps that may need Camen run in the session.
+
 ```
-/dispatch      worktree + background session running /task <url>
+/dispatch        worktree + background session running /task-build <url>
    |
-/task
-   plan        read the task, read the code, write criteria and plan
-   |             decision left open ........ ask Camen, stop
-   |             a day of work or more ..... Camen reads the plan, stop
-   build       per group: decide tests, code, tests, loop compile / behavior / tests  / run, commit
+/task-build      session one, context = the plan
+   /plan           read the task, read the code, write criteria and plan       in session
+   |                 decision left open ........ ask Camen, stop
+   |                 a day of work or more ..... Camen reads the plan, stop
+   /build          split criteria into groups, then per group                  subagent each
+   |                 decide tests, code, tests, loop compile / tests / run, commit
+   |                 question ................. ask Camen, answer into Decisions, rerun
+   /verify         compile, in-scope, criteria and style                       subagent
+   |                 fail ..................... /build <group>, 3 passes max
    |
-   /verify     compile, in-scope, full test suite, acceptance criteria and style sub-agent
-   |             fail ....................... back to build, 3 passes max
-   /review     user-review. agent-seeded comments to aid review
-   |             user's comment ................ fix, reply in the thread, validate behavior
-   |             "good" ..................... done
-   /pr         push and open, description from the plan
+/task-review     session two, started by task-build with --bg
+   /review         Camen in difit, walkthrough comments, fixes in place        in session
+   |                 "good" ................... done
+   /verify         same, plus the repo's pre-push checks                       subagent
+   /pr             push and open, description from the plan
    |
-/monitor-prs   CI, conflicts, comments, close-out on merge
-                 approach questioned ........ ask user
+/monitor-prs     CI, conflicts, comments, close-out on merge
+                   approach questioned ........ ask Camen
 ```
 
-`/task` takes a ticket URL, a file path, freeform text, or nothing and asks. Run it again on the same branch and it reads the plan and git and carries on.
+Primitives (`plan`, `build`, `verify`, `review`, `pr`) never start another step, so each runs by hand and does the same thing it does inside a bundle. Only the bundles (`task-build`, `task-review`) sequence and launch. `/task-build` run again on the same branch reads the plan and carries on.
 
 ## The plan file
 
-`~/.claude/tasks/<name>.md`. Example at `example-plan.md`. Five sections:
+`~/.claude/tasks/<name>.md`. Example at `example-plan.md`. Six sections:
 
 - the task restated, with its source and branch
 - Acceptance Criteria: checkable sentences about behavior, one per line
 - Files
+- Groups: what ships together, each marked `done <sha>` as it lands; build writes it
 - Decisions: placement, interfaces, the alternative rejected, and anything build added
 - Out of scope
 
@@ -46,9 +52,10 @@ An acceptance criterion is what everything grades against. The build stops on it
 
 ## Guards
 
-- Build loop, 10 passes per group, in `skills/task`. Stops and says what was tried.
-- Verify loop, 3 passes, in `skills/verify`. Same.
-- Token budget, `scripts/autonomous-task-guard.sh`, pre-tool-use hook. Blocks the next tool call past `CLAUDE_SESSION_BUDGET_TOKENS`. Counts input, output, and cache writes across the session and its sub-agents. Only on when dispatch sets the variable, so hand-started sessions have no budgets.
+- Build loop, 10 passes per group, in `skills/build`. Stops and says what was tried.
+- Verify loop, 3 passes, in `skills/task-build` and `skills/task-review`. Same.
+- Questions from a build group, 1 per group, in `skills/build`. A second means the plan is wrong.
+- Token budget, `scripts/autonomous-task-guard.sh`, pre-tool-use hook. Blocks the next tool call past `CLAUDE_SESSION_BUDGET_TOKENS`. Counts input, output, cache writes, and cache reads at a tenth, across the session and its sub-agents; cache reads are most of a long session's usage. Only on when dispatch sets the variable, so hand-started sessions have no budgets.
 - Available memory. 
 - A passing default branch.
 
@@ -72,7 +79,7 @@ CLAUDE.md          who Camen is, how to write, how to code, what done means
 settings.json      deny list, the guard hook, status line
 example-plan.md    a plan file, filled in
 scripts/           autonomous task guard, status line
-skills/            task, verify, review, pr, monitor-prs, dispatch, todo
+skills/            plan, build, verify, review, pr, task-build, task-review, dispatch, monitor-prs, todo
 archive/           archived skills 
 ```
 

@@ -50,6 +50,37 @@ in
   };
 
   # ============================================================
+  # GitHub CLI — extensions are Nix-managed; `gh extension install` won't stick
+  # ============================================================
+  programs.gh = {
+    enable = true;
+    settings = {
+      git_protocol = "https";
+      aliases.co = "pr checkout";
+    };
+    extensions = [
+      (pkgs.stdenvNoCC.mkDerivation rec {
+        pname = "gh-stack";
+        version = "0.1.1";
+        src = pkgs.fetchurl {
+          url = "https://github.com/github/gh-stack/releases/download/v${version}/${
+            {
+              aarch64-darwin = "darwin-arm64";
+              x86_64-darwin = "darwin-amd64";
+            }.${pkgs.stdenv.hostPlatform.system}
+          }";
+          hash = {
+            aarch64-darwin = "sha256-8Jqssu5y/bHUAe5PW5DgYpGahS/Dx7Zr8bGoUxBGF9g=";
+            x86_64-darwin = "sha256-QHQPgmRcKMTh2kfGvQKmrEl9OCpFfBCTaUozaxdQr3E=";
+          }.${pkgs.stdenv.hostPlatform.system};
+        };
+        dontUnpack = true;
+        installPhase = "install -Dm755 $src $out/bin/gh-stack";
+      })
+    ];
+  };
+
+  # ============================================================
   # Tmux — plugins managed by Nix, config is a plain dotfile
   # ============================================================
   programs.tmux = {

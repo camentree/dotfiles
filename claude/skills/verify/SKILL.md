@@ -1,11 +1,11 @@
 ---
 name: verify
-description: Verify the current branch against its plan file. Independent checks, cheapest first; the pre-push checks only when the result is about to be pushed.
+description: Verify the current branch against its plan file. Independent checks, cheapest first; the pre-push checks only with --pre-push. Reports findings, fixes nothing, starts nothing.
 ---
 
 # Verify
 
-Input: the plan file for the current branch under `~/.claude/tasks/`. Rebase onto the default branch first.
+Input: the plan file for the current branch under `~/.claude/tasks/`, and `--pre-push` when the result is about to be pushed. Rebase onto the default branch first.
 
 Run in this order and stop at the first failure:
 
@@ -16,11 +16,13 @@ Run in this order and stop at the first failure:
 3. Criteria (Style and acceptance criteria). A fresh sub-agent gets the plan file, the diff, and every `## Code style checks` section from the CLAUDE.md and CLAUDE.local.md files apply from root to the changed files
     - Style: It returns findings as `file:line`, the rule, and the fix.
     - Acceptance Criteria: For each acceptance criterion it finds the test or runs the check that proves it, confirms the check exercises the criterion rather than merely passing, and marks pass, fail, or weak.
-4. Before a push only: what the repo's CLAUDE.md says must pass before a push, run the way it says to run it. If it names nothing, the repo's unit and integration tests. Long runs go to a log in the background. A failure that also fails on the default branch with the same message is environmental; note it and move on. What the repo leaves to CI, `/monitor-prs` picks up after the push.
+4. With `--pre-push` only: what the repo's CLAUDE.md says must pass before a push, run the way it says to run it. If it names nothing, the repo's unit and integration tests. Long runs go to a log in the background. A failure that also fails on the default branch with the same message is environmental; note it and move on. What the repo leaves to CI, `/monitor-prs` picks up after the push.
 
-Step 4 runs only when the result is about to be pushed; otherwise steps 1–3 are the whole check.
+Without `--pre-push`, steps 1–3 are the whole check. Start it only after step 3's findings are fixed and committed, and touch nothing in the tree while it runs: an edit mid-run costs a second preflight (six minutes of cold compile).
 
-Report the result per criterion. A failure goes back to the build steps of `/task` for that fix, then this loop restarts from step one. Three full passes without success means the plan is wrong. Say which criterion and what was tried, and end the turn.
+A stacked branch verifies against its parent branch, not the default branch, and the parent can be rewritten mid-review. Check `git merge-base --is-ancestor <parent> HEAD` first; if it fails, rebase with `git -c rerere.enabled=false rebase --onto <parent> <old-parent-sha>` before anything else.
+
+Report the result per criterion, findings as `file:line`, the rule, and the fix. Fix nothing here: the caller sends findings to `/build <plan> <group>` and runs this again, and by hand that caller is Camen.
 
 Project-specific checks live in the project's CLAUDE.md or CLAUDE.local.md: how to run it, how to hit it, how to seed state, where the logs are. Use them in steps 1 and 4. If not there or you need something not mentioned, update the relevant CLAUDE{.local}.md with your learnings.
 
