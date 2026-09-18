@@ -30,6 +30,16 @@ function demo-data-token () {
   echo "$DEMO_DATA_TOKEN"
 }
 
+function backend-warm () {
+  (
+    cd "$AUGUST_BACKEND_PATH/loquat" || exit 1
+    wk master > /dev/null || exit 1
+    git fetch --prune && git pull --ff-only || exit 1
+    sbt --client compile
+    sbt --client shutdown
+  )
+}
+
 function wkfs () {
   case "$1" in
     ls) shift; _wkfs-ls "$@"; return ;;
