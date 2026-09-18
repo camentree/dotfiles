@@ -8,7 +8,7 @@ description: One pass over every open PR of mine. Keeps CI green, resolves confl
 For each open PR authored by me, in its worktree:
 
 1. **CI red.** Read the failing job's log, fix, commit, push.
-2. **Conflicts.** Rebase onto the default branch, resolve, run `/verify`, push. Stacked branches are a `gh stack` (`gh stack init <bottom> <top>` adopts existing ones); rebase the bottom, `git rebase --onto` each branch above onto its new parent, then `gh stack push`, which force-with-leases every branch. A rebased branch can only be published that way, so the lease push is the one force allowed below.
+2. **Conflicts.** Rebase onto the default branch, resolve, run `/verify`, push. A rebased branch can only be published with `git push --force-with-lease`, so that is the one force allowed below.
 3. **Unanswered review comments**, sorted into three piles:
    - Mechanical and unambiguous: rename, typo, a missing null check. Fix it, commit, reply with only `done in <sha>`.
    - Clear but larger: implement and commit, do not push. Add it to the report for Camen.

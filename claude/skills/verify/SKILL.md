@@ -20,8 +20,6 @@ Run in this order and stop at the first failure:
 
 Without `--pre-push`, steps 1–3 are the whole check. Start it only after step 3's findings are fixed and committed, and touch nothing in the tree while it runs: an edit mid-run costs a second preflight (six minutes of cold compile).
 
-A stacked branch verifies against its parent branch, not the default branch, and the parent can be rewritten mid-review. Check `git merge-base --is-ancestor <parent> HEAD` first; if it fails, rebase with `git -c rerere.enabled=false rebase --onto <parent> <old-parent-sha>` before anything else.
-
 Report the result per criterion, findings as `file:line`, the rule, and the fix. Fix nothing here: the caller sends findings to `/build <plan> <group>` and runs this again, and by hand that caller is Camen.
 
 Project-specific checks live in the project's CLAUDE.md or CLAUDE.local.md: how to run it, how to hit it, how to seed state, where the logs are. Use them in steps 1 and 4. If not there or you need something not mentioned, update the relevant CLAUDE{.local}.md with your learnings.

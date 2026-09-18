@@ -39,7 +39,6 @@
   environment.systemPackages = with pkgs; [
     _1password-cli
     awscli2
-    bloop
     blueutil
     coursier
     curl

@@ -209,18 +209,20 @@ function _wk () {
 function _wk-share-files () {
   local repo_root="$1" worktree_path="$2"
   local -A share_sources=()
-  local share_file share_pattern share_source share_target
+  local share_file share_pattern share_source share_target share_mode
   for share_file in "$repo_root/.worktreeinclude" "$repo_root/.worktreeinclude.local"; do
     [ -f "$share_file" ] || continue
     while IFS= read -r share_pattern; do
       [[ -z "$share_pattern" || "$share_pattern" == \#* ]] && continue
+      share_mode=link
+      [[ "$share_pattern" == -c\ * ]] && { share_mode=copy; share_pattern="${share_pattern#-c }"; }
       if [[ "$share_pattern" == !* ]]; then
         for share_source in "$repo_root"/${~share_pattern#!}(N); do
           unset "share_sources[$share_source]"
         done
       else
         for share_source in "$repo_root"/${~share_pattern}(N); do
-          share_sources[$share_source]=1
+          share_sources[$share_source]=$share_mode
         done
       fi
     done < "$share_file"
@@ -228,7 +230,11 @@ function _wk-share-files () {
   for share_source in "${(k)share_sources[@]}"; do
     share_target="$worktree_path/${share_source#$repo_root/}"
     mkdir -p "${share_target:h}"
-    ln -sf "$share_source" "$share_target"
+    if [[ "$share_sources[$share_source]" == copy ]]; then
+      cp -Rc "$share_source" "$share_target"
+    else
+      ln -sf "$share_source" "$share_target"
+    fi
   done
 }
 function _wk-ls () {
