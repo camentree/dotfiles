@@ -29,6 +29,7 @@ let
     NODE_ENV = "production";
     DATABASE_URL = "postgres://localhost/parallax";
     PORT = "8790";
+    API_URL = "http://127.0.0.1:8787/api/";
   };
 
   uv = "/run/current-system/sw/bin/uv";

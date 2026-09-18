@@ -84,15 +84,15 @@
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "askUserQuestionTimeout": "never",
-  "dialogExpiry": "never",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,
   "remoteControlAtStartup": true,
-  "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "useAutoModeDuringPlan": true
+  "useAutoModeDuringPlan": true,
+  "dialogExpiry": "never",
+  "crossSessionInbound": "accept"
 }
