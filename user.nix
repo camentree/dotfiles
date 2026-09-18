@@ -170,10 +170,6 @@ in
       '';
     };
 
-    ".ssh/authorized_keys".text = ''
-      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW
-    '';
-
   };
 
   # ============================================================

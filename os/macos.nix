@@ -22,6 +22,14 @@
   users.users.camen = {
     name = "camen";
     home = "/Users/camen";
+    # Must live here, not in home-manager: a home.file ~/.ssh/authorized_keys is a
+    # symlink into /nix/store, which is group-writable, so sshd's StrictModes refuses
+    # to read it and every login fails with "Permission denied (publickey)". This
+    # option writes /etc/ssh/nix_authorized_keys.d/camen, which sshd reads via the
+    # AuthorizedKeysCommand nix-darwin already installs.
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJKrlOuiKfCW1tb/8PHXms+N8hSSxO1Rfw3YAVPA8lRW"
+    ];
   };
 
   # ============================================================
