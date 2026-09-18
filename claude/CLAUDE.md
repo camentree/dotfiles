@@ -45,4 +45,4 @@ Do not use homebrew.
 
 ## Context size
 
-Every connector loads its tool list into every session, and that list is re-read on every turn. At the start of a session in a directory whose `~/.claude.json` project entry has no `disabledMcpServers`, tell me which connectors are loaded and remind me: `/mcp`, pick each one this project doesn't need, toggle it off; the choice is saved for this directory and applies from the next session. In a coding repo that is everything but Linear.
+Every connector loads its tool list into every session, and that list is re-read on every turn. At the start of a session, look up the git root (not the cwd) under `projects` in `~/.claude.json`; if that entry has no `disabledMcpServers`, tell me which connectors are loaded and remind me: `/mcp`, pick each one this repo doesn't need, toggle it off; the choice is saved on the git root's entry and applies from the next session. In a coding repo that is everything but Linear.
