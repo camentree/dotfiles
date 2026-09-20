@@ -35,6 +35,8 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
+- `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
+- difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 - Stacked branches are tracked with `gh stack`. `gh stack rebase` and `gh stack add` check each branch out, so they fail on branches held by other worktrees. Rebase a layer by hand from its own worktree with `git -c rerere.enabled=false rebase --onto <parent> <old-parent-sha>`, then rebuild the record from the top with `gh stack unstack --local` and `gh stack init <bottom> ... <top>`, which adopts without checking out. `gh stack submit` pushes every layer and rewrites the lower PRs, so it is the `/pr` step, never a mid-review one.
 
 ## Machine
