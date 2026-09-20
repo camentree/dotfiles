@@ -5,6 +5,10 @@ export AUGUST_BACKEND_PATH="$AUGUST_FULLSTACK_PATH/august-backend"
 export AUGUST_FRONTEND_PATH="$AUGUST_FULLSTACK_PATH/august-frontend"
 export AUGUST_TOOLS_PATH="$HOME/Projects/Experimental-Tools"
 export AUGUST_AI_COMPLETIONS_PATH="$HOME/Projects/ai-completions"
+# One sbt server per worktree, each holding up to 5G of heap forever once a compile has grown it.
+# G1's periodic GC (JDK 12+) runs a collection after 60s idle and hands freed heap back to macOS,
+# so parked servers shrink to a few hundred MB while staying warm for incremental compiles.
+export SBT_OPTS="-Xmx5G -XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=10 -XX:MinHeapFreeRatio=5"
 [[ -n "$AUGUST_DEFAULT_USER" ]] || print -u2 "AUGUST_DEFAULT_USER unset — set it in ~/.zshenv.local"
 
 alias fullstack="cd $AUGUST_FULLSTACK_PATH"
@@ -12,119 +16,6 @@ alias backend="cd $AUGUST_BACKEND_PATH/loquat"
 alias frontend="cd $AUGUST_FRONTEND_PATH"
 alias notes="cd $HOME/Documents/notes && tabname notes && nvim ToDo.md"
 
-function _august-attach () {
-  if [ -n "$TMUX" ]; then tmux switch-client -t "$1"
-  else tmux attach -t "$1"; fi
-}
-
-function _august-branch () {
-  local option="$1" fallback="$2"
-  if [[ "$option" == *=* ]]; then print -r -- "${option#*=}"; else print -r -- "$fallback"; fi
-}
-
-function august-start () {
-  local -a arguments=("$@")
-  local -a backend_option frontend_option tools_option ai_completions_option external_api_option fullstack_option
-  zparseopts -D -E -- \
-    -backend::=backend_option \
-    -frontend::=frontend_option \
-    -tools::=tools_option \
-    -ai-completions::=ai_completions_option \
-    -external-api::=external_api_option \
-    -fullstack::=fullstack_option || return 1
-
-  local -A branches
-  [ -n "$backend_option" ]        && branches[b]=$(_august-branch "$backend_option[-1]" master)
-  [ -n "$frontend_option" ]       && branches[f]=$(_august-branch "$frontend_option[-1]" master)
-  [ -n "$tools_option" ]          && branches[t]=$(_august-branch "$tools_option[-1]" main)
-  [ -n "$ai_completions_option" ] && branches[a]=$(_august-branch "$ai_completions_option[-1]" main)
-  [ -n "$external_api_option" ]   && branches[e]=$(_august-branch "$external_api_option[-1]" master)
-
-  if [ -n "$fullstack_option" ]; then
-    local fullstack_branch=$(_august-branch "$fullstack_option[-1]" master)
-    : ${branches[b]:=$fullstack_branch}
-    : ${branches[f]:=$fullstack_branch}
-    : ${branches[e]:=$fullstack_branch}
-  fi
-
-  local -a selected=(${(ko)branches})
-  local letters="${(j::)selected}"
-  if [ -z "$letters" ]; then
-    echo "usage: august-start [--backend[=branch]] [--frontend[=branch]] [--tools[=branch]] [--ai-completions[=branch]] [--external-api[=branch]] [--fullstack[=branch]]"
-    return 1
-  fi
-
-  if [ -n "${branches[b]}" ] || [ -n "${branches[e]}" ]; then
-    nc -z localhost 5432 2>/dev/null || {
-      echo "no postgres on 5432 — podman machine start && docker start db"
-      return 1
-    }
-  fi
-
-  local -A directories=(
-    a "$AUGUST_AI_COMPLETIONS_PATH"
-    b "$AUGUST_BACKEND_PATH"
-    e "$AUGUST_BACKEND_PATH"
-    f "$AUGUST_FRONTEND_PATH"
-    t "$AUGUST_TOOLS_PATH"
-  )
-
-  local terminal_letter argument
-  for argument in $arguments; do
-    case "${argument%%=*}" in
-      --backend|--fullstack) terminal_letter=b ;;
-      --frontend)            terminal_letter=f ;;
-      --tools)               terminal_letter=t ;;
-      --ai-completions)      terminal_letter=a ;;
-      --external-api)        terminal_letter=e ;;
-      *) continue ;;
-    esac
-    break
-  done
-
-  local session=fullstack
-  local window="$session":dev-servers
-
-  if tmux has-session -t "$session" 2>/dev/null; then
-    _august-attach "$session"
-    return
-  fi
-
-  tmux new-session -d -s "$session" -n dev-servers -c "${directories[$terminal_letter]}"
-  tmux set-option -t "$session" set-titles-string "dev servers ($letters)"
-  tmux setw -t "$window" pane-border-status top
-  tmux setw -t "$window" main-pane-width 55%
-  tmux select-pane -t "$window" -T terminal
-  tmux send-keys -t "$window" "wk ${branches[$terminal_letter]}" C-m
-
-  local letter title start_command
-  local split=-h
-  for letter in $selected; do
-    case "$letter" in
-      a) title="ai-completions :8080"     start_command="pnpm install && pnpm dev" ;;
-      b) title="loquat :9000"             start_command="cd loquat && sbt run" ;;
-      e) title="api-integrations :9003"   start_command="cd loquat && sbt 'apiIntegrations/run'" ;;
-      f) title="frontend :3000"           start_command="yarn install && yarn start" ;;
-      t) title="experimental-tools :5173" start_command="yarn install && yarn dev" ;;
-    esac
-    tmux split-window "$split" -t "$window" -c "${directories[$letter]}"
-    tmux select-pane -t "$window" -T "$title"
-    tmux send-keys -t "$window" "wk ${branches[$letter]} && $start_command" C-m
-    split=-v
-  done
-
-  tmux select-layout -t "$window" main-vertical
-  tmux select-pane -t "$window".1
-  _august-attach "$session"
-}
-
-function august-stop () {
-  tmux kill-session -t fullstack 2>/dev/null
-  local port
-  for port in 9000 9003 3000 5173 8080; do
-    kill $(lsof -ti tcp:$port -sTCP:LISTEN) 2>/dev/null
-  done
-}
 
 function demo-data-token () {
   local -a staging
@@ -137,6 +28,16 @@ function demo-data-token () {
     cd "$AUGUST_BACKEND_PATH/demo-data" && ./bin/python test_token.py $cognito -e "$user" | tail -1
   )
   echo "$DEMO_DATA_TOKEN"
+}
+
+function backend-warm () {
+  (
+    cd "$AUGUST_BACKEND_PATH/loquat" || exit 1
+    wk master > /dev/null || exit 1
+    git fetch --prune && git pull --ff-only || exit 1
+    sbt --client compile
+    sbt --client shutdown
+  )
 }
 
 function wkfs () {

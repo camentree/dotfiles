@@ -37,7 +37,6 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
-- Stacked branches are tracked with `gh stack`. `gh stack rebase` and `gh stack add` check each branch out, so they fail on branches held by other worktrees. Rebase a layer by hand from its own worktree with `git -c rerere.enabled=false rebase --onto <parent> <old-parent-sha>`, then rebuild the record from the top with `gh stack unstack --local` and `gh stack init <bottom> ... <top>`, which adopts without checking out. `gh stack submit` pushes every layer and rewrites the lower PRs, so it is the `/pr` step, never a mid-review one.
 
 ## Machine
 
@@ -47,4 +46,4 @@ Do not use homebrew.
 
 ## Context size
 
-Every connector loads its tool list into every session, and that list is re-read on every turn. At the start of a session in a directory whose `~/.claude.json` project entry has no `disabledMcpServers`, tell me which connectors are loaded and remind me: `/mcp`, pick each one this project doesn't need, toggle it off; the choice is saved for this directory and applies from the next session. In a coding repo that is everything but Linear.
+Every connector loads its tool list into every session, and that list is re-read on every turn. At the start of a session, look up the git root (not the cwd) under `projects` in `~/.claude.json`; if that entry has no `disabledMcpServers`, tell me which connectors are loaded and remind me: `/mcp`, pick each one this repo doesn't need, toggle it off; the choice is saved on the git root's entry and applies from the next session. In a coding repo that is everything but Linear.

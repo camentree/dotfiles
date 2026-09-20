@@ -9,7 +9,6 @@ description: Start one task in its own worktree as a background session running 
 
 1. Get the branch name from the ticket.
 2. `zsh -ic 'wk <branch>'` from the repo root.
-   - Stacking on an open PR: `zsh -ic 'wk -h <branch>'` from that PR's worktree instead, and tell the task session to base its PR on the parent branch.
 3. From the worktree: `CLAUDE_SESSION_BUDGET_TOKENS=10000000 CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000 claude --bg --name <TICKET-ID> "/task-build <url>"`. The budget variable is what turns the token guard on; the budget is weighted, cache reads at a tenth. The window variable compacts at 200k instead of the model's 1M, since a re-read of the whole context is the cost of every turn. Both are inherited by the `/task-review` session that `/task-build` starts. The session shows up in `claude agents`.
 4. Move the ticket to In Progress.
 

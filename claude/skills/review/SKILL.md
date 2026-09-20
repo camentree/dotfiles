@@ -14,13 +14,13 @@ Input: the current branch and, if there is one, its plan file under `~/.claude/t
 
 If `<name>.difit.json` exists and `curl -X GET <url>/api/comments-json` answers, the review is already running. Skip to Wait.
 
-Otherwise, with the compare branch being the stack parent for a stacked branch (the plan file says which) and else the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
+Otherwise, with the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
 
 ```
 npx --yes difit . <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked --host 0.0.0.0
 ```
 
-`difit` is not installed on the machine; `npx --yes difit` is how it runs. `--host 0.0.0.0` because Camen reviews from a different device than the one the session runs on, and the default binding is reachable only from the session's own host. difit still prints a `localhost` url; swap in the machine's LAN address (`ipconfig getifaddr en0`) in `<name>.difit.json` and everywhere you give him the url, and check it answers there before posting the walkthrough. Before starting, `git merge-base --is-ancestor <compare branch> HEAD` must hold; a stack parent rewritten in its own worktree silently drops the merge-base to master and the diff shows the whole stack. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
+`difit` is not installed on the machine; `npx --yes difit` is how it runs. `--host 0.0.0.0` because Camen reviews from a different device than the one the session runs on, and the default binding is reachable only from the session's own host. difit still prints a `localhost` url; swap in the machine's LAN address (`ipconfig getifaddr en0`) in `<name>.difit.json` and everywhere you give him the url, and check it answers there before posting the walkthrough. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
 
 Post the walkthrough as comments, one request:
 
@@ -44,27 +44,32 @@ Print the URL and notify: `osascript -e 'display notification "<name> ready for 
 
 ## Wait
 
-Watch for his comments with the Monitor tool, persistent:
+Watch for his comments with the Monitor tool, 30 minute timeout, re-armed on expiry:
 
 ```
-curl -N -s <url>/api/watch | grep --line-buffered commentsChanged
+last=$(curl -s -X GET <url>/api/comments-json | jq '[.threads[].messages[] | select(.author != "claude")] | length')
+curl -N -s <url>/api/watch | grep --line-buffered commentsChanged | while read -r _; do
+  count=$(curl -s -X GET <url>/api/comments-json | jq '[.threads[].messages[] | select(.author != "claude")] | length')
+  [ "$count" -gt "$last" ] && echo "new comment from Camen ($count)"
+  last=$count
+done
 ```
 
-On each event, `curl -X GET <url>/api/comments-json` and write the body to `<name>.comments.json`. His comments are the messages without `"author":"claude"`.
+The server broadcasts `commentsChanged` for every change, your own replies included; the count filter keeps it to his new messages so you do not wake yourself. On each event, `curl -X GET <url>/api/comments-json` and write the body to `<name>.comments.json`. His comments are the messages without `"author":"claude"`.
 
 ## Respond
 
 For each new comment from Camen, in its thread:
 
-- A change request that adds a rule the branch did not have: a commit of its own. A change to something a review commit already introduced (a rename of a rename, a reshape of the same block, reverting a behaviour a review commit added): fold it into that commit, `git commit --amend` when it is HEAD, else `git commit --fixup <sha>`, squashed at the end of the review with `GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash <compare branch>`. The branch's first commit is never amended. Either way reply `done in <sha>` plus one line on what changed. A reply is `{"type":"reply","author":"claude","filePath":...,"position":...,"body":...}` to the same import endpoint.
+- A change request: a commit of its own, never an amend, fixup, or rebase; `/pr` rewrites the branch into a readable history before the push. Reply `done in <sha>` plus one line on what changed. A reply is `{"type":"reply","author":"claude","filePath":...,"position":...,"body":...}` to the same import endpoint.
 - A question: answer it.
 - Disagreement with a decision: reply with the options and a recommendation. No code change until he answers.
 
-After each change, run the tests that cover it. The commit makes difit's reload button appear in his tab; he clicks it when he is ready, nothing restarts. Go back to Wait.
+After each change, run the tests that cover it. Editing a file makes difit's reload button appear in his tab (the commit itself does not; difit watches the worktree and `.git/HEAD`, not refs); he clicks it when he is ready, nothing restarts. Go back to Wait.
 
 If the server ever has to be restarted mid-review, keep the URL: add `--port <port>` from `<name>.difit.json`, drop `--clean`, restore the threads with the `curl -X POST <url>/api/comments` call above, save the new pid, and re-arm the monitor (it ends with the old server).
 
-A rebase under a running server drops every thread, and `POST /api/comments` with the saved export does not bring them back (it answers `merged:false`). Save `<name>.comments.json` before rebasing, then re-post the walkthrough and any of his open threads through `/api/comment-imports`. A stacked branch diffs against its parent branch, not the default branch.
+Threads are keyed on the merge-base commit, so commits leave them alone. Only a rebase onto a moved base changes the key: after one, the page shows no threads, but the old ones are still on the server. Fetch them with `curl -X GET '<url>/api/comments-json?base=<old merge-base short sha>&target=.&baseMode=merge-base'` and re-post them through `/api/comment-imports` under the new key.
 
 ## Done
 

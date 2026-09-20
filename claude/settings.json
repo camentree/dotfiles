@@ -8,8 +8,6 @@
     "allow": [
       "Bash(git rebase origin/master)",
       "Bash(git rebase --continue)",
-      "Bash(gh stack push)",
-      "Bash(gh stack sync)",
       "Bash(git push --force-with-lease *)",
       "Bash(pbcopy)",
       "Bash(pbcopy *)"
@@ -38,6 +36,24 @@
       "/tmp"
     ]
   },
+  "skillOverrides": {
+    "dataviz": "name-only",
+    "claude-api": "name-only",
+    "artifact-design": "name-only",
+    "artifact-diagramming": "name-only",
+    "artifact-capabilities": "name-only",
+    "schedule": "user-invocable-only",
+    "code-review": "user-invocable-only",
+    "simplify": "user-invocable-only",
+    "loop": "user-invocable-only",
+    "update-config": "user-invocable-only",
+    "claude-in-chrome": "user-invocable-only",
+    "init": "off",
+    "keybindings-help": "off",
+    "fewer-permission-prompts": "off",
+    "security-review": "off",
+    "run": "off"
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -60,16 +76,10 @@
     "command": "bash ~/.claude/scripts/status-line.sh"
   },
   "enabledPlugins": {
-    "august-metals@skills-dir": false
+    "august-metals@skills-dir": false,
+    "cowork-plugin-management@synced": false
   },
-  "extraKnownMarketplaces": {
-    "august-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "augusthealth/august-marketplace"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
   "outputStyle": "Concise",
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
