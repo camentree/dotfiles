@@ -17,10 +17,10 @@ If `<name>.difit.json` exists and `curl -X GET <url>/api/comments-json` answers,
 Otherwise, with the default branch from `git symbolic-ref --short refs/remotes/origin/HEAD`:
 
 ```
-npx --yes difit . <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked
+npx --yes difit . <default branch> --merge-base --background --keep-alive --no-open --clean --include-untracked --host 0.0.0.0
 ```
 
-`difit` is not installed on the machine; `npx --yes difit` is how it runs. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
+`difit` is not installed on the machine; `npx --yes difit` is how it runs. `--host 0.0.0.0` because Camen reviews from a different device than the one the session runs on, and the default binding is reachable only from the session's own host. difit still prints a `localhost` url; swap in the machine's LAN address (`ipconfig getifaddr en0`) in `<name>.difit.json` and everywhere you give him the url, and check it answers there before posting the walkthrough. The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button in the page after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server. It prints JSON with `url` and `pid`. Save that as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it first with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
 
 Post the walkthrough as comments, one request:
 
