@@ -51,7 +51,7 @@ The literal word `schedule`; else a Linear identifier (`ABC-123`) or a `linear.a
 
 The date at the top is today. Do both of these, then whatever the argument asked for.
 
-- **Meetings** — check the personal calendar for events not already in the file and add them. Don't remove anything already there.
+- **Meetings** — run the [calendar script](#calendar) and add timed events not already in the file. Don't remove anything already there.
 - **Reviewable PRs** — [rebuild the section](#reviewable-prs).
 
 `### Done`, `### In Review`, `### To Do`, `### Up Next`, and `### Schedule` stay untouched unless the argument says otherwise.
@@ -70,7 +70,7 @@ The date at the top is older than today. Run these in order.
 
 **4. Roll To Do down.** Move every `### To Do` entry, with its status line, verbatim and in order, to the end of `### Up Next`. `### To Do` ends up empty. `### In Review` doesn't move — work sitting in review stays there until Camen moves it himself, and it stays schedulable.
 
-**5. Rebuild Meetings.** Clear the section, notes and all. Ask, as a single message with no tool calls, and wait: **"What work meetings do you have today?"** Then add his answer plus timed events from the personal calendar between 09:00 and 17:00, sorted by time. The work Google account isn't reachable, so his reply is the only source for work meetings.
+**5. Rebuild Meetings.** Clear the section, notes and all. Run the [calendar script](#calendar) and add every timed event, work and personal, sorted by time. Skip all-day events and anything with status `tentative` or `cancelled`.
 
 ```
 ### Meetings
@@ -226,8 +226,18 @@ Short. What changed in the file, and anything worth knowing that isn't in it —
 - No emoji. Linear IDs as plain text; the link carries the target.
 - Camen moves entries between Done, In Review, To Do, and Up Next himself. The skill only ever does so on the new-day rollover — emptying Done, dropping To Do into Up Next, and promoting the day's scheduled work back up. `### In Review` it never writes at all. Never reword, reorder, or restructure an entry it moves.
 
+## Calendar
+
+Every calendar Camen has, work and personal, is in Apple Calendar. Read today's events with:
+
+```
+osascript -l JavaScript ~/.claude/scripts/calendar-events.js
+```
+
+An integer argument offsets the day (`1` is tomorrow). One line per event: `HH:MM-HH:MM` or `all-day`, then `[calendar#index]`, title, status. Three calendars are named `Events`; `Events#2` is the work Google account, the other two are personal. Calendars shared with Camen (read-only ones, plus the `Engineering` team calendar) are left out by the script. Takes about ten seconds; Calendar.app must be allowed under System Settings → Privacy & Security → Automation for the terminal.
+
 ## Failure modes
 
-Never block the whole pass on one source. If `gh` isn't authed, skip Reviewable PRs. If Linear is disconnected, skip Up Next. If the calendar is unreachable, use his reply alone. Note each skip in one trailing line.
+Never block the whole pass on one source. If `gh` isn't authed, skip Reviewable PRs. If Linear is disconnected, skip Up Next. If the calendar script fails, ask, as a single message with no tool calls: **"What meetings do you have today?"** and use his reply alone. Note each skip in one trailing line.
 
 If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.
