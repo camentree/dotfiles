@@ -5,14 +5,14 @@ description: Verify the current branch against its plan file. Independent checks
 
 # Verify
 
-Input: the plan file for the current branch under `~/.claude/tasks/`, and `--pre-push` when the result is about to be pushed. Rebase onto the default branch first.
+Input: the plan file for the current branch under `~/.claude/tasks/`, and `--pre-push` when the result is about to be pushed. The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch. Rebase onto `origin/<base branch>` first.
 
 Run in this order and stop at the first failure:
 
 *when saying CLAUDE.md here, that includes any CLAUDE.local.md*
 
 1. The specs that cover the change compile and pass.
-2. Scope: the diff against the default branch touches only the plan's files, or the exception is in its Decisions.
+2. Scope: the diff against the base branch touches only the plan's files, or the exception is in its Decisions.
 3. Criteria (Style and acceptance criteria). A fresh sub-agent gets the plan file, the diff, and every `## Code style checks` section from the CLAUDE.md and CLAUDE.local.md files apply from root to the changed files
     - Style: It returns findings as `file:line`, the rule, and the fix.
     - Acceptance Criteria: For each acceptance criterion it finds the test or runs the check that proves it, confirms the check exercises the criterion rather than merely passing, and marks pass, fail, or weak.

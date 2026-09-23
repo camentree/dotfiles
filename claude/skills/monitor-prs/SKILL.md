@@ -8,7 +8,7 @@ description: One pass over every open PR of mine. Keeps CI green, resolves confl
 For each open PR authored by me, in its worktree:
 
 1. **CI red.** Read the failing job's log, fix, commit, push.
-2. **Conflicts.** Rebase onto the default branch, resolve, run `/verify`, push. A rebased branch can only be published with `git push --force-with-lease`, so that is the one force allowed below.
+2. **Conflicts.** Rebase onto the PR's base branch (`gh pr view --json baseRefName`), resolve, run `/verify`, push. A stacked PR whose parent has merged (`git config branch.<branch>.gh-merge-base` names a branch whose PR is merged): `git rebase --onto origin/<default branch> <parent's last head, headRefOid from gh pr list --state merged --head <parent>>`, so the parent's pre-squash commits drop out, then `gh pr edit --base <default branch>` if GitHub has not retargeted it, `git config --unset branch.<branch>.gh-merge-base`, `/verify`, push. A rebased branch can only be published with `git push --force-with-lease`, so that is the one force allowed below.
 3. **Unanswered review comments**, sorted into three piles:
    - Mechanical and unambiguous: rename, typo, a missing null check. Fix it, commit, reply with only `done in <sha>`.
    - Clear but larger: implement and commit, do not push. Add it to the report for Camen.

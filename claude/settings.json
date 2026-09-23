@@ -81,18 +81,23 @@
   },
   "extraKnownMarketplaces": {},
   "outputStyle": "Concise",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "medium"
+    }
+  },
   "promptSuggestionEnabled": false,
   "awaySummaryEnabled": false,
   "askUserQuestionTimeout": "never",
+  "dialogExpiry": "never",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "theme": "dark-daltonized",
   "editorMode": "normal",
   "fileCheckpointingEnabled": true,
   "remoteControlAtStartup": true,
+  "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "useAutoModeDuringPlan": true,
-  "dialogExpiry": "never",
-  "crossSessionInbound": "accept"
+  "useAutoModeDuringPlan": true
 }
