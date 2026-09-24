@@ -8,6 +8,7 @@ Declarative Mac config via Nix (nix-darwin + home-manager). This repo **is** the
 flake.nix           Entry point; lists machines.
 user.nix            home-manager user config (git, tmux, symlinks).
 os/macos.nix        Shared macOS settings + packages.
+os/server.nix       Home-server services; imported by machines/*-server.nix.
 machines/*.nix      Per-machine: hostname + packages.
 home/               Plain dotfiles — symlinked into $HOME as-is.
 claude/             Claude Code global config — symlinked to ~/.claude/.
@@ -43,7 +44,9 @@ When adding a new dotfile: drop the file in `home/`, then add a `home.file.".foo
 
 ### Adding a machine
 
-Add a new `.nix` file in `machines/`, then register it in `flake.nix` under `darwinConfigurations`.
+Add a new `.nix` file in `machines/`, then register it in `flake.nix` under `darwinConfigurations`. Servers import `../os/server.nix` and keep only hardware-specific settings. `git add` new files before building, because flakes ignore untracked files.
+
+Setting up a fresh Mac end to end (1Password SSH, `setup.sh`, manual steps): see "Setting up a new Mac from scratch" in `README.md`. `setup.sh` needs an interactive sudo password, so the user has to run it in their own terminal. An agent's shell can't.
 
 ## Testing changes
 

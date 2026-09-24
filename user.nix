@@ -156,6 +156,10 @@ in
           HostName mac-intel-server.local
           User camen
 
+        Host mac-arm-server
+          HostName mac-arm-server.local
+          User camen
+
         Host mac-intel-server-remote
           HostName ssh.smallworkshop.dev
           User camen

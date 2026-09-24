@@ -28,28 +28,33 @@ if command -v nix &> /dev/null; then
 else
   echo "Installing Nix..."
   echo "This will ask for your sudo password."
-  sh <(curl -L https://nixos.org/nix/install) --daemon
-  echo ""
-  echo "Nix installed. Please restart your terminal and run this script again."
-  exit 0
+  sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+  # Load nix into this shell so the rest of the script can run without a
+  # terminal restart.
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 
 # ----------------------------------------------------------
 # Step 2: Move conflicting /etc files (nix-darwin needs these)
 # ----------------------------------------------------------
 echo -e "\n[2/6] Preparing /etc files for nix-darwin"
-for f in /etc/bashrc /etc/zshrc; do
-  if [ -f "$f" ] && ! grep -q "nix-darwin" "$f" 2>/dev/null; then
+# nix-darwin refuses to activate over /etc files whose contents it doesn't
+# recognize (stock macOS versions it hasn't seen, or ones the Nix installer
+# edited). Once nix-darwin owns them they're symlinks into /etc/static.
+for f in /etc/bashrc /etc/zshrc /etc/zprofile /etc/zshenv /etc/nix/nix.conf; do
+  if [ -f "$f" ] && [ ! -L "$f" ]; then
     echo "Moving $f to ${f}.before-nix-darwin"
     sudo mv "$f" "${f}.before-nix-darwin"
   fi
 done
 
 # ----------------------------------------------------------
-# Step 3: SSH key (if not already set up)
+# Step 3: SSH key (if GitHub auth isn't already working, e.g. via 1Password)
 # ----------------------------------------------------------
 echo -e "\n[3/6] SSH key"
-if [ -f "$HOME/.ssh/id_ed25519" ]; then
+if ssh -T -o BatchMode=yes git@github.com 2>&1 | grep -q "successfully authenticated"; then
+  echo "GitHub SSH auth already works"
+elif [ -f "$HOME/.ssh/id_ed25519" ]; then
   echo "Already exists"
 else
   echo "Generating ed25519 SSH key..."
@@ -67,9 +72,11 @@ fi
 # ----------------------------------------------------------
 echo -e "\n[4/6] Building nix-darwin config ($HOST)"
 cd "$THIS_DIR"
+# --inputs-from . takes nix-darwin from flake.lock, so the bootstrap
+# darwin-rebuild matches the pinned release instead of nix-darwin master.
 sudo "$(which nix 2>/dev/null || echo /nix/var/nix/profiles/default/bin/nix)" \
   --extra-experimental-features "nix-command flakes" \
-  run nix-darwin -- switch --flake ".#${HOST}"
+  run --inputs-from . nix-darwin#darwin-rebuild -- switch --flake ".#${HOST}"
 
 # Pick up newly installed packages from nix
 export PATH="/run/current-system/sw/bin:$HOME/.nix-profile/bin:$PATH"
@@ -97,7 +104,9 @@ fi
 # ----------------------------------------------------------
 echo -e "\n[6/6] Claude Code machine settings"
 CLAUDE_LOCAL="$HOME/.claude/settings.local.json"
-if [[ ! -f "$CLAUDE_LOCAL" ]]; then
+if ! command -v mise &> /dev/null; then
+  echo "Skipped (no mise, so no Java/sbt on this machine)"
+elif [[ ! -f "$CLAUDE_LOCAL" ]]; then
   echo "Creating $CLAUDE_LOCAL..."
   mkdir -p "$HOME/.claude"
   JAVA_HOME_VAL="$HOME/.local/share/mise/installs/java/temurin-17.0.16+8"

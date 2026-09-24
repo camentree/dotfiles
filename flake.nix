@@ -24,6 +24,10 @@
           modules = [ ./os/macos.nix ./machines/mac-intel-server.nix home-manager.darwinModules.home-manager homeManagerModule ];
         };
 
+        "mac-arm-server" = nix-darwin.lib.darwinSystem {
+          modules = [ ./os/macos.nix ./machines/mac-arm-server.nix home-manager.darwinModules.home-manager homeManagerModule ];
+        };
+
         "mac-arm-personal" = nix-darwin.lib.darwinSystem {
           modules = [ ./os/macos.nix ./machines/mac-arm-personal.nix home-manager.darwinModules.home-manager homeManagerModule ];
         };
