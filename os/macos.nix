@@ -86,12 +86,18 @@
       autohide = true;
       tilesize = 47;
       show-recents = false;
+      persistent-apps = [];
+      persistent-others = [];
     };
 
-    # Keyboard
     NSGlobalDomain = {
+      # Keyboard
       KeyRepeat = 2;
       InitialKeyRepeat = 15;
+
+      # Appearance
+      AppleInterfaceStyleSwitchesAutomatically = true;
+      NSTableViewDefaultSizeMode = 2;        # medium sidebar icons
     };
 
     # Finder
@@ -148,6 +154,25 @@
     $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Show Sidebar" "@b"
     $asPrimaryUser defaults write NSGlobalDomain NSUserKeyEquivalents -dict-add "Toggle Sidebar" "@b"
     $asPrimaryUser defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
+
+    # Keyboard shortcuts: Mail
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Get New Mail" "^r"
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Unread" "^u"
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Read" "^u"
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Archive" "^a"
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mailbox Search" '@$f'
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Send" '@\U21a9'
+
+    # Keyboard shortcuts: Cmd+B for sidebar toggle (Calendar, Notes, Contacts)
+    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Show Calendar List" "@b"
+    $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
+    $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Show Folders" "@b"
+    $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Hide Folders" "@b"
+    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Show Lists" "@b"
+    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Hide Lists" "@b"
+
+    # Tint window backgrounds with the wallpaper color
+    $asPrimaryUser defaults write NSGlobalDomain AppleReduceDesktopTinting -bool false
 
     # Keyboard modifier keys: Caps Lock → Control, Left Control → Left Command, Left Command → Left Option
     # Takes effect at next login, not at rebuild.

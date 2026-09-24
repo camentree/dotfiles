@@ -275,6 +275,8 @@ in
         rsnapshot
       ];
 
+      services.openssh.enable = true;
+
       environment.etc."ssh/sshd_config.d/200-no-password.conf".text = ''
         PasswordAuthentication no
         KbdInteractiveAuthentication no
@@ -290,6 +292,7 @@ in
       # ===== macos defaults =====
 
       system.defaults.screensaver.askForPassword = lib.mkForce false;
+      system.defaults.loginwindow.autoLoginUser = "camen";
       system.defaults.CustomUserPreferences = {
         "com.apple.bird" = {
           optimize-storage = false;
