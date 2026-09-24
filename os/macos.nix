@@ -183,8 +183,10 @@
     $asPrimaryUser defaults write com.apple.iCal NSUserKeyEquivalents -dict-add "Hide Calendar List" "@b"
     $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Show Folders" "@b"
     $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Hide Folders" "@b"
-    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Show Lists" "@b"
-    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Hide Lists" "@b"
+    # Contacts' preferences are privacy-protected, so without Full Disk Access the write
+    # fails with "Could not write domain" and would abort the rest of activation.
+    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Show Lists" "@b" || true
+    $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Hide Lists" "@b" || true
 
     # System Settings only lists App Shortcuts for apps named here; the shortcuts
     # work without it. universalaccess needs Full Disk Access to write, so a
