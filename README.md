@@ -125,6 +125,7 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 - **Finder sidebar** — Favorites: Applications, Downloads, Pictures, Desktop, Documents. Locations: remove AirDrop and Macintosh HD. Stored in binary `.sfl4` bookmark files Nix can't write.
 - **iCloud Desktop & Documents** — System Settings → Apple Account → iCloud → Drive → on.
 - **Mail signature** — Mail → Settings → Signatures → "camen". Mail owns the signature files.
+- **Contacts shortcuts** — System Settings → Keyboard → Keyboard Shortcuts → App Shortcuts → Contacts: "Show Lists" and "Hide Lists" → `Cmd+B`. Contacts' preferences sit behind the Contacts privacy permission, which even Full Disk Access doesn't grant, so Nix can't write them.
 - **Game Center** — System Settings → Game Center → off. It's an account sign-in, not a setting Nix can write.
 - **Desktop wallpaper** — set to `sombrero_2025_45p.png`
 
