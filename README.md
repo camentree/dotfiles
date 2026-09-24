@@ -121,9 +121,11 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 - **Claude Code** — run `claude` to authenticate
 - **GitHub CLI** — `gh auth login`
 - **Base Python venv** — `mkdir -p ~/.venvs && uv venv --python 3.13 ~/.venvs/base3.13`
-- **Mail shortcuts** — System Settings → Keyboard → App Shortcuts → Mail:
-  - "Mailbox Search" → `Cmd+\`
-  - "Send" → `Ctrl+Cmd+Return`
+- **Full Disk Access for the terminal** — System Settings → Privacy & Security → Full Disk Access → add the terminal you run `nix-rebuild` from, then rebuild. Without it the rebuild can't write `com.apple.universalaccess`, so the Nix-managed App Shortcuts work but don't show up in System Settings.
+- **Finder sidebar** — Favorites: Applications, Downloads, Pictures, Desktop, Documents. Locations: remove AirDrop and Macintosh HD. Stored in binary `.sfl4` bookmark files Nix can't write.
+- **iCloud Desktop & Documents** — System Settings → Apple Account → iCloud → Drive → on.
+- **Mail signature** — Mail → Settings → Signatures → "camen". Mail owns the signature files.
+- **Game Center** — System Settings → Game Center → off. It's an account sign-in, not a setting Nix can write.
 - **Desktop wallpaper** — set to `sombrero_2025_45p.png`
 
 ### `mac-arm-work` only
@@ -135,8 +137,7 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 
 Only one server runs the tunnel, apps, deploys, and jobs: the one named by `activeServer` in `os/server.nix` (exposed as `$ACTIVE_SERVER`). Every server still runs postgres and its own rsnapshot backups. To cut over, finish the steps below on the new machine, change `activeServer`, commit, and `nix-rebuild` on **both** machines, the old one first so it drops the tunnel.
 
-- **Remote Login** — System Settings → General → Sharing → Remote Login. Password logins are disabled by `os/server.nix`; only the key in `os/macos.nix` works.
-- **Automatic login** — System Settings → Users & Groups → Automatically log in as `camen`. The services are launchd *user* agents, so they only run while the user is logged in.
+- **Automatic login** — System Settings → Users & Groups → Automatically log in as `camen`, once. `os/server.nix` sets the user, but macOS only logs in automatically once this step has saved the password to `/etc/kcpassword`. The services are launchd *user* agents, so they only run while the user is logged in. Remote Login is on via `os/server.nix`; password logins are disabled there too, so only the key in `os/macos.nix` works.
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
 - **Failure-alert email** — Gmail app password in `~/.mail/password` (`chmod 600`).
 - **App repos** — clone `one-offs`, `parallax`, `todo`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.

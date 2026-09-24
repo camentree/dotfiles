@@ -104,14 +104,29 @@
     finder = {
       AppleShowAllExtensions = true;        # always show file extensions
       AppleShowAllFiles = false;             # don't show hidden files by default
-      FXDefaultSearchScope = "SCcf";         # search current folder by default
+      FXDefaultSearchScope = "SCev";         # search this Mac by default
       FXEnableExtensionChangeWarning = false; # don't warn when changing extensions
       FXPreferredViewStyle = "Nlsv";         # list view by default
-      FXRemoveOldTrashItems = true;          # auto-remove trash after 30 days
+      FXRemoveOldTrashItems = false;         # keep trash until emptied
+      NewWindowTarget = "Home";              # new windows open the home folder
+      ShowRemovableMediaOnDesktop = false;   # no external disks on the desktop
       ShowPathbar = true;                    # show path breadcrumbs
       ShowStatusBar = true;                  # show status bar
       _FXSortFoldersFirst = true;            # folders on top when sorting by name
       _FXShowPosixPathInTitle = true;        # full path in window title
+    };
+
+    # Calendar
+    CustomUserPreferences."com.apple.iCal" = {
+      "first day of week" = 2;
+      "first minute of work hours" = 360;       # 6am
+      "last minute of work hours" = 1320;       # 10pm
+      "Default duration in minutes for new event" = 30;
+      "scroll by weeks in week view" = 0;
+      "Show heat map in Year View" = true;
+      "TimeZone support enabled" = true;
+      "WarnBeforeSendingInvitations" = false;
+      "enableTravelAdvisoriesForAutomaticBehavior" = false;
     };
 
     # Trackpad
@@ -156,7 +171,7 @@
     $asPrimaryUser defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
 
     # Keyboard shortcuts: Mail
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Get New Mail" "^r"
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Get All New Mail" "^r"
     $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Unread" "^u"
     $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Read" "^u"
     $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Archive" "^a"
@@ -170,6 +185,43 @@
     $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Hide Folders" "@b"
     $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Show Lists" "@b"
     $asPrimaryUser defaults write com.apple.AddressBook NSUserKeyEquivalents -dict-add "Hide Lists" "@b"
+
+    # System Settings only lists App Shortcuts for apps named here; the shortcuts
+    # work without it. universalaccess needs Full Disk Access to write, so a
+    # terminal without it shouldn't fail the rebuild.
+    $asPrimaryUser defaults write com.apple.universalaccess com.apple.custommenu.apps -array \
+      NSGlobalDomain notion.id com.apple.mail com.apple.iCal com.apple.Notes com.apple.AddressBook || true
+
+    # Mail is sandboxed: `defaults write com.apple.mail` lands in ~/Library/Preferences,
+    # which Mail ignores for its own settings, so write its container plists by path.
+    # Needs Full Disk Access (see README), and Mail must have launched once.
+    mailPrefs="${config.users.users.${config.system.primaryUser}.home}/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail"
+    mailGroupPrefs="${config.users.users.${config.system.primaryUser}.home}/Library/Group Containers/group.com.apple.mail/Library/Preferences/group.com.apple.mail"
+    # SF Mono isn't in nixpkgs (Apple license) and macOS only ships it inside
+    # Terminal.app, so copy it into the user's fonts for other apps to see.
+    $asPrimaryUser cp /System/Applications/Utilities/Terminal.app/Contents/Resources/Fonts/SF-Mono-*.otf ${config.users.users.${config.system.primaryUser}.home}/Library/Fonts/
+
+    $asPrimaryUser defaults write "$mailPrefs" NSFont -string SFMono-Regular || true
+    $asPrimaryUser defaults write "$mailPrefs" NSFontSize -string 12 || true
+    $asPrimaryUser defaults write "$mailPrefs" NSFixedPitchFont -string SFMono-Regular || true
+    $asPrimaryUser defaults write "$mailPrefs" NSFixedPitchFontSize -string 11 || true
+    $asPrimaryUser defaults write "$mailPrefs" ColorQuoterColorList "<data>$(cat ${./mail-quote-colors.b64})</data>" || true
+    $asPrimaryUser defaults write "$mailPrefs" NumberOfSnippetLines -int 0 || true
+    $asPrimaryUser defaults write "$mailPrefs" ConversationViewSortDescending -bool true || true
+    $asPrimaryUser defaults write "$mailPrefs" HighlightCurrentThread -bool false || true
+    $asPrimaryUser defaults write "$mailPrefs" ReplyQuotesOriginal -bool false || true
+    $asPrimaryUser defaults write "$mailPrefs" SupressQuoteBarsInComposeWindows -bool true || true
+    $asPrimaryUser defaults write "$mailPrefs" AddLinkPreviews -bool false || true
+    $asPrimaryUser defaults write "$mailPrefs" PlayMailSounds -bool false || true
+    $asPrimaryUser defaults write "$mailPrefs" NewMessagesSoundName -string "" || true
+    $asPrimaryUser defaults write "$mailGroupPrefs" DisableAutomaticMessageSummarization -bool true || true
+    $asPrimaryUser defaults write "$mailGroupPrefs" DisableFollowUp -bool true || true
+    $asPrimaryUser defaults write "$mailGroupPrefs" MarkAsReadBehavior -int 3 || true
+
+    # Finder: hide the sidebar Tags section, and clear the default color tags
+    $asPrimaryUser defaults write com.apple.finder ShowRecentTags -bool false
+    $asPrimaryUser defaults write com.apple.finder FavoriteTagNames -array ""
+    $asPrimaryUser defaults write com.apple.finder WarnOnEmptyTrash -bool false
 
     # Tint window backgrounds with the wallpaper color
     $asPrimaryUser defaults write NSGlobalDomain AppleReduceDesktopTinting -bool false

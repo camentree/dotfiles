@@ -71,6 +71,8 @@ nix flake check
 - **Runtime versions** (Node, Java, sbt, Python venvs) are managed by mise/uv, not Nix. See the `[5/6]` step in `setup.sh`.
 - **Claude Code `settings.local.json`** (both root `.claude/` and per-project) is gitignored-esque: it holds machine-local permission allowlists. `setup.sh` also writes one to `~/.claude/settings.local.json` on first run with the right `JAVA_HOME`.
 
+- **Full Disk Access** — the terminal running `nix-rebuild` needs it (granted by hand, see "Manual configuration" in `README.md`), or activation-script `defaults write`s to protected domains like `com.apple.universalaccess` fail. Those writes end in `|| true` so a missing grant doesn't abort the rebuild.
+
 ## Do not
 
 - Commit `.zshenv.local` or anything with real secrets.
