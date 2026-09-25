@@ -152,6 +152,16 @@ Only one server runs the tunnel, apps, deploys, and jobs: the one named by `acti
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
 - **Failure-alert email** — Gmail app password in `~/.mail/password` (`chmod 600`).
 - **App repos** — clone `one-offs`, `parallax`, `todo`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.
+- **Deploy keys** — the deploy agents pull unattended, when the 1Password SSH agent may be locked, so each private repo gets a read-only key per machine (GitHub won't reuse one key across repos). `todo` is public and pulls over HTTPS. After `gh auth login`:
+  ```bash
+  for repo in parallax one-offs; do
+    ssh-keygen -q -t ed25519 -N '' -C "$(hostname -s) $repo deploy" -f ~/.ssh/$repo-deploy
+    gh repo deploy-key add ~/.ssh/$repo-deploy.pub --repo camentree/$repo --title "$(hostname -s)"
+  done
+  git -C ~/Projects/parallax config core.sshCommand "ssh -i ~/.ssh/parallax-deploy -o IdentitiesOnly=yes"
+  git -C ~/Projects/todo remote set-url origin https://github.com/camentree/todo.git
+  ```
+  `one-offs/scripts/deploy` picks up its key itself. When retiring a server, remove its keys: `gh repo deploy-key list --repo camentree/<repo>`, then `gh repo deploy-key delete <id> --repo camentree/<repo>`.
 
 ### `mac-intel-server` only
 
