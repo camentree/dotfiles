@@ -43,9 +43,6 @@ let
   todoEnvironment = baseEnvironment // {
     PATH = "${pkgs.nodejs_24}/bin:${systemPath}";
     NODE_ENV = "production";
-    DATABASE_URL = "postgres://localhost/parallax";
-    PORT = "8790";
-    API_URL = "http://127.0.0.1:8787/api/";
   };
 
   uv = "/run/current-system/sw/bin/uv";
@@ -341,18 +338,6 @@ in
       launchd.user.agents.parallax-mcp = parallaxService "mcp";
       launchd.user.agents.parallax-http = parallaxService "http";
       launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
-
-      launchd.user.agents.todo = {
-        serviceConfig = {
-          ProgramArguments = namedProgram "todo" "npm start";
-          RunAtLoad = true;
-          KeepAlive = true;
-          WorkingDirectory = todoRoot;
-          StandardOutPath = "/tmp/todo.stdout.log";
-          StandardErrorPath = "/tmp/todo.stderr.log";
-          EnvironmentVariables = todoEnvironment;
-        };
-      };
 
       # ===== deploys =====
 
