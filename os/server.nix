@@ -208,6 +208,24 @@ $(tail -c 8000 "$output")"
 
         location / { try_files $uri =404; }
       }
+
+      # todo: a static client, with /api/ proxied to parallax on this machine.
+      # parallax.smallworkshop.dev is behind Cloudflare Access, which answers a
+      # browser's preflight with 403, so the app has to stay same-origin.
+      server {
+        listen 127.0.0.1:8791;
+        absolute_redirect off;
+        root ${todoRoot}/dist/client;
+
+        location ^~ /api/ {
+          proxy_pass http://127.0.0.1:8787;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto https;
+        }
+
+        location / { try_files $uri /index.html; }
+      }
     }
   '';
 in
