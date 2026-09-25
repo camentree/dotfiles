@@ -17,7 +17,6 @@ let
 
   # paths
   homeDirectory = "/Users/camen";
-  documentsDirectory = "${homeDirectory}/Documents";
   projectsDirectory = "${homeDirectory}/Projects";
 
   oneOffsRoot = "${projectsDirectory}/one-offs";
@@ -105,56 +104,6 @@ $(tail -c 8000 "$output")"
       fi
       exit "$status"
     ''}";
-
-  # local backups
-  # nixpkgs marks rsnapshot linux-only erroneously
-  rsnapshot = pkgs.rsnapshot.overrideAttrs (old: {
-    meta = old.meta // { platforms = old.meta.platforms ++ lib.platforms.darwin; };
-  });
-  rsnapshotBackupRoot = "${homeDirectory}/Backups/rsnapshot";
-  rsnapshotConf = pkgs.writeText "rsnapshot.conf" (
-    "config_version\t1.2\n" +
-    "snapshot_root\t${rsnapshotBackupRoot}/\n" +
-    "cmd_rsync\t${pkgs.rsync}/bin/rsync\n" +
-    "rsync_long_args\t--delete --numeric-ids --relative --delete-excluded --info=progress2,name0 --stats\n" +
-    "link_dest\t1\n" +
-    "retain\tdaily\t7\n" +
-    "retain\tweekly\t4\n" +
-    "retain\tmonthly\t6\n" +
-    "verbose\t2\n" +
-    "loglevel\t3\n" +
-    "logfile\t${rsnapshotBackupRoot}/rsnapshot.log\n" +
-    "lockfile\t${rsnapshotBackupRoot}/rsnapshot.pid\n" +
-    "exclude\t.DS_Store\n" +
-    "exclude\t*.icloud\n" +
-    "backup\t${documentsDirectory}/\tdocuments/\n"
-  );
-  rsnapshotRun = pkgs.writeShellScript "rsnapshot-run" ''
-    set -euo pipefail
-    mkdir -p ${rsnapshotBackupRoot}
-    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
-  '';
-
-  backupNow = pkgs.writeShellScriptBin "backup-now" ''
-    exec ${rsnapshotRun} -V daily
-  '';
-  backupTest = pkgs.writeShellScriptBin "backup-test" ''
-    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest
-  '';
-
-  # The lowest interval (daily) does the actual rsync; weekly/monthly only
-  # rotate, so they must fire *before* daily on overlapping days for correct
-  # rotation.
-  rsnapshotAgent = interval: schedule: {
-    serviceConfig = {
-      ProgramArguments = namedProgram "rsnapshot-${interval}"
-        (monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}");
-      StartCalendarInterval = [ schedule ];
-      StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
-      StandardErrorPath = "/tmp/rsnapshot.${interval}.stderr.log";
-      EnvironmentVariables = baseEnvironment;
-    };
-  };
 
   # applications
   appDeploy = repository: pkgs.writeShellScript "deploy-${repository}" ''
@@ -271,8 +220,6 @@ in
       environment.variables.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
       environment.systemPackages = with pkgs; [
-        backupNow
-        backupTest
         cloudflared
         emailAlert
         google-cloud-sdk
@@ -280,7 +227,6 @@ in
         nginx
         ntfy-sh
         playwright-driver.browsers
-        rsnapshot
       ];
 
       services.openssh.enable = true;
@@ -321,15 +267,6 @@ in
         restartAfterFreeze = true;
       };
 
-      # ===== backups =====
-
-      # Every server backs up its own ~/Documents, active or not.
-      launchd.user.agents.rsnapshot-daily =
-        rsnapshotAgent "daily" { Hour = 3; Minute = 30; };
-      launchd.user.agents.rsnapshot-weekly =
-        rsnapshotAgent "weekly" { Weekday = 0; Hour = 3; Minute = 10; };
-      launchd.user.agents.rsnapshot-monthly =
-        rsnapshotAgent "monthly" { Day = 1; Hour = 3; Minute = 0; };
     }
 
     # Only on the active server (see activeServer above).

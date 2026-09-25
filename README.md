@@ -146,7 +146,7 @@ Terminal:
 
 ### Servers (`mac-arm-server`, `mac-intel-server`)
 
-Only one server runs the tunnel, apps, deploys, and jobs: the one named by `activeServer` in `os/server.nix` (exposed as `$ACTIVE_SERVER`). Every server still runs postgres and its own rsnapshot backups. To cut over, finish the steps below on the new machine, change `activeServer`, commit, and `nix-rebuild` on **both** machines, the old one first so it drops the tunnel.
+Only one server runs the tunnel, apps, deploys, and jobs: the one named by `activeServer` in `os/server.nix` (exposed as `$ACTIVE_SERVER`). Every server still runs postgres. To cut over, finish the steps below on the new machine, change `activeServer`, commit, and `nix-rebuild` on **both** machines, the old one first so it drops the tunnel.
 
 - **Automatic login** — System Settings → Users & Groups → Automatically log in as `camen`, once. `os/server.nix` sets the user, but macOS only logs in automatically once this step has saved the password to `/etc/kcpassword`. The services are launchd *user* agents, so they only run while the user is logged in. Remote Login is on via `os/server.nix`; password logins are disabled there too, so only the key in `os/macos.nix` works.
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
