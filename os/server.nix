@@ -10,7 +10,7 @@ let
   # but only this one runs the tunnel, apps, deploys, and jobs. Otherwise two
   # machines would fight over the Cloudflare tunnel and run every parallax job
   # twice. To cut over: change this, commit, and `nix-rebuild` on both machines.
-  activeServer = "mac-intel-server";
+  activeServer = "mac-arm-server";
 
   hostName = config.networking.hostName;
   isActiveServer = hostName == activeServer;
