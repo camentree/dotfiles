@@ -363,10 +363,10 @@ in
           # Stays a root daemon: as a user agent, macOS's Local Network privacy blocked
           # the HomeKit bridge's Bonjour broadcasts. KeepAlive.PathState below replaces
           # the old `test -x` guard by only starting it once the script exists.
-          ProgramArguments = [ "${homeAssistantRoot}/scripts/serve" ];
+          ProgramArguments = [ "${homeAssistantRoot}/scripts/home-assistant" ];
           KeepAlive = {
             PathState = {
-              "${homeAssistantRoot}/scripts/serve" = true;
+              "${homeAssistantRoot}/scripts/home-assistant" = true;
             };
             NetworkState = true;
           };
