@@ -34,8 +34,11 @@ let
     USER = "camen";
   };
 
+  # Routines shell out to `claude`: npm-installed on older machines, native
+  # installer (~/.local/bin) on newer ones. Without it on PATH every routine
+  # fails with "claude: command not found".
   parallaxEnvironment = baseEnvironment // {
-    PATH = "${homeDirectory}/.npm-global/bin:${systemPath}";
+    PATH = "${homeDirectory}/.local/bin:${homeDirectory}/.npm-global/bin:${systemPath}";
   };
 
   todoEnvironment = baseEnvironment // {
