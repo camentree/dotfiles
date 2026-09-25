@@ -20,8 +20,9 @@ in
   # Launcher clears a stale postmaster.pid (e.g. after an unclean shutdown)
   # only when no live postgres owns it — guards against the PID-reuse case.
   launchd.user.agents.postgresql = {
-    command = "${postgresLauncher}";
     serviceConfig = {
+      # Named launcher so Login Items shows "postgresql" rather than "sh".
+      ProgramArguments = [ "${pkgs.writeShellScriptBin "postgresql" "exec ${postgresLauncher}"}/bin/postgresql" ];
       RunAtLoad = true;
       KeepAlive = true;
       StandardOutPath = "/tmp/postgresql.stdout.log";

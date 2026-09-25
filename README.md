@@ -51,7 +51,7 @@ SHORTCUTS.md        ← iCloud links for Shortcuts.app, which Nix can't install.
 ### 1. Get GitHub access
 
 1. Sign in to the Apple ID / iCloud and let the Mac finish its first-boot updates.
-2. Install [1Password](https://1password.com/downloads), sign in, and enable the SSH agent (Settings → Developer → "Use the SSH agent"). The SSH key already lives in 1Password; no key on disk is needed.
+2. Install [1Password](https://1password.com/downloads), sign in, and enable the SSH agent (Settings → Developer → "Use the SSH agent", display set to "key names"). The SSH key already lives in 1Password; no key on disk is needed. If there isn't one yet, create an Ed25519 SSH Key item.
 3. Point SSH at the agent until Nix takes over `~/.ssh/config`:
    ```bash
    mkdir -p ~/.ssh && printf 'Host *\n\tIdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"\n' > ~/.ssh/config
@@ -93,7 +93,7 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 
 ### All machines
 
-- [1Password](https://1password.com/downloads) (+ Safari extension from App Store)
+- [1Password](https://1password.com/downloads) — installed by hand before Nix, since its SSH agent is what clones this repo. Safari extension from the App Store is optional: only needed to fill cards and addresses.
 - [Claude](https://claude.ai/download)
 - [Google Chrome](https://google.com/chrome)
 - [Ghostty](https://ghostty.org)
@@ -113,21 +113,31 @@ Nix manages configs but not GUI apps (no Homebrew casks).
 
 ### All machines
 
+First, so the next rebuild can write every setting:
+
+- **Full Disk Access for the terminal** — System Settings → Privacy & Security → Full Disk Access → add the terminal you run `nix-rebuild` from, then open Mail once and rebuild. Without it the rebuild can't write Mail's settings or `com.apple.universalaccess` (App Shortcuts work but don't show up in System Settings).
+
+System Settings:
+
+- **1Password as AutoFill** — General → AutoFill & Passwords → turn on 1Password and turn off Passwords, so logins fill from 1Password in Safari and other apps.
+- **iCloud Desktop & Documents** — Apple Account → iCloud → Drive → on.
+- **Contacts shortcuts** — Keyboard → Keyboard Shortcuts → App Shortcuts → Contacts: "Show Lists" and "Hide Lists" → `Cmd+B`. Contacts' preferences sit behind the Contacts privacy permission, which even Full Disk Access doesn't grant, so Nix can't write them.
+- **Game Center** — Game Center → off. It's an account sign-in, not a setting Nix can write.
+- **Desktop wallpaper** — set to `sombrero_2025_45p.png`
+
+Apps:
+
+- **1Password** — unset `cmd+\` autofill shortcut
 - **Rectangle** — grant accessibility permissions; set meta key to `cmd+ctrl`
-- **1Password** — sign in; enable Safari extension; unset `cmd+\` autofill shortcut
-- **1Password SSH Agent** — Settings → Developer → enable "SSH Agent", set display to "key names"
-- **SSH key** — in 1Password, create an Ed25519 SSH Key item if one doesn't exist
 - **Slack** — sign into workspaces
+- **Mail signature** — Mail → Settings → Signatures → "camen". Mail owns the signature files.
+- **Finder sidebar** — Favorites: Applications, Downloads, Pictures, Desktop, Documents. Locations: remove AirDrop and Macintosh HD. Stored in binary `.sfl4` bookmark files Nix can't write.
+
+Terminal:
+
 - **Claude Code** — run `claude` to authenticate
 - **GitHub CLI** — `gh auth login`
 - **Base Python venv** — `mkdir -p ~/.venvs && uv venv --python 3.13 ~/.venvs/base3.13`
-- **Full Disk Access for the terminal** — System Settings → Privacy & Security → Full Disk Access → add the terminal you run `nix-rebuild` from, then rebuild. Without it the rebuild can't write `com.apple.universalaccess`, so the Nix-managed App Shortcuts work but don't show up in System Settings.
-- **Finder sidebar** — Favorites: Applications, Downloads, Pictures, Desktop, Documents. Locations: remove AirDrop and Macintosh HD. Stored in binary `.sfl4` bookmark files Nix can't write.
-- **iCloud Desktop & Documents** — System Settings → Apple Account → iCloud → Drive → on.
-- **Mail signature** — Mail → Settings → Signatures → "camen". Mail owns the signature files.
-- **Contacts shortcuts** — System Settings → Keyboard → Keyboard Shortcuts → App Shortcuts → Contacts: "Show Lists" and "Hide Lists" → `Cmd+B`. Contacts' preferences sit behind the Contacts privacy permission, which even Full Disk Access doesn't grant, so Nix can't write them.
-- **Game Center** — System Settings → Game Center → off. It's an account sign-in, not a setting Nix can write.
-- **Desktop wallpaper** — set to `sombrero_2025_45p.png`
 
 ### `mac-arm-work` only
 

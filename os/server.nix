@@ -79,6 +79,12 @@ let
       | ${pkgs.msmtp}/bin/msmtp -C ${msmtprc} -t || true
   '';
 
+  # nix-darwin's `command` runs every agent as `/bin/sh -c ...`, so System
+  # Settings → Login Items lists them all as "sh". Launching through a script
+  # named after the agent makes Login Items show that name instead.
+  namedProgram = name: command:
+    [ "${pkgs.writeShellScriptBin name "exec ${command}"}/bin/${name}" ];
+
   monitoredCommand = name: alertAfterFailures: command:
     "${pkgs.writeShellScript "${name}-monitored" ''
       output=$(mktemp)
@@ -140,8 +146,9 @@ $(tail -c 8000 "$output")"
   # rotate, so they must fire *before* daily on overlapping days for correct
   # rotation.
   rsnapshotAgent = interval: schedule: {
-    command = monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}";
     serviceConfig = {
+      ProgramArguments = namedProgram "rsnapshot-${interval}"
+        (monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}");
       StartCalendarInterval = [ schedule ];
       StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
       StandardErrorPath = "/tmp/rsnapshot.${interval}.stderr.log";
@@ -159,8 +166,9 @@ $(tail -c 8000 "$output")"
     exec "$script"
   '';
   deployAgent = repository: environment: {
-    command = monitoredCommand "deploy-${repository}" 3 "${appDeploy repository}";
     serviceConfig = {
+      ProgramArguments = namedProgram "deploy-${repository}"
+        (monitoredCommand "deploy-${repository}" 3 "${appDeploy repository}");
       RunAtLoad = true;
       StartInterval = 120;
       WorkingDirectory = "${projectsDirectory}/${repository}";
@@ -171,8 +179,8 @@ $(tail -c 8000 "$output")"
   };
 
   parallaxService = name: {
-    command = "${uv} run parallax serve ${name}";
     serviceConfig = {
+      ProgramArguments = namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
       RunAtLoad = true;
       KeepAlive = true;
       WorkingDirectory = parallaxRoot;
@@ -330,8 +338,8 @@ in
 
       # Reads tunnel config from ~/.cloudflared/config.yml (kept outside the repo).
       launchd.user.agents.cloudflared = {
-        command = "${pkgs.cloudflared}/bin/cloudflared tunnel --config ${homeDirectory}/.cloudflared/config.yml run";
         serviceConfig = {
+          ProgramArguments = namedProgram "cloudflared" "${pkgs.cloudflared}/bin/cloudflared tunnel --config ${homeDirectory}/.cloudflared/config.yml run";
           RunAtLoad = true;
           KeepAlive = true;
           StandardOutPath = "/tmp/cloudflared.stdout.log";
@@ -340,8 +348,8 @@ in
       };
 
       launchd.user.agents.nginx = {
-        command = "${pkgs.nginx}/bin/nginx -c ${nginxConf} -e /tmp/nginx.error.log";
         serviceConfig = {
+          ProgramArguments = namedProgram "nginx" "${pkgs.nginx}/bin/nginx -c ${nginxConf} -e /tmp/nginx.error.log";
           RunAtLoad = true;
           KeepAlive = true;
           StandardOutPath = "/tmp/nginx.stdout.log";
@@ -350,8 +358,12 @@ in
       };
 
       launchd.daemons.home-assistant = {
-        command = "/bin/bash -c 'test -x ${homeAssistantRoot}/scripts/serve && exec ${homeAssistantRoot}/scripts/serve'";
         serviceConfig = {
+          # Runs the repo's script directly (not via bash) so Login Items shows its name.
+          # Stays a root daemon: as a user agent, macOS's Local Network privacy blocked
+          # the HomeKit bridge's Bonjour broadcasts. KeepAlive.PathState below replaces
+          # the old `test -x` guard by only starting it once the script exists.
+          ProgramArguments = [ "${homeAssistantRoot}/scripts/serve" ];
           KeepAlive = {
             PathState = {
               "${homeAssistantRoot}/scripts/serve" = true;
@@ -373,8 +385,8 @@ in
       launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
 
       launchd.user.agents.todo = {
-        command = "npm start";
         serviceConfig = {
+          ProgramArguments = namedProgram "todo" "npm start";
           RunAtLoad = true;
           KeepAlive = true;
           WorkingDirectory = todoRoot;
@@ -395,8 +407,8 @@ in
       # Which parallax jobs exist and when each is due lives in the parallax repo;
       # this agent only asks once a minute what is due now.
       launchd.user.agents.parallax-jobs = {
-        command = "${uv} run --env-file .env -- parallax jobs --due";
         serviceConfig = {
+          ProgramArguments = namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
           RunAtLoad = true;
           StartInterval = 60;
           WorkingDirectory = parallaxRoot;
