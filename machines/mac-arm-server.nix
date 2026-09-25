@@ -1,7 +1,7 @@
 # ============================================================
 # Apple Silicon Mac mini — home server (services live in os/server.nix)
 # ============================================================
-{ lib, ... }:
+{ config, lib, ... }:
 
 {
   imports = [ ../os/server.nix ];
@@ -31,5 +31,9 @@
     sudo pmset -a hibernatemode 0
     # No screensaver on a headless box; the aerial one decodes 4K video nonstop.
     $asPrimaryUser defaults -currentHost write com.apple.screensaver idleTime -int 0
+    # Keep re-downloadable files out of Time Machine. -p pins the path, so the
+    # exclusion survives the folder being deleted and recreated.
+    sudo tmutil addexclusion -p ${config.users.users.${config.system.primaryUser}.home}/.cache/uv
+    sudo tmutil addexclusion -p ${config.users.users.${config.system.primaryUser}.home}/Downloads
   '';
 }
