@@ -149,6 +149,11 @@ in
     # SSH
     ".ssh/config" = {
       text = ''
+        Match host github.com exec "test -f ~/.ssh/github"
+          IdentityFile ~/.ssh/github
+          IdentitiesOnly yes
+          IdentityAgent none
+
         Host github.com
           IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 

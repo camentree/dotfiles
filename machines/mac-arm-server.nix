@@ -1,7 +1,7 @@
 # ============================================================
 # Apple Silicon Mac mini — home server (services live in os/server.nix)
 # ============================================================
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 {
   imports = [ ../os/server.nix ];
@@ -10,10 +10,6 @@
   networking.hostName = "mac-arm-server";
   networking.computerName = "mac-arm-server";
   environment.variables.NIX_MACHINE = "mac-arm-server";
-
-  environment.systemPackages = with pkgs; [
-    xcodes
-  ];
 
   # Fix for home-assistant
   networking.knownNetworkServices = [ "Ethernet" "USB 10/100/1000 LAN" "Wi-Fi" ];

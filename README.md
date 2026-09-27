@@ -152,16 +152,20 @@ Only one server runs the tunnel, apps, deploys, and jobs: the one named by `acti
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
 - **Failure-alert email** — Gmail app password in `~/.mail/password` (`chmod 600`).
 - **App repos** — clone `one-offs`, `parallax`, `todo`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.
-- **Deploy keys** — the deploy agents pull unattended, when the 1Password SSH agent may be locked, so each private repo gets a read-only key per machine (GitHub won't reuse one key across repos). `todo` is public and pulls over HTTPS. After `gh auth login`:
+- **GitHub key** — the deploy agents pull unattended, when the 1Password SSH agent may be locked, so each server gets one unencrypted key on the GitHub account, which reads and writes every repo. `~/.ssh/config` uses `~/.ssh/github` for github.com whenever the file exists, and the 1Password agent otherwise, so laptops are unaffected. After `gh auth login` and `gh auth refresh -h github.com -s admin:public_key`:
   ```bash
-  for repo in parallax one-offs; do
-    ssh-keygen -q -t ed25519 -N '' -C "$(hostname -s) $repo deploy" -f ~/.ssh/$repo-deploy
-    gh repo deploy-key add ~/.ssh/$repo-deploy.pub --repo camentree/$repo --title "$(hostname -s)"
-  done
-  git -C ~/Projects/parallax config core.sshCommand "ssh -i ~/.ssh/parallax-deploy -o IdentitiesOnly=yes"
-  git -C ~/Projects/todo remote set-url origin https://github.com/camentree/todo.git
+  ssh-keygen -q -t ed25519 -N '' -C "$(hostname -s)" -f ~/.ssh/github
+  gh ssh-key add ~/.ssh/github.pub --title "$(hostname -s)"
   ```
-  `one-offs/scripts/deploy` picks up its key itself. When retiring a server, remove its keys: `gh repo deploy-key list --repo camentree/<repo>`, then `gh repo deploy-key delete <id> --repo camentree/<repo>`.
+  When retiring a server, remove its key: `gh ssh-key list`, then `gh ssh-key delete <id>`.
+
+### `mac-arm-server` only
+
+- **Xcode and the iOS Simulator** — install Xcode from the App Store (Nix can't redistribute it), then add the simulator runtime. Several GB; the simulator is how app changes get checked on iOS (`xcrun simctl`).
+  ```bash
+  sudo xcode-select -s /Applications/Xcode.app
+  xcodebuild -downloadPlatform iOS
+  ```
 
 ### `mac-intel-server` only
 
