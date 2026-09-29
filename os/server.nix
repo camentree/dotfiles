@@ -10,14 +10,13 @@ let
   # but only this one runs the tunnel, apps, deploys, and jobs. Otherwise two
   # machines would fight over the Cloudflare tunnel and run every parallax job
   # twice. To cut over: change this, commit, and `nix-rebuild` on both machines.
-  activeServer = "mac-intel-server";
+  activeServer = "mac-arm-server";
 
   hostName = config.networking.hostName;
   isActiveServer = hostName == activeServer;
 
   # paths
   homeDirectory = "/Users/camen";
-  documentsDirectory = "${homeDirectory}/Documents";
   projectsDirectory = "${homeDirectory}/Projects";
 
   oneOffsRoot = "${projectsDirectory}/one-offs";
@@ -34,16 +33,16 @@ let
     USER = "camen";
   };
 
+  # Routines shell out to `claude`: npm-installed on older machines, native
+  # installer (~/.local/bin) on newer ones. Without it on PATH every routine
+  # fails with "claude: command not found".
   parallaxEnvironment = baseEnvironment // {
-    PATH = "${homeDirectory}/.npm-global/bin:${systemPath}";
+    PATH = "${homeDirectory}/.local/bin:${homeDirectory}/.npm-global/bin:${systemPath}";
   };
 
   todoEnvironment = baseEnvironment // {
     PATH = "${pkgs.nodejs_24}/bin:${systemPath}";
     NODE_ENV = "production";
-    DATABASE_URL = "postgres://localhost/parallax";
-    PORT = "8790";
-    API_URL = "http://127.0.0.1:8787/api/";
   };
 
   uv = "/run/current-system/sw/bin/uv";
@@ -105,56 +104,6 @@ $(tail -c 8000 "$output")"
       fi
       exit "$status"
     ''}";
-
-  # local backups
-  # nixpkgs marks rsnapshot linux-only erroneously
-  rsnapshot = pkgs.rsnapshot.overrideAttrs (old: {
-    meta = old.meta // { platforms = old.meta.platforms ++ lib.platforms.darwin; };
-  });
-  rsnapshotBackupRoot = "${homeDirectory}/Backups/rsnapshot";
-  rsnapshotConf = pkgs.writeText "rsnapshot.conf" (
-    "config_version\t1.2\n" +
-    "snapshot_root\t${rsnapshotBackupRoot}/\n" +
-    "cmd_rsync\t${pkgs.rsync}/bin/rsync\n" +
-    "rsync_long_args\t--delete --numeric-ids --relative --delete-excluded --info=progress2,name0 --stats\n" +
-    "link_dest\t1\n" +
-    "retain\tdaily\t7\n" +
-    "retain\tweekly\t4\n" +
-    "retain\tmonthly\t6\n" +
-    "verbose\t2\n" +
-    "loglevel\t3\n" +
-    "logfile\t${rsnapshotBackupRoot}/rsnapshot.log\n" +
-    "lockfile\t${rsnapshotBackupRoot}/rsnapshot.pid\n" +
-    "exclude\t.DS_Store\n" +
-    "exclude\t*.icloud\n" +
-    "backup\t${documentsDirectory}/\tdocuments/\n"
-  );
-  rsnapshotRun = pkgs.writeShellScript "rsnapshot-run" ''
-    set -euo pipefail
-    mkdir -p ${rsnapshotBackupRoot}
-    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} "$@"
-  '';
-
-  backupNow = pkgs.writeShellScriptBin "backup-now" ''
-    exec ${rsnapshotRun} -V daily
-  '';
-  backupTest = pkgs.writeShellScriptBin "backup-test" ''
-    exec ${rsnapshot}/bin/rsnapshot -c ${rsnapshotConf} configtest
-  '';
-
-  # The lowest interval (daily) does the actual rsync; weekly/monthly only
-  # rotate, so they must fire *before* daily on overlapping days for correct
-  # rotation.
-  rsnapshotAgent = interval: schedule: {
-    serviceConfig = {
-      ProgramArguments = namedProgram "rsnapshot-${interval}"
-        (monitoredCommand "rsnapshot-${interval}" 1 "${rsnapshotRun} ${interval}");
-      StartCalendarInterval = [ schedule ];
-      StandardOutPath = "/tmp/rsnapshot.${interval}.stdout.log";
-      StandardErrorPath = "/tmp/rsnapshot.${interval}.stderr.log";
-      EnvironmentVariables = baseEnvironment;
-    };
-  };
 
   # applications
   appDeploy = repository: pkgs.writeShellScript "deploy-${repository}" ''
@@ -256,6 +205,24 @@ $(tail -c 8000 "$output")"
 
         location / { try_files $uri =404; }
       }
+
+      # todo: a static client, with /api/ proxied to parallax on this machine.
+      # parallax.smallworkshop.dev is behind Cloudflare Access, which answers a
+      # browser's preflight with 403, so the app has to stay same-origin.
+      server {
+        listen 127.0.0.1:8791;
+        absolute_redirect off;
+        root ${todoRoot}/dist/client;
+
+        location ^~ /api/ {
+          proxy_pass http://127.0.0.1:8787;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto https;
+        }
+
+        location / { try_files $uri /index.html; }
+      }
     }
   '';
 in
@@ -271,8 +238,6 @@ in
       environment.variables.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
       environment.systemPackages = with pkgs; [
-        backupNow
-        backupTest
         cloudflared
         emailAlert
         google-cloud-sdk
@@ -280,7 +245,6 @@ in
         nginx
         ntfy-sh
         playwright-driver.browsers
-        rsnapshot
       ];
 
       services.openssh.enable = true;
@@ -321,15 +285,6 @@ in
         restartAfterFreeze = true;
       };
 
-      # ===== backups =====
-
-      # Every server backs up its own ~/Documents, active or not.
-      launchd.user.agents.rsnapshot-daily =
-        rsnapshotAgent "daily" { Hour = 3; Minute = 30; };
-      launchd.user.agents.rsnapshot-weekly =
-        rsnapshotAgent "weekly" { Weekday = 0; Hour = 3; Minute = 10; };
-      launchd.user.agents.rsnapshot-monthly =
-        rsnapshotAgent "monthly" { Day = 1; Hour = 3; Minute = 0; };
     }
 
     # Only on the active server (see activeServer above).
@@ -363,10 +318,10 @@ in
           # Stays a root daemon: as a user agent, macOS's Local Network privacy blocked
           # the HomeKit bridge's Bonjour broadcasts. KeepAlive.PathState below replaces
           # the old `test -x` guard by only starting it once the script exists.
-          ProgramArguments = [ "${homeAssistantRoot}/scripts/serve" ];
+          ProgramArguments = [ "${homeAssistantRoot}/scripts/home-assistant" ];
           KeepAlive = {
             PathState = {
-              "${homeAssistantRoot}/scripts/serve" = true;
+              "${homeAssistantRoot}/scripts/home-assistant" = true;
             };
             NetworkState = true;
           };
@@ -383,18 +338,6 @@ in
       launchd.user.agents.parallax-mcp = parallaxService "mcp";
       launchd.user.agents.parallax-http = parallaxService "http";
       launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
-
-      launchd.user.agents.todo = {
-        serviceConfig = {
-          ProgramArguments = namedProgram "todo" "npm start";
-          RunAtLoad = true;
-          KeepAlive = true;
-          WorkingDirectory = todoRoot;
-          StandardOutPath = "/tmp/todo.stdout.log";
-          StandardErrorPath = "/tmp/todo.stderr.log";
-          EnvironmentVariables = todoEnvironment;
-        };
-      };
 
       # ===== deploys =====
 

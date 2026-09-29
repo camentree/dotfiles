@@ -146,12 +146,26 @@ Terminal:
 
 ### Servers (`mac-arm-server`, `mac-intel-server`)
 
-Only one server runs the tunnel, apps, deploys, and jobs: the one named by `activeServer` in `os/server.nix` (exposed as `$ACTIVE_SERVER`). Every server still runs postgres and its own rsnapshot backups. To cut over, finish the steps below on the new machine, change `activeServer`, commit, and `nix-rebuild` on **both** machines, the old one first so it drops the tunnel.
+Only one server runs the tunnel, apps, deploys, and jobs: the one named by `activeServer` in `os/server.nix` (exposed as `$ACTIVE_SERVER`). Every server still runs postgres. To cut over, finish the steps below on the new machine, change `activeServer`, commit, and `nix-rebuild` on **both** machines, the old one first so it drops the tunnel.
 
 - **Automatic login** — System Settings → Users & Groups → Automatically log in as `camen`, once. `os/server.nix` sets the user, but macOS only logs in automatically once this step has saved the password to `/etc/kcpassword`. The services are launchd *user* agents, so they only run while the user is logged in. Remote Login is on via `os/server.nix`; password logins are disabled there too, so only the key in `os/macos.nix` works.
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
 - **Failure-alert email** — Gmail app password in `~/.mail/password` (`chmod 600`).
 - **App repos** — clone `one-offs`, `parallax`, `todo`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.
+- **GitHub key** — the deploy agents pull unattended, when the 1Password SSH agent may be locked, so each server gets one unencrypted key on the GitHub account, which reads and writes every repo. `~/.ssh/config` uses `~/.ssh/github` for github.com whenever the file exists, and the 1Password agent otherwise, so laptops are unaffected. After `gh auth login` and `gh auth refresh -h github.com -s admin:public_key`:
+  ```bash
+  ssh-keygen -q -t ed25519 -N '' -C "$(hostname -s)" -f ~/.ssh/github
+  gh ssh-key add ~/.ssh/github.pub --title "$(hostname -s)"
+  ```
+  When retiring a server, remove its key: `gh ssh-key list`, then `gh ssh-key delete <id>`.
+
+### `mac-arm-server` only
+
+- **Xcode and the iOS Simulator** — install Xcode from the App Store (Nix can't redistribute it), then add the simulator runtime. Several GB; the simulator is how app changes get checked on iOS (`xcrun simctl`).
+  ```bash
+  sudo xcode-select -s /Applications/Xcode.app
+  xcodebuild -downloadPlatform iOS
+  ```
 
 ### `mac-intel-server` only
 
