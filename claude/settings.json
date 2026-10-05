@@ -10,7 +10,11 @@
       "Bash(git rebase --continue)",
       "Bash(git push --force-with-lease *)",
       "Bash(pbcopy)",
-      "Bash(pbcopy *)"
+      "Bash(pbcopy *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git rebase --onto *)",
+      "Bash(git checkout * -- *)"
     ],
     "deny": [
       "Bash(rm -rf /)",
