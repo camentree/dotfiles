@@ -349,9 +349,15 @@ in
 
       # Which parallax jobs exist and when each is due lives in the parallax repo;
       # this agent only asks once a minute what is due now.
+      #
+      # It runs the repo's own scripts/jobs rather than a generated nix-store
+      # script because this path is what holds macOS Full Disk Access, which
+      # sync-voice-memos needs to read Voice Memos' group container. A store
+      # path would take a new hash on any change here and silently drop the
+      # grant, leaving that job reading an empty directory.
       launchd.user.agents.parallax-jobs = {
         serviceConfig = {
-          ProgramArguments = namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
+          ProgramArguments = [ "${parallaxRoot}/scripts/jobs" ];
           RunAtLoad = true;
           StartInterval = 60;
           WorkingDirectory = parallaxRoot;
