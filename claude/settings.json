@@ -76,7 +76,6 @@
     "command": "bash ~/.claude/scripts/status-line.sh"
   },
   "enabledPlugins": {
-    "august-metals@skills-dir": false,
     "cowork-plugin-management@synced": false
   },
   "extraKnownMarketplaces": {},

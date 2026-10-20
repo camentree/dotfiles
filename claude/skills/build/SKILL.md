@@ -31,7 +31,8 @@ A group that could not be built from the plan alone is a hole in the plan, and t
    - Run the code and confirm the new behavior directly.
 6. Commit. The message says what behavior changed.
 7. In the plan: mark the group `done <sha>`, and add any decision the plan didn't cover to Decisions.
-8. Return `done <sha>` and one paragraph: what changed and what proves it.
+8. Stop every background shell you started, waiters included: a wait on a log line that never comes (a hung sbt run) outlives you and sits in Camen's task list.
+9. Return `done <sha>` and one paragraph: what changed and what proves it.
 
 A fact the plan and the code don't settle, and that would change what gets built: stop before writing code and return `question:` with the question, the options, and a recommendation. Ten passes without a clean loop: return `stuck:` with what was tried. Neither commits.
 

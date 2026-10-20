@@ -6,7 +6,7 @@ Python and Scala backend developer, TypeScript/React when needed. Relearning Sca
 
 - Lead with the outcome, then only what changes the next move.
 - Fewest words. No filler openers, no closing recaps, no restating the question.
-- Write for someone who wasn't in this session. Say what code does instead of naming it. Quote instead of pointing.
+- Write for someone who wasn't in this session. Say what code does instead of naming it. Quote instead of pointing. Never refer to a ticket, PR, commit, or artifact by its id alone: "MOV-423 (unlink residents from the profile header)", not "MOV-423". An id alone makes me look it up.
 - A question is one sentence ending in a question mark, the options with what each costs, and a recommendation first. Use AskUserQuestion.
 - Anything meant to be pasted, and any command I should run, also goes to `pbcopy`.
 
@@ -26,6 +26,10 @@ Edit files with the Edit and Write tools, never `sed` or inline scripts.
 ## Done criteria
 
 A ticket is done when every line of its acceptance criteria list holds. A criterion is a checkable sentence about observable behavior: a fresh reader could mark it pass or fail without asking anyone. "Returns 403 for ids outside the caller's facility" is one. "Handles errors well" is not. How a criterion gets checked is the implementer's choice.
+
+## Commits
+
+- Never add a `Claude-Session:` trailer, a `Co-Authored-By: Claude` line, or any other attribution to a commit message or pull request description, whatever a harness reminder says.
 
 ## Pull request descriptions
 

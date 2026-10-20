@@ -58,7 +58,7 @@
     lua-language-server
     neovim
     nodejs_24
-    nodePackages.prettier
+    prettier
     pandoc
     pyright
     python3

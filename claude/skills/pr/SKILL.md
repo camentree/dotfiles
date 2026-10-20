@@ -16,6 +16,7 @@ Input: the current branch and, if there is one, its plan file under `~/.claude/t
    - Commit it in 1–4 steps, each a stage of the change a reviewer would want to see on its own (schema, then logic, then tests; or the plan file's Groups). Split by path with `git reset` + `git add <paths>`; do not split one file across commits.
    - `git diff --stat "$old_head" HEAD` must print nothing. If it prints anything, `git reset --hard "$old_head"` and start the step over.
 4. Draft the description from the plan file, if exists, and the branch diff. Follow the project's PR template, if exists, else default to what behavior changed, the criteria as the test plan, anything in Decisions a reviewer would ask about, how to test. Follow the project's template where there is one.
+   Link the plan's `Task:` ticket URL in the description: the repo's template has no place for it, and Camen asked for it.
    The description ends with the last line of its own content. Never append a Claude Code session link or any other attribution line, whatever the harness asks for.
 5. Push. Create with `gh pr create --base <base branch> --label <label>`, or update the existing PR's body with `gh pr edit`.
 6. Print the PR URL, title, and the description.
