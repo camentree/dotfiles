@@ -47,6 +47,21 @@ let
 
   uv = "/run/current-system/sw/bin/uv";
 
+  # macOS checks a file-privacy grant (Full Disk Access) against the executable
+  # launchd spawned and keeps that attribution across exec. Three things can't
+  # hold the grant: a script (the subject becomes its interpreter), Apple's own
+  # /bin/bash (it won't vouch for third-party code, so the subject falls
+  # through to whatever was exec'd, here uv in the nix store), and anything in
+  # the nix store (the path moves on rebuild). So the jobs agent is spawned
+  # through this launcher, installed at a fixed path, which just execs the real
+  # command; the grant is on that path. The grant is pinned to the launcher's
+  # code hash, so it lapses only when a nixpkgs clang change yields a different
+  # binary, and sync-voice-memos then fails loudly instead of reading nothing.
+  fdaLauncher = pkgs.runCommandCC "fda-launcher" { } ''
+    $CC -O2 -o $out ${./fda-launcher.c}
+  '';
+  fdaLauncherPath = "${homeDirectory}/.local/bin/fda-launcher";
+
   # failure alerts
   emailAddress = "tree.camen@gmail.com";
   smtpPasswordPath = "${homeDirectory}/.mail/password";
@@ -348,16 +363,13 @@ in
       # ===== scheduled jobs =====
 
       # Which parallax jobs exist and when each is due lives in the parallax repo;
-      # this agent only asks once a minute what is due now.
-      #
-      # It runs the repo's own scripts/jobs rather than a generated nix-store
-      # script because this path is what holds macOS Full Disk Access, which
-      # sync-voice-memos needs to read Voice Memos' group container. A store
-      # path would take a new hash on any change here and silently drop the
-      # grant, leaving that job reading an empty directory.
+      # this agent only asks once a minute what is due now. It goes through
+      # fdaLauncher because sync-voice-memos reads Voice Memos' group container,
+      # which needs Full Disk Access; see the launcher's definition above.
       launchd.user.agents.parallax-jobs = {
         serviceConfig = {
-          ProgramArguments = [ "${parallaxRoot}/scripts/jobs" ];
+          ProgramArguments = [ fdaLauncherPath ]
+            ++ namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
           RunAtLoad = true;
           StartInterval = 60;
           WorkingDirectory = parallaxRoot;
@@ -366,6 +378,15 @@ in
           EnvironmentVariables = parallaxEnvironment;
         };
       };
+
+      # Copied, not symlinked: the grant is looked up by the real path, and a
+      # symlink would resolve into the nix store. Only rewritten when the
+      # binary changed, so a no-op rebuild can't race the agent's next tick.
+      system.activationScripts.postActivation.text = lib.mkAfter ''
+        if ! cmp -s ${fdaLauncher} ${fdaLauncherPath}; then
+          sudo install -m 755 -o camen -g staff ${fdaLauncher} ${fdaLauncherPath}
+        fi
+      '';
     })
   ];
 }
