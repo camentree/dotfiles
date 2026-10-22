@@ -411,7 +411,8 @@ in
       system.activationScripts.postActivation.text = lib.mkAfter ''
         if [ "$(cat ${fdaLauncherPath}.source 2>/dev/null)" != "${fdaLauncher}" ]; then
           sudo install -m 755 -o camen -g staff ${fdaLauncher} ${fdaLauncherPath}
-          if sudo -u camen /usr/bin/codesign --force \
+          if sudo -H -u camen /usr/bin/codesign --force \
+              --keychain ${homeDirectory}/Library/Keychains/login.keychain-db \
               --sign "${fdaLauncherSigningIdentity}" \
               --identifier ${fdaLauncherIdentifier} \
               ${fdaLauncherPath}; then
