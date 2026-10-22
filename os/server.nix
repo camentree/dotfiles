@@ -27,10 +27,17 @@ let
   # environments
   systemPath = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
+  # NIX_SSL_CERT_FILE is set for interactive shells but not for launchd, and Nix's
+  # OpenSSL reads it as its default CA file. Without it, Node falls back to the root
+  # certificates compiled into the binary, which still trust the emSign roots the
+  # eMudhra key compromise made worthless (see security.pki.caCertificateBlacklist
+  # in os/macos.nix). Drop this once nodejs_24 reaches 24.22.1 or later, which ships
+  # the NSS 3.131.1 roots and rejects the compromised keys outright.
   baseEnvironment = {
     PATH = systemPath;
     HOME = homeDirectory;
     USER = "camen";
+    NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
   };
 
   # Routines shell out to `claude`: npm-installed on older machines, native
@@ -144,9 +151,15 @@ $(tail -c 8000 "$output")"
     };
   };
 
+  # Through fdaLauncher for the same reason as parallax-jobs below: the servers
+  # read and write the memory files under ~/Documents, and a bare nix-store
+  # wrapper has to ask for that folder again on every rebuild that moves bash.
+  # Nobody is at the screen to answer, so every write hung until the dialog
+  # was dismissed (2026-10-19 to 2026-10-22).
   parallaxService = name: {
     serviceConfig = {
-      ProgramArguments = namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
+      ProgramArguments = [ fdaLauncherPath ]
+        ++ namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
       RunAtLoad = true;
       KeepAlive = true;
       WorkingDirectory = parallaxRoot;
