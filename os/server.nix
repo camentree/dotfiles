@@ -69,7 +69,9 @@ let
   msmtprc = pkgs.writeText "msmtprc" ''
     defaults
     tls on
-    tls_trust_file ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+    # The system bundle, not pkgs.cacert directly, so the emSign roots removed by
+    # security.pki.caCertificateBlacklist (see os/macos.nix) are gone here too.
+    tls_trust_file /etc/ssl/certs/ca-certificates.crt
     logfile /tmp/msmtp.log
     timeout 20
 

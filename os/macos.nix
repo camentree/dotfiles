@@ -42,6 +42,30 @@
   };
 
   # ============================================================
+  # Certificates
+  # ============================================================
+  # Dropped from /etc/ssl/certs/ca-certificates.crt, which curl, git and the Nix
+  # OpenSSL stack read via NIX_SSL_CERT_FILE. eMudhra's 2025-04-30 key ceremony
+  # produced a second, weak key pair alongside the strong one for 24 intermediate CA
+  # certificates; eight of those private keys were recovered from the published
+  # certificates (reported 2026-10-17), so anyone holding them can issue trusted
+  # certificates for any site. The six TLS intermediates chain to emSign ECC Root
+  # CA - G3, which Mozilla removed in NSS 3.131.1 on 2026-10-20 along with the two
+  # emSign Inc roots; emSign Root CA - G1 stays trusted, as Mozilla kept it. These
+  # three names are what the incident's own advisory tells NixOS and nix-darwin
+  # users to blacklist. Remove this block once the pinned nixpkgs carries NSS
+  # 3.131.1 or later, which no longer ships these roots.
+  #
+  # The advisory also names Comodo AAA Services root, which cross-signed the same
+  # intermediates. Not listed here: the cross-signed chain already fails against
+  # this bundle, because NSS marks that root as not valid for server authentication.
+  security.pki.caCertificateBlacklist = [
+    "emSign ECC Root CA - C3"
+    "emSign ECC Root CA - G3"
+    "emSign Root CA - C1"
+  ];
+
+  # ============================================================
   # Packages — installed on every machine
   # ============================================================
   environment.systemPackages = with pkgs; [

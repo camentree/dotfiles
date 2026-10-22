@@ -150,6 +150,20 @@ function claude-move-session () {
   echo "Moved $session_id -> $encoded"
 }
 
+function claude-remotes () {
+  local session="claude-remotes"
+  local directories=(parallax todo dotfiles one-offs)
+  tmux has-session -t "$session" 2>/dev/null && { tmux attach -t "$session"; return; }
+  tmux new-session -d -s "$session" -c "$HOME/Projects/${directories[1]}"
+  tmux send-keys -t "$session" "claude remote-control --spawn worktree --name \"${directories[1]}\"" Enter
+  for directory in "${directories[@]:1}"; do
+    tmux split-window -t "$session" -c "$HOME/Projects/$directory"
+    tmux select-layout -t "$session" tiled
+    tmux send-keys -t "$session" "claude remote-control --spawn worktree --name \"$directory\"" Enter
+  done
+  if [ -n "$TMUX" ]; then tmux switch-client -t "$session"; else tmux attach -t "$session"; fi
+}
+
 # Function Helpers
 function _confirm () {
   local reply_confirm
