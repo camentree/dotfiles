@@ -61,13 +61,19 @@ let
   # through to whatever was exec'd, here uv in the nix store), and anything in
   # the nix store (the path moves on rebuild). So the jobs agent is spawned
   # through this launcher, installed at a fixed path, which just execs the real
-  # command; the grant is on that path. The grant is pinned to the launcher's
-  # code hash, so it lapses only when a nixpkgs clang change yields a different
-  # binary, and sync-voice-memos then fails loudly instead of reading nothing.
+  # command; the grant is on that path. An unsigned binary's grant is pinned to
+  # its code hash and lapses whenever a nixpkgs clang change yields different
+  # bytes, so the installed copy is signed with a self-signed identity from the
+  # login keychain (made once per server by os/create-launcher-signing-identity.sh):
+  # TCC then records the grant against the identifier and certificate, and the
+  # binary can change freely. Signing happens at activation because the nix
+  # build sandbox can't reach the keychain.
   fdaLauncher = pkgs.runCommandCC "fda-launcher" { } ''
     $CC -O2 -o $out ${./fda-launcher.c}
   '';
   fdaLauncherPath = "${homeDirectory}/.local/bin/fda-launcher";
+  fdaLauncherSigningIdentity = "Parallax Launcher Signing";
+  fdaLauncherIdentifier = "dev.smallworkshop.fda-launcher";
 
   # failure alerts
   emailAddress = "tree.camen@gmail.com";
@@ -396,10 +402,23 @@ in
 
       # Copied, not symlinked: the grant is looked up by the real path, and a
       # symlink would resolve into the nix store. Only rewritten when the
-      # binary changed, so a no-op rebuild can't race the agent's next tick.
+      # store binary changed, so a no-op rebuild can't race the agent's next
+      # tick. The installed file carries a signature, so it can't be compared
+      # to the store binary directly; the store path it came from is kept in a
+      # sidecar instead. Signing runs as camen because the identity lives in
+      # the login keychain, and the sidecar is written last so a failed
+      # signing is retried on the next rebuild.
       system.activationScripts.postActivation.text = lib.mkAfter ''
-        if ! cmp -s ${fdaLauncher} ${fdaLauncherPath}; then
+        if [ "$(cat ${fdaLauncherPath}.source 2>/dev/null)" != "${fdaLauncher}" ]; then
           sudo install -m 755 -o camen -g staff ${fdaLauncher} ${fdaLauncherPath}
+          if sudo -u camen /usr/bin/codesign --force \
+              --sign "${fdaLauncherSigningIdentity}" \
+              --identifier ${fdaLauncherIdentifier} \
+              ${fdaLauncherPath}; then
+            echo ${fdaLauncher} | sudo tee ${fdaLauncherPath}.source >/dev/null
+          else
+            echo "fda-launcher installed unsigned: no '${fdaLauncherSigningIdentity}' identity in the login keychain; run os/create-launcher-signing-identity.sh" >&2
+          fi
         fi
       '';
     })
