@@ -27,10 +27,17 @@ let
   # environments
   systemPath = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
 
+  # NIX_SSL_CERT_FILE is set for interactive shells but not for launchd, and Nix's
+  # OpenSSL reads it as its default CA file. Without it, Node falls back to the root
+  # certificates compiled into the binary, which still trust the emSign roots the
+  # eMudhra key compromise made worthless (see security.pki.caCertificateBlacklist
+  # in os/macos.nix). Drop this once nodejs_24 reaches 24.22.1 or later, which ships
+  # the NSS 3.131.1 roots and rejects the compromised keys outright.
   baseEnvironment = {
     PATH = systemPath;
     HOME = homeDirectory;
     USER = "camen";
+    NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
   };
 
   # Routines shell out to `claude`: npm-installed on older machines, native
@@ -47,6 +54,27 @@ let
 
   uv = "/run/current-system/sw/bin/uv";
 
+  # macOS checks a file-privacy grant (Full Disk Access) against the executable
+  # launchd spawned and keeps that attribution across exec. Three things can't
+  # hold the grant: a script (the subject becomes its interpreter), Apple's own
+  # /bin/bash (it won't vouch for third-party code, so the subject falls
+  # through to whatever was exec'd, here uv in the nix store), and anything in
+  # the nix store (the path moves on rebuild). So the jobs agent is spawned
+  # through this launcher, installed at a fixed path, which just execs the real
+  # command; the grant is on that path. An unsigned binary's grant is pinned to
+  # its code hash and lapses whenever a nixpkgs clang change yields different
+  # bytes, so the installed copy is signed with a self-signed identity from the
+  # login keychain (made once per server by os/create-launcher-signing-identity.sh):
+  # TCC then records the grant against the identifier and certificate, and the
+  # binary can change freely. Signing happens at activation because the nix
+  # build sandbox can't reach the keychain.
+  fdaLauncher = pkgs.runCommandCC "fda-launcher" { } ''
+    $CC -O2 -o $out ${./fda-launcher.c}
+  '';
+  fdaLauncherPath = "${homeDirectory}/.local/bin/fda-launcher";
+  fdaLauncherSigningIdentity = "Parallax Launcher Signing";
+  fdaLauncherIdentifier = "dev.smallworkshop.fda-launcher";
+
   # failure alerts
   emailAddress = "tree.camen@gmail.com";
   smtpPasswordPath = "${homeDirectory}/.mail/password";
@@ -54,7 +82,9 @@ let
   msmtprc = pkgs.writeText "msmtprc" ''
     defaults
     tls on
-    tls_trust_file ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+    # The system bundle, not pkgs.cacert directly, so the emSign roots removed by
+    # security.pki.caCertificateBlacklist (see os/macos.nix) are gone here too.
+    tls_trust_file /etc/ssl/certs/ca-certificates.crt
     logfile /tmp/msmtp.log
     timeout 20
 
@@ -127,9 +157,15 @@ $(tail -c 8000 "$output")"
     };
   };
 
+  # Through fdaLauncher for the same reason as parallax-jobs below: the servers
+  # read and write the memory files under ~/Documents, and a bare nix-store
+  # wrapper has to ask for that folder again on every rebuild that moves bash.
+  # Nobody is at the screen to answer, so every write hung until the dialog
+  # was dismissed (2026-10-19 to 2026-10-22).
   parallaxService = name: {
     serviceConfig = {
-      ProgramArguments = namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
+      ProgramArguments = [ fdaLauncherPath ]
+        ++ namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
       RunAtLoad = true;
       KeepAlive = true;
       WorkingDirectory = parallaxRoot;
@@ -348,10 +384,13 @@ in
       # ===== scheduled jobs =====
 
       # Which parallax jobs exist and when each is due lives in the parallax repo;
-      # this agent only asks once a minute what is due now.
+      # this agent only asks once a minute what is due now. It goes through
+      # fdaLauncher because sync-voice-memos reads Voice Memos' group container,
+      # which needs Full Disk Access; see the launcher's definition above.
       launchd.user.agents.parallax-jobs = {
         serviceConfig = {
-          ProgramArguments = namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
+          ProgramArguments = [ fdaLauncherPath ]
+            ++ namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
           RunAtLoad = true;
           StartInterval = 60;
           WorkingDirectory = parallaxRoot;
@@ -360,6 +399,29 @@ in
           EnvironmentVariables = parallaxEnvironment;
         };
       };
+
+      # Copied, not symlinked: the grant is looked up by the real path, and a
+      # symlink would resolve into the nix store. Only rewritten when the
+      # store binary changed, so a no-op rebuild can't race the agent's next
+      # tick. The installed file carries a signature, so it can't be compared
+      # to the store binary directly; the store path it came from is kept in a
+      # sidecar instead. Signing runs as camen because the identity lives in
+      # the login keychain, and the sidecar is written last so a failed
+      # signing is retried on the next rebuild.
+      system.activationScripts.postActivation.text = lib.mkAfter ''
+        if [ "$(cat ${fdaLauncherPath}.source 2>/dev/null)" != "${fdaLauncher}" ]; then
+          sudo install -m 755 -o camen -g staff ${fdaLauncher} ${fdaLauncherPath}
+          if sudo -H -u camen /usr/bin/codesign --force \
+              --keychain ${homeDirectory}/Library/Keychains/login.keychain-db \
+              --sign "${fdaLauncherSigningIdentity}" \
+              --identifier ${fdaLauncherIdentifier} \
+              ${fdaLauncherPath}; then
+            echo ${fdaLauncher} | sudo tee ${fdaLauncherPath}.source >/dev/null
+          else
+            echo "fda-launcher installed unsigned: no '${fdaLauncherSigningIdentity}' identity in the login keychain; run os/create-launcher-signing-identity.sh" >&2
+          fi
+        fi
+      '';
     })
   ];
 }
