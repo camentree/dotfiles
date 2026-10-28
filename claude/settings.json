@@ -14,7 +14,10 @@
       "Bash(git rm *)",
       "Bash(git commit *)",
       "Bash(git rebase --onto *)",
-      "Bash(git checkout * -- *)"
+      "Bash(git checkout * -- *)",
+      "Bash(curl -s -X GET http://localhost:*)",
+      "Bash(curl -s -X POST http://localhost:*)",
+      "Bash(curl -N -s http://localhost:*)"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -86,6 +89,9 @@
   "outputStyle": "Concise",
   "modelSettings": {
     "claude-opus-5": {
+      "effortLevel": "medium"
+    },
+    "claude-fable-5-1": {
       "effortLevel": "medium"
     }
   },

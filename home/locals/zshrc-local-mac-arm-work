@@ -40,6 +40,17 @@ function backend-warm () {
   )
 }
 
+functions -c _wk-rm _wk-rm-shared
+
+function _wk-rm () {
+  local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+  local repo_root=$(_wk-repo-root)
+  if [ "$repo_root" = "$AUGUST_BACKEND_PATH" ] && [ "$(_wk-existing-path "$branch")" != "$repo_root" ]; then
+    "$AUGUST_BACKEND_PATH/loquat/bin-local/dev" rm "$branch"
+  fi
+  _wk-rm-shared "$branch"
+}
+
 function wkfs () {
   case "$1" in
     ls) shift; _wkfs-ls "$@"; return ;;

@@ -583,6 +583,16 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- Soft wrap is measured against the raw buffer text, so a line render-markdown
+-- shortens by concealing a link's URL still wraps at its unconcealed width.
+-- Wrap is window-local, so it has to be set on every buffer that enters a window,
+-- not just on markdown ones, or a window that held markdown stays unwrapped.
+vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
+	callback = function(event)
+		vim.wo.wrap = vim.bo[event.buf].filetype ~= "markdown"
+	end,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "markdown",
 	callback = function(event)

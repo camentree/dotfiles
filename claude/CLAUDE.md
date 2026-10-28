@@ -15,7 +15,7 @@ Python and Scala backend developer, TypeScript/React when needed. Relearning Sca
 - Readable over clever. No added layers: three similar lines beat a helper. Don't generalize before a second case.
 - Never write comments. Preserve existing ones.
 - Names spelled out: `index` not `i`, `markdown_client` not `md`. `_` only for a discard.
-- Keyword arguments past one parameter. Type-hint every parameter. No `*,` markers.
+- Python and Scala: Keyword arguments past one parameter. Type-hint every parameter. No `*,` markers.
 - Match the neighbouring code: same shape, same naming, same test structure as the files beside it.
 - A project's own conventions win where they conflict with these.
 
@@ -40,6 +40,7 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
+- "difit" means run `/review`, never a bare `npx difit`: the skill arms the comment monitor and keeps the threads.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 
 ## Machine

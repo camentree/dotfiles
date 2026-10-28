@@ -5,7 +5,7 @@ description: Verify the current branch against its plan file. Independent checks
 
 # Verify
 
-Input: the plan file for the current branch under `~/.claude/tasks/`, and `--pre-push` when the result is about to be pushed. The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch. Rebase onto `origin/<base branch>` first.
+Input: the plan file for the current branch under `~/.claude/tasks/`, and `--pre-push` when the result is about to be pushed. The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch.
 
 Run in this order and stop at the first failure:
 
