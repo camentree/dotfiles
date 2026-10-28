@@ -195,12 +195,16 @@
     $asPrimaryUser defaults write notion.id NSUserKeyEquivalents -dict-add "Show/Hide Sidebar" "@b"
 
     # Keyboard shortcuts: Mail
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Get All New Mail" "^r"
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Unread" "^u"
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Read" "^u"
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Archive" "^a"
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mailbox Search" '@$f'
-    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Send" '@\U21a9'
+    # Mail's domain redirects into its sandbox container, so these need Full Disk
+    # Access. Without it they fail with "Could not write domain", and since the
+    # activation script runs under `set -e` that aborted every rebuild here before
+    # home-manager ran, leaving the dotfile links stale. Don't let them abort.
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Get All New Mail" "^r" || true
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Unread" "^u" || true
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mark as Read" "^u" || true
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Archive" "^a" || true
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Mailbox Search" '@$f' || true
+    $asPrimaryUser defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Send" '@\U21a9' || true
 
     # Keyboard shortcuts: Cmd+B for sidebar toggle (Calendar, Notes)
     # Contacts is set by hand (see README): its preferences sit behind the Contacts
