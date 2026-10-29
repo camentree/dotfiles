@@ -16,6 +16,7 @@
     imagemagick
     podman
     krunkit
+    ngrok
     postgresql
   ];
 
