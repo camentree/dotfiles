@@ -126,10 +126,10 @@ function tabname () {
 ## Functions -- Git Worktrees
 function wk () {
   case "$1" in
-    ls)    shift; _wk-ls "$@" ;;
-    rm)    shift; _wk-rm "$@" ;;
-    clean) shift; _wk-clean "$@" ;;
-    *)            _wk "$@" ;;
+    ls)    shift; wk-ls "$@" ;;
+    rm)    shift; wk-rm "$@" ;;
+    clean) shift; wk-clean "$@" ;;
+    *)            wk-create "$@" ;;
   esac
 }
 
@@ -165,38 +165,38 @@ function claude-remotes () {
 }
 
 # Function Helpers
-function _confirm () {
+function confirm-proceed () {
   local reply_confirm
   read "reply_confirm?Proceed? [y/N] " || return 1
   [[ "$reply_confirm" == [yY]* ]]
 }
-function _wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
-function _wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
-function _wk-path () { print -r -- "${1:h}/.${1:t}-worktrees/$2" ; }
-function _wk-existing-path () {
+function wk-repo-root () { git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's#/\.git$##'; }
+function wk-default-branch () { git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'; }
+function wk-path () { print -r -- "${1:h}/.${1:t}-worktrees/$2" ; }
+function wk-existing-path () {
   git worktree list --porcelain | awk -v branch="refs/heads/$1" '
     $1=="worktree" { path=$2 }
     $1=="branch" && $2==branch { print path; exit }'
 }
-function _wk () {
+function wk-create () {
   local mode=switch
   case "$1" in
     -h) mode=new-from-here; shift ;;
   esac
   local branch="$1"
-  local repo_root=$(_wk-repo-root)
-  local worktree_path=$(_wk-path "$repo_root" "$branch")
+  local repo_root=$(wk-repo-root)
+  local worktree_path=$(wk-path "$repo_root" "$branch")
   local subdir=$(git rev-parse --show-prefix)
 
   case "$mode" in
     switch)
-      local existing=$(_wk-existing-path "$branch")
+      local existing=$(wk-existing-path "$branch")
       if [ -n "$existing" ]; then
         cd "$existing/$subdir" 2>/dev/null || cd "$existing"
         print -r -- "$PWD"
         return 0
       fi
-      if [ "$branch" = "$(_wk-default-branch)" ]; then
+      if [ "$branch" = "$(wk-default-branch)" ]; then
         git -C "$repo_root" checkout "$branch" >&2 || return 1
         cd "$repo_root/$subdir" 2>/dev/null || cd "$repo_root"
         print -r -- "$PWD"
@@ -207,7 +207,7 @@ function _wk () {
          git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
         git worktree add "$worktree_path" "$branch" >&2 || return 1
       else
-        local default=$(_wk-default-branch)
+        local default=$(wk-default-branch)
         [ -z "$default" ] && { echo "origin/HEAD not set — use 'wk -h $branch' instead"; return 1; }
         git fetch origin "$default" --quiet 2>/dev/null
         git worktree add -b "$branch" --no-track "$worktree_path" "origin/$default" >&2 || return 1
@@ -216,12 +216,12 @@ function _wk () {
     new-from-here) git worktree add -b "$branch" "$worktree_path" >&2 || return 1 ;;
   esac
 
-  _wk-share-files "$repo_root" "$worktree_path"
+  wk-share-files "$repo_root" "$worktree_path"
 
   cd "$worktree_path/$subdir" 2>/dev/null || cd "$worktree_path"
   print -r -- "$PWD"
 }
-function _wk-share-files () {
+function wk-share-files () {
   local repo_root="$1" worktree_path="$2"
   local -A share_sources=()
   local share_file share_pattern share_source share_target share_mode
@@ -252,15 +252,15 @@ function _wk-share-files () {
     fi
   done
 }
-function _wk-ls () {
+function wk-ls () {
   git worktree list --porcelain | awk '/^branch / { sub(/^refs\/heads\//, "", $2); print $2 }'
 }
-function _wk-rm () {
+function wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   [ -z "$branch" ] && { echo "Usage: wk rm [branch]"; return 1; }
-  local repo_root=$(_wk-repo-root)
+  local repo_root=$(wk-repo-root)
   [ -z "$repo_root" ] && { echo "Not in a git repo"; return 1; }
-  local worktree_path=$(_wk-existing-path "$branch")
+  local worktree_path=$(wk-existing-path "$branch")
   [ "$worktree_path" = "$repo_root" ] && { echo "$branch is checked out in the main repo — not removing"; return 1; }
   if [ -n "$worktree_path" ]; then
     [[ "$PWD" == "$worktree_path"* ]] && cd "$repo_root"
@@ -280,7 +280,7 @@ function _wk-rm () {
     echo "Removed worktree; kept branch: $branch"
   fi
 }
-function _wk-clean () {
+function wk-clean () {
   local keep_branches=()
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -288,7 +288,7 @@ function _wk-clean () {
       *) echo "Usage: wk clean [-k branch]..."; return 1 ;;
     esac
   done
-  local repo_root=$(_wk-repo-root)
+  local repo_root=$(wk-repo-root)
   local current_root=$(git rev-parse --show-toplevel 2>/dev/null)
   local branches=($(git worktree list --porcelain | awk -v root=$repo_root -v current=$current_root '
     $1=="worktree" { path=$2 }
@@ -296,12 +296,12 @@ function _wk-clean () {
   branches=(${branches:|keep_branches})
   [ ${#branches} -eq 0 ] && { echo "No worktrees to remove"; return 0; }
   print -l "Will remove ${#branches} worktree(s) and force-delete their branches:" ${branches/#/  }
-  _confirm || return 1
+  confirm-proceed || return 1
   local branch
-  for branch in $branches; do _wk-rm "$branch"; done
+  for branch in $branches; do wk-rm "$branch"; done
 }
 function _wk_completions () {
-  [ -n "$(_wk-repo-root)" ] || return
+  [ -n "$(wk-repo-root)" ] || return
   local subcommands=(
     'ls:branches with a worktree'
     'rm:remove a worktree and delete its branch'
@@ -316,7 +316,7 @@ function _wk_completions () {
       _describe 'branch' branches
       ;;
     *)
-      local worktrees=(${(f)"$(_wk-ls)"})
+      local worktrees=(${(f)"$(wk-ls)"})
       case "$words[2]" in
         rm)
           [ $CURRENT -eq 3 ] && _describe 'worktree' worktrees
