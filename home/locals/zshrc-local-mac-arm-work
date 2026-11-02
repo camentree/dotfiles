@@ -40,26 +40,26 @@ function backend-warm () {
   )
 }
 
-functions -c _wk-rm _wk-rm-shared
+functions -c wk-rm wk-rm-shared
 
-function _wk-rm () {
+function wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
-  local repo_root=$(_wk-repo-root)
-  if [ "$repo_root" = "$AUGUST_BACKEND_PATH" ] && [ "$(_wk-existing-path "$branch")" != "$repo_root" ]; then
+  local repo_root=$(wk-repo-root)
+  if [ "$repo_root" = "$AUGUST_BACKEND_PATH" ] && [ "$(wk-existing-path "$branch")" != "$repo_root" ]; then
     "$AUGUST_BACKEND_PATH/loquat/bin-local/dev" rm "$branch"
   fi
-  _wk-rm-shared "$branch"
+  wk-rm-shared "$branch"
 }
 
 function wkfs () {
   case "$1" in
-    ls) shift; _wkfs-ls "$@"; return ;;
-    rm) shift; _wkfs-rm "$@"; return ;;
-    *)         _wkfs "$@";    return ;;
+    ls) shift; wkfs-ls "$@"; return ;;
+    rm) shift; wkfs-rm "$@"; return ;;
+    *)         wkfs-create "$@";    return ;;
   esac
 }
 
-function _wkfs () {
+function wkfs-create () {
   local flags=("${@[1,-2]}")
   local branch="${@[-1]}"
 
@@ -82,7 +82,7 @@ function _wkfs () {
   cd "$worktree_directory"
 }
 
-function _wkfs-ls () {
+function wkfs-ls () {
   local root="$AUGUST_FULLSTACK_PATH/.august-fullstack-worktrees"
   for backend_link in "$root"/**/backend(N@); do
     local branch_dir="${backend_link%/backend}"
@@ -90,7 +90,7 @@ function _wkfs-ls () {
   done
 }
 
-function _wkfs-rm () {
+function wkfs-rm () {
   local branch="$1"
   local worktree_directory="$AUGUST_FULLSTACK_PATH/.august-fullstack-worktrees/$branch"
   [[ "$PWD" == "$worktree_directory"* ]] && cd "$AUGUST_FULLSTACK_PATH"
@@ -118,7 +118,7 @@ function _wkfs_completions () {
       ;;
     3)
       [ "$words[2]" = rm ] || return
-      local worktrees=(${(f)"$(_wkfs-ls)"})
+      local worktrees=(${(f)"$(wkfs-ls)"})
       _describe 'worktree' worktrees
       ;;
   esac
