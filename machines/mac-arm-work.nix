@@ -18,6 +18,7 @@
     krunkit
     ngrok
     postgresql
+    snowflake-cli
   ];
 
   home-manager.users.camen = {

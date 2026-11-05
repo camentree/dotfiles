@@ -20,6 +20,8 @@ Otherwise, with the default branch from `git symbolic-ref --short refs/remotes/o
 npx --yes difit . <base> --keep-alive --no-open --clean --include-untracked --host 0.0.0.0
 ```
 
+`--include-untracked` stages every untracked file as an empty intent-to-add entry (`git add -N`), so deleting one mid-review shows as a tracked deletion; drop it with `git rm --cached <path>` too.
+
 Start every difit server through the Bash tool with `run_in_background: true`, never with difit's `--background`: Claude Code kills its background tasks when the session ends, so closing the tab takes the server with it, while `--background` detaches it and it runs for days. It prints `difit server started on http://localhost:<port>` to the task's output; read the port there and the pid from `lsof -ti :<port> -sTCP:LISTEN`.
 
 `<base>` is the commit whose diff to `HEAD` is exactly what Camen has not seen yet, chosen from the code, not from a fixed branch name:
