@@ -152,7 +152,7 @@ Only one server runs the tunnel, apps, deploys, and jobs: the one named by `acti
 - **Full Disk Access for the Parallax agents** — the Parallax servers and jobs read `~/Documents`, which macOS gates behind a consent dialog nobody is at the screen to answer. They launch through `~/.local/bin/fda-launcher`, which holds Full Disk Access. First `bash os/create-launcher-signing-identity.sh` (prompts once for the login password), then `nix-rebuild`, then System Settings → Privacy & Security → Full Disk Access → add `~/.local/bin/fda-launcher` (`Cmd+Shift+G` in the file picker, since `.local` is hidden). Because the installed launcher is signed, the grant survives rebuilds; redo the tick only if the identity is recreated.
 - **Cloudflare tunnel** — `~/.cloudflared/config.yml` and its credentials JSON (not in the repo).
 - **Failure-alert email** — Gmail app password in `~/.mail/password` (`chmod 600`).
-- **App repos** — clone `one-offs`, `parallax`, `todo`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.
+- **App repos** — clone `one-offs`, `parallax`, and `home-assistant` into `~/Projects/`, each with its `.env`. The deploy/serve agents fail until these exist.
 - **GitHub key** — the deploy agents pull unattended, when the 1Password SSH agent may be locked, so each server gets one unencrypted key on the GitHub account, which reads and writes every repo. `~/.ssh/config` uses `~/.ssh/github` for github.com whenever the file exists, and the 1Password agent otherwise, so laptops are unaffected. After `gh auth login` and `gh auth refresh -h github.com -s admin:public_key`:
   ```bash
   ssh-keygen -q -t ed25519 -N '' -C "$(hostname -s)" -f ~/.ssh/github
