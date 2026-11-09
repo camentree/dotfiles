@@ -43,6 +43,10 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - "difit" means run `/review`, never a bare `npx difit`: the skill arms the comment monitor and keeps the threads.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 
+## Tab title
+
+Once the session's work is clear, name the terminal tab with `tabname '<group> - <feature> (X/Y)'`. Group is the stack's shared heading, the same on every PR in the stack. Feature is this PR's piece. X/Y is its position in the stack. Drop ` (X/Y)` outside a stack. All lowercase. Keep each part to a word or two, distinct from the user's other tabs: `billing - proration (2/4)`. When reviewing someone else's PR, the group is the author's name, abbreviated the way the user abbreviates them: `ktakata - proration`. Rename when the work moves to another PR; otherwise leave the title alone, since the user may have set it.
+
 ## Machine
 
 Managed by Nix. Source of truth is `~/Projects/dotfiles/`, and files in `$HOME` are symlinks into the store. Edit the repo and ask user to run `nix-rebuild` rather than editing in place.
