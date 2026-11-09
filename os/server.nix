@@ -193,7 +193,10 @@ $(tail -c 8000 "$output")"
         root ${parallaxRoot}/frontend/dist/client;
 
         location / { try_files $uri /index.html; }
-        location /api/ { proxy_pass http://127.0.0.1:8787; }
+        location /api/ {
+          proxy_pass http://127.0.0.1:8787;
+          proxy_read_timeout 100s;
+        }
         location /webhook/ { proxy_pass http://127.0.0.1:8787; }
         location /mcp {
           proxy_pass http://127.0.0.1:8000;
