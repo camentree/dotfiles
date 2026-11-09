@@ -64,6 +64,19 @@ What to post, in this order:
 
 Print the URL and notify: `osascript -e 'display notification "<name> ready for review" with title "Claude"'`. Arm the Wait monitor in the same turn. Every difit server you start gets one, including a bare "difit" request to look at a few uncommitted fixes: skip the walkthrough there, never the monitor.
 
+### Fixes for PR review comments
+
+When the commits under review answer a reviewer's PR comments, give each commit its own server instead of one diff, so each fix reads against the comment that asked for it.
+
+- **Map comments to commits.** `gh api --paginate repos/{owner}/{repo}/pulls/<n>/comments`; a reply on a reviewer's thread naming a sha is the commit for it. One commit can answer several comments, and one comment can need several commits. An uncommitted change that answers a comment gets a server too, `difit . HEAD`.
+- **One server per commit.** `npx --yes difit <sha> <sha>^ --port <port> --keep-alive --no-open --clean --host 0.0.0.0`, consecutive free ports, state saved as `<name>-pr-<NN>-<slug>`. Start them all from one background Bash, each with `&`, then `wait`.
+- **One thread per server**, on the commit's first added line in its main file (`"side":"old","line":1` for a deleted file): the link `https://github.com/<owner>/<repo>/pull/<n>#discussion_r<id>`, the comment verbatim as a blockquote, then the context he needs: what the commit did, anything in the comment it leaves unanswered (a question for product, work done in another PR, by its number and what it does), and his own replies on the thread quoted.
+- **One monitor for all of them:** the Wait loop per port inside `( ... ) &`, then `wait`.
+- **Tabs.** With Claude in Chrome connected (the session was started with `claude --chrome`): `tabs_context_mcp {createIfEmpty: true}`, then in one `browser_batch` navigate the first tab, `tabs_create_mcp` the rest, and navigate each; then set each tab's `document.title` to `NN <slug>` through `javascript_tool` (a reload loses it). The extension names its group "Claude (MCP)" and resets the name on every `tabs_context_mcp` call, so renaming it doesn't stick; tell him to select the tabs, right-click, choose "Add tabs to new group", and paste the feature's name, with the name on `pbcopy`. That moves them into a group the extension doesn't touch, and out of reach of its tools. Without Chrome connected: `open -na "Google Chrome" --args --new-window <urls>`.
+- **Report** the PR comments that no commit answers, quoted, and the threads where a commit answers only part of the comment.
+
+The servers are this session's background tasks, so resuming the session restarts them: same ports, no `--clean`, threads restored from each `comments.json`.
+
 ## Wait
 
 Watch for his comments with the Monitor tool, 30 minute timeout, re-armed on expiry:

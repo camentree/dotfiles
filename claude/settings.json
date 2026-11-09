@@ -50,11 +50,7 @@
     "artifact-diagramming": "name-only",
     "artifact-capabilities": "name-only",
     "schedule": "user-invocable-only",
-    "code-review": "user-invocable-only",
-    "simplify": "user-invocable-only",
-    "loop": "user-invocable-only",
     "update-config": "user-invocable-only",
-    "claude-in-chrome": "user-invocable-only",
     "init": "off",
     "keybindings-help": "off",
     "fewer-permission-prompts": "off",
@@ -92,7 +88,7 @@
       "effortLevel": "medium"
     },
     "claude-fable-5-1": {
-      "effortLevel": "high"
+      "effortLevel": "medium"
     }
   },
   "promptSuggestionEnabled": false,
