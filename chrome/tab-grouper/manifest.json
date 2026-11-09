@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Grouper",
+  "version": "1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwkf4AeUKvh7f3Ck3CUxvHHmnqBcTy3sV/CeUpBSOLXqjQ8N4FA2I0f3sti6KtYzqtciLElfCTvftJxWE4SUSvP+VB3hwKY2ACAxJZev98ZX6nxpihLDrUeA4fG2vw3NtMr806HUiopUlmKetmErJblZ4CNSax5QLQQwzdMT6686bWTTKvuWw6LA5lYZJxMsWi38quVhOAAnPmaru22oG61770j7xvWBHLrAxq+nUXBv1jmJrfcwKv8xp14msFk8rVJxWdd4djQueWiHl6IBO0nIwE5l89+E2wnP5c98MlVuDPkznVhZJURvn0ocVnuvc6I6s2QGI7IJjotA9vfZo8wIDAQAB",
+  "permissions": ["tabs", "tabGroups"],
+  "background": { "service_worker": "background.js" }
+}
