@@ -46,10 +46,6 @@ let
     PATH = "${homeDirectory}/.local/bin:${homeDirectory}/.npm-global/bin:${systemPath}";
   };
 
-  parallaxDeployEnvironment = parallaxEnvironment // {
-    PATH = "${pkgs.nodejs_24}/bin:${parallaxEnvironment.PATH}";
-  };
-
   uv = "/run/current-system/sw/bin/uv";
 
   # macOS checks a file-privacy grant (Full Disk Access) against the executable
@@ -166,7 +162,7 @@ $(tail -c 8000 "$output")"
         ++ namedProgram "parallax-${name}" "${uv} run parallax serve ${name}";
       RunAtLoad = true;
       KeepAlive = true;
-      WorkingDirectory = "${parallaxRoot}/backend";
+      WorkingDirectory = parallaxRoot;
       StandardOutPath = "/tmp/parallax-${name}.stdout.log";
       StandardErrorPath = "/tmp/parallax-${name}.stderr.log";
       EnvironmentVariables = parallaxEnvironment;
@@ -367,7 +363,7 @@ in
       # ===== deploys =====
 
       launchd.user.agents.deploy-one-offs = deployAgent "one-offs" baseEnvironment;
-      launchd.user.agents.deploy-parallax = deployAgent "parallax" parallaxDeployEnvironment;
+      launchd.user.agents.deploy-parallax = deployAgent "parallax" parallaxEnvironment;
 
       # ===== scheduled jobs =====
 
@@ -381,7 +377,7 @@ in
             ++ namedProgram "parallax-jobs" "${uv} run --env-file .env -- parallax jobs --due";
           RunAtLoad = true;
           StartInterval = 60;
-          WorkingDirectory = "${parallaxRoot}/backend";
+          WorkingDirectory = parallaxRoot;
           StandardOutPath = "/tmp/parallax-jobs.stdout.log";
           StandardErrorPath = "/tmp/parallax-jobs.stderr.log";
           EnvironmentVariables = parallaxEnvironment;
