@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-DONE_GLYPH="🟢"
-BLOCKED_GLYPH="🔴"
-WORKING_GLYPH="🟡"
+DONE_GLYPH="🔹"
+BLOCKED_GLYPH="♦️"
+WORKING_GLYPH="🔸"
 mode="${1:-}"
 
 device="${OUTER_TTY:-/dev/tty}"

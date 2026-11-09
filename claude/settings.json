@@ -43,6 +43,20 @@
       "/tmp"
     ]
   },
+  "skillOverrides": {
+    "dataviz": "name-only",
+    "claude-api": "name-only",
+    "artifact-design": "name-only",
+    "artifact-diagramming": "name-only",
+    "artifact-capabilities": "name-only",
+    "schedule": "user-invocable-only",
+    "update-config": "user-invocable-only",
+    "init": "off",
+    "keybindings-help": "off",
+    "fewer-permission-prompts": "off",
+    "security-review": "off",
+    "run": "off"
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -137,20 +151,6 @@
       }
     ]
   },
-  "skillOverrides": {
-    "dataviz": "name-only",
-    "claude-api": "name-only",
-    "artifact-design": "name-only",
-    "artifact-diagramming": "name-only",
-    "artifact-capabilities": "name-only",
-    "schedule": "user-invocable-only",
-    "update-config": "user-invocable-only",
-    "init": "off",
-    "keybindings-help": "off",
-    "fewer-permission-prompts": "off",
-    "security-review": "off",
-    "run": "off"
-  },
   "worktree": {
     "baseRef": "fresh"
   },
@@ -186,5 +186,6 @@
   "crossSessionInbound": "accept",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "useAutoModeDuringPlan": true
+  "useAutoModeDuringPlan": true,
+  "autoCompactEnabled": false
 }

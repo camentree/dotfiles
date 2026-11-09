@@ -27,6 +27,9 @@ One session per task that Camen talks to, and a second for his review, so the re
    /pr               push and open, description from the plan
    |
 /address-comments  teammates' comments with Camen: changes, replies, rules proposed
+
+/review-pr         a teammate's pull request: run it, findings with collateral in difit,
+                   his marked comments posted as one review
 ```
 
 `/manage` has seven things it can have done: design, review the design, code, review the code, check behavior in the app, demonstrate, and ask Camen. Which a task needs, in what order, how often, and when to stop is the manager's call: no loop or token limit is set for it. Four things are not:
@@ -97,7 +100,7 @@ Review comments become rules. `/review` and `/address-comments` each end by prop
 CLAUDE.md          who Camen is, how to write, how to code, what done means
 settings.json      deny list, status line
 scripts/           status line, proof recorder and page builder
-skills/            manage, critique, verify, proof, review, address-comments, pr, task-review, todo, august, scrawl
+skills/            manage, critique, verify, proof, review, review-pr, difit, address-comments, pr, task-review, todo, august, scrawl
 skills/archive/    skills no longer used: plan, build, task-build, dispatch, monitor-prs, explain
 agents/            scout, worker and driver, the subagents /manage starts
 ```

@@ -40,12 +40,12 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
-- "difit" means run `/review`, never a bare `npx difit`: the skill arms the comment monitor and keeps the threads.
+- "difit" means run `/review` (my branch) or `/review-pr` (someone else's pull request), never a bare `npx difit`: the skills arm the comment monitor and keep the threads.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 
 ## Tab title
 
-Once the session's work is clear, name the terminal tab with `tabname '<group> - <feature> (X/Y)'`. Group is the stack's shared heading, the same on every PR in the stack. Feature is this PR's piece. X/Y is its position in the stack. Drop ` (X/Y)` outside a stack. All lowercase. Keep each part to a word or two, distinct from the user's other tabs: `billing - proration (2/4)`. When reviewing someone else's PR, the group is the author's name, abbreviated the way the user abbreviates them: `ktakata - proration`. Rename when the work moves to another PR; otherwise leave the title alone, since the user may have set it.
+Once the session's work is clear, name the terminal tab with `tabname '<group> - <feature> (X/Y)'`. Group is the stack's shared heading, the same on every PR in the stack. Feature is this PR's piece. X/Y is its position in the stack. Drop ` (X/Y)` outside a stack. All lowercase. Keep each part to a word or two, distinct from the user's other tabs: `billing - proration (2/4)`. When reviewing someone else's PR, the group is the author's name, abbreviated the way the user abbreviates them: `ktakata - proration`. For work that isn't a PR, the group is the repo and the feature is the topic, e.g. `dotfiles - tab status` or `august-backend - flaky specs`. Rename when the work moves to another PR or topic; otherwise leave the title alone, since the user may have set it.
 
 ## Machine
 
