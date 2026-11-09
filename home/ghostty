@@ -53,7 +53,7 @@ keybind = cmd+slash=text:\x1b[17;2~
 
 keybind = cmd+shift+i=text:tabname\x20
 
-keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
 
 keybind = alt+backspace=text:\x17
 keybind = ctrl+backspace=text:\x17

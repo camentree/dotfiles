@@ -66,9 +66,9 @@ Print the URL and notify: `osascript -e 'display notification "<name> ready for 
 
 ### Fixes for PR review comments
 
-When the commits under review answer a reviewer's PR comments, give each commit its own server instead of one diff, so each fix reads against the comment that asked for it.
+When the commits under review answer a reviewer's PR comments, give each commit its own server instead of one diff, so each fix reads against the comment that asked for it. Only comments still unaddressed: a thread he has already replied to, with a sha or in words, was reviewed in an earlier round and gets no server.
 
-- **Map comments to commits.** `gh api --paginate repos/{owner}/{repo}/pulls/<n>/comments`; a reply on a reviewer's thread naming a sha is the commit for it. One commit can answer several comments, and one comment can need several commits. An uncommitted change that answers a comment gets a server too, `difit . HEAD`.
+- **Map comments to commits.** `gh api --paginate repos/{owner}/{repo}/pulls/<n>/comments`; keep the reviewer threads with no reply from him, and match each to the commits made for it since. One commit can answer several comments, and one comment can need several commits. An uncommitted change that answers a comment gets a server too, `difit . HEAD`.
 - **One server per commit.** `npx --yes difit <sha> <sha>^ --port <port> --keep-alive --no-open --clean --host 0.0.0.0`, consecutive free ports, state saved as `<name>-pr-<NN>-<slug>`. Start them all from one background Bash, each with `&`, then `wait`.
 - **One thread per server**, on the commit's first added line in its main file (`"side":"old","line":1` for a deleted file): the link `https://github.com/<owner>/<repo>/pull/<n>#discussion_r<id>`, the comment verbatim as a blockquote, then the context he needs: what the commit did, anything in the comment it leaves unanswered (a question for product, work done in another PR, by its number and what it does), and his own replies on the thread quoted.
 - **One monitor for all of them:** the Wait loop per port inside `( ... ) &`, then `wait`.
