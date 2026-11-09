@@ -18,6 +18,11 @@
     krunkit
     ngrok
     postgresql
+    # nixpkgs builds snowflake-cli without boto3, so the AWS workload-identity
+    # login abulafia uses crashes; add the connector's boto extra.
+    (snowflake-cli.overridePythonAttrs (old: {
+      dependencies = old.dependencies ++ python3Packages.snowflake-connector-python.optional-dependencies.boto;
+    }))
   ];
 
   home-manager.users.camen = {
