@@ -21,7 +21,6 @@ let
 
   oneOffsRoot = "${projectsDirectory}/one-offs";
   parallaxRoot = "${projectsDirectory}/parallax";
-  todoRoot = "${projectsDirectory}/todo";
   homeAssistantRoot = "${projectsDirectory}/home-assistant";
 
   # environments
@@ -45,11 +44,6 @@ let
   # fails with "claude: command not found".
   parallaxEnvironment = baseEnvironment // {
     PATH = "${homeDirectory}/.local/bin:${homeDirectory}/.npm-global/bin:${systemPath}";
-  };
-
-  todoEnvironment = baseEnvironment // {
-    PATH = "${pkgs.nodejs_24}/bin:${systemPath}";
-    NODE_ENV = "production";
   };
 
   uv = "/run/current-system/sw/bin/uv";
@@ -195,7 +189,14 @@ $(tail -c 8000 "$output")"
 
       server {
         listen 127.0.0.1:8788;
-        location /api/ { proxy_pass http://127.0.0.1:8787; }
+        absolute_redirect off;
+        root ${parallaxRoot}/frontend/dist/client;
+
+        location / { try_files $uri /index.html; }
+        location /api/ {
+          proxy_pass http://127.0.0.1:8787;
+          proxy_read_timeout 100s;
+        }
         location /webhook/ { proxy_pass http://127.0.0.1:8787; }
         location /mcp {
           proxy_pass http://127.0.0.1:8000;
@@ -242,22 +243,9 @@ $(tail -c 8000 "$output")"
         location / { try_files $uri =404; }
       }
 
-      # todo: a static client, with /api/ proxied to parallax on this machine.
-      # parallax.smallworkshop.dev is behind Cloudflare Access, which answers a
-      # browser's preflight with 403, so the app has to stay same-origin.
       server {
         listen 127.0.0.1:8791;
-        absolute_redirect off;
-        root ${todoRoot}/dist/client;
-
-        location ^~ /api/ {
-          proxy_pass http://127.0.0.1:8787;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto https;
-        }
-
-        location / { try_files $uri /index.html; }
+        return 301 https://parallax.smallworkshop.dev$request_uri;
       }
     }
   '';
@@ -379,7 +367,6 @@ in
 
       launchd.user.agents.deploy-one-offs = deployAgent "one-offs" baseEnvironment;
       launchd.user.agents.deploy-parallax = deployAgent "parallax" parallaxEnvironment;
-      launchd.user.agents.deploy-todo = deployAgent "todo" todoEnvironment;
 
       # ===== scheduled jobs =====
 
