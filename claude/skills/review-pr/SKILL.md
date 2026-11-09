@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Help Camen review a teammate's pull request. Checks the branch out in its own worktree, runs its tests and the app, reproduces what looks wrong, and opens difit with a walkthrough and draft findings, each finding backed by what was run - the request, the response, and the state it left. He replies in the threads, marks what to post, and the marked comments go to GitHub as one review when he says. No code changes. Updates itself from his feedback.
+description: Help Camen review a teammate's pull request. Use whenever he asks for help reviewing someone else's pull request, in any words ("help me review <url>"), not only on /review-pr. Checks the branch out in its own worktree, runs its tests and the app, reproduces what looks wrong, and opens difit with a walkthrough and draft findings, each finding backed by what was run - the request, the response, and the state it left. He replies in the threads, marks what to post, and the marked comments go to GitHub as one review when he says. No code changes. Updates itself from his feedback.
 ---
 
 # Review a pull request
@@ -57,12 +57,14 @@ Findings, each a draft of a comment he could post to the author:
 - Lead with the behavior in plain words and the domain's own nouns: "the bed assignment's start date stays on the move-in date", not "the bed doesn't move", and never "the date" without saying which. Then the concrete steps with real values. Code identifiers and the fix come last.
 - Phrase it as a question or a suggestion to a peer, not a verdict.
 - State only what was run. A guess about how common a case is, or what production data holds, is said as a guess or left out.
+- Anchor a finding on the line where the behavior happens (the call that throws, the branch that drops), never on a neighbouring line about another case: a corrupt-PDF finding on the `InvalidPasswordException` line read as a password finding.
 - One finding per behavior. Two bugs with one fix are still two threads, with the fix in each.
 
 ## Answer him
 
 He reads the threads and replies. A reply from him is working the issue out with you, not a request for new wording:
 
+- "What happens" asks for the outcome a user sees, in a sentence; give the code path only when he asks for it.
 - Answer the question plainly, in the same thread. Don't append a reworded comment.
 - "I don't understand": tell it as a story, with a person and dates, before any code.
 - When he restates it, check every part against what was run: the order of steps, which date is which, which side is earlier. Say "yes" only to what holds, and correct the rest by name.

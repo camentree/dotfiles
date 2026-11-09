@@ -7,8 +7,6 @@ description: Run one task as its manager. Takes a ticket URL, a file, or the tas
 
 Camen talks to you, not to the agents, and he is not watching them. Anything you bring him has to make sense to someone who last thought about this task yesterday.
 
-Run on the most capable model. On a lesser one, say so in your first message to Camen: a session started without `--model` takes the default in settings, and `claude --bg --model fable` starts it right.
-
 Run from the task's worktree; on the default branch, say so and stop. A task that spans repos has one worktree per repo on the same branch name, and you run from the folder that holds them. A branch stacked on an unmerged one names its parent in `git config branch.<branch>.gh-merge-base`: set it when it is missing, since that is where `/verify`, `/review` and `/pr` find the base.
 
 ## The plan
