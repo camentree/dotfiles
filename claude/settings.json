@@ -50,7 +50,6 @@
     "artifact-diagramming": "name-only",
     "artifact-capabilities": "name-only",
     "schedule": "user-invocable-only",
-    "code-review": "user-invocable-only",
     "simplify": "user-invocable-only",
     "loop": "user-invocable-only",
     "update-config": "user-invocable-only",
@@ -60,18 +59,6 @@
     "fewer-permission-prompts": "off",
     "security-review": "off",
     "run": "off"
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/scripts/autonomous-task-guard.sh"
-          }
-        ]
-      }
-    ]
   },
   "worktree": {
     "baseRef": "fresh"

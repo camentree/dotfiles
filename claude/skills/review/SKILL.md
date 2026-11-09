@@ -1,6 +1,6 @@
 ---
 name: review
-description: Hand the current branch to Camen for review in difit. The walkthrough is comments in the diff, the server stays up for the whole review, his comments get answered in place, and it ends when he says the branch is good. Nothing is pushed.
+description: Hand the current branch to Camen for review in difit. The walkthrough is comments in the diff, the server stays up for the whole review, his comments get answered in place, and it ends when he says the branch is good. A comment that would apply to later work ends as a proposed rule for the repo's notes. Nothing is pushed.
 ---
 
 # Review
@@ -55,7 +55,7 @@ Every comment you post carries `"author":"claude"`. User's doesn't.
 
 What to post, in this order:
 
-- **What the branch does.** One thread on the first changed line of the main file: the change in a few sentences, and which criteria it serves.
+- **What the branch does.** One thread on the first changed line of the main file: the change in a few sentences, and which criteria it serves. When the task has a proof page, `<name>.proof/index.html` beside the plan, the thread ends with its path.
 - **Context.** A thread wherever a reader would otherwise have to ask: a decision from the plan and the alternative rejected, a convention being followed, a precedent being reused.
 - **Critical path.** A thread on each change most likely to break something else, saying why it's the risky one.
 - **How to verify.** Where it helps, the test name, or the command and its expected output, on the line it proves.
@@ -101,6 +101,8 @@ Only a rebase onto a moved base changes the key: after one, the page shows no th
 ## Done
 
 He ends the review with a comment saying the branch is good, in any words: 👍, good, ship it. Write `<name>.comments.json` one last time, stop the monitor, `kill <pid>`, and delete `<name>.difit.json`. Nothing is verified or pushed here; `/task-review` runs `/verify --pre-push` and `/pr` next, and by hand you do.
+
+Then turn what he asked for into rules, so the next branch does not earn the same comment. Go through his comments in `<name>.comments.json` once. Leave out what was about this change only. For each one that would apply to other work in this repo and is not already in its notes, write one line, the rule and a one-line why, for the `## Code style checks` section of the repo's CLAUDE.md if it is his, else its CLAUDE.local.md: builders read that section before they write, and `/verify` grades against it. A rule that holds in every repo goes to his own CLAUDE.md. One that a linter or a test could enforce: say so, and propose that in place of a line. Don't wait for a comment to repeat. Propose, never write unasked: one AskUserQuestion listing each line and where it would go, and write only the ones he picks, editing an existing entry over adding one. With nothing to propose, say nothing.
 
 Then re-package the commits. A review leaves one commit per comment — "Drop the handle's doc comment", "Keep the picker instance ref to ourselves" — which is what makes each reply point at a diff he can read, and is not what belongs in the history. Squash each fix back into the commit it belongs to, so what lands is the commits the branch would have had if the review had never happened: `git reset --soft <commit before the round>` and recommit when the round is one change, an interactive rebase when it is several. Keep the original commit messages; a review fix does not earn a line in them. Save the pre-rewrite sha before starting.
 
