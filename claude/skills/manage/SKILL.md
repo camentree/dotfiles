@@ -138,7 +138,13 @@ Whenever a piece waits on him (a question, a decision, something only he can run
 
 ## Handing over
 
-Send the proof page with SendUserFile, `display` `render`, `status` `proactive` unless he has just asked for it. Then a message holding three things:
+Send the proof page with SendUserFile, `display` `render`, `status` `proactive` unless he has just asked for it. Then a message whose first line is the status, so he can tell at a glance whether the task is finished:
+
+- **✅ Done** only when every piece is handed over: every pull request is open as a draft, its proof media is attached (checked as below), its organize.md line is set, and no agent is still running for the task. Under it, one line per pull request: its title in words, its link, and what its description carries (e.g. "proof: recording + 6 screenshots").
+- **⏳ Not done:** otherwise, followed by what is still running or left, one line each. A progress message during the task always starts this way too, so a message without ✅ Done never means finished.
+- **🛑 Needs you:** comes before either when something blocks on him, as his CLAUDE.md says.
+
+Then three things:
 
 - **Needs you**: what you could not settle, one line each, so he can answer in a word, the one that costs most to get wrong first. That is something about what the feature should do that you still do not know, and whatever is still failing: a finding neither fixed nor answered, an item still `broken`, a criterion the page marks `failed` or `not shown`. A choice between ways of doing it is not on this list: you made it. With nothing, say "Nothing needs you."
 - **Decided for you**: at most three decisions, the ones that change what a user sees or that he is most likely to want reversed, one line each with the alternative. The rest are in the plan. With none worth his eye, leave this out.
