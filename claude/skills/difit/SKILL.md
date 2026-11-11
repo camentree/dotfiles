@@ -50,13 +50,7 @@ Hand him both urls, `http://localhost:<port>` and the LAN one, localhost on `pbc
 
 ## In Chrome
 
-Open every difit in Chrome, in one tab group per session: all the session's difits share it, a tab each. With Claude in Chrome connected (the session was started with `claude --chrome`): `tabs_context_mcp {createIfEmpty: true}`. The session's group already exists when an earlier difit opened it: open the new difit there with `tabs_create_mcp` and `navigate`, never a second group. Otherwise the call creates the group with one empty tab: navigate that tab first, and `tabs_create_mcp` for the rest. Do it in one `browser_batch`, ending with each new tab's `document.title` through `javascript_tool`, naming the review (a reload loses it). Close a tab when its server shuts down; closing the group's last tab removes the group, and the next difit creates it again.
-
-Name the group after this session's Ghostty tab as he sees it: `osascript -e 'tell application "System Events" to get name of every window of process "Ghostty"'` (the front tab's title per window). Not `~/.claude/tab-names/`, which holds only what `tabname` last wrote and misses a title he set in Ghostty himself. The extension names its group "Claude (MCP)" and has no tool to rename it, but a rename survives later `tabs_context_mcp` calls and the tabs stay in reach of its tools (checked 2026-11-09). Rename it with the Tab Grouper extension (`chrome/tab-grouper` in dotfiles, loaded unpacked in his Chrome), once the tab has loaded: `bash ~/.claude/scripts/chrome-tab-group.sh match=<difit url> "title=<name>"`. A matched tab already in a group renames that group in place, so the tabs stay in the extension's group; ungrouped matches get a new group. The other forms: `"group=<current name>" match=<url>` moves tabs into a named group, `"group=<current name>" "title=<new name>"` renames it, `color=<grey|blue|red|yellow|green|pink|purple|cyan|orange>` sets its colour, and `match` repeats. It acts silently and does nothing when nothing matches. To check, read the groups from the tab strip: `osascript -l JavaScript` walking `Application('System Events').processes['Google Chrome'].windows` for `AXTabGroup` elements, whose description is "group <name> - <n> Tabs, ...". After editing the extension's files, `chrome-tab-group.sh reload=1` reloads it.
-
-The extension refuses `file://` urls ("Can't interact with browser-internal or unparseable URLs"), so serve a local page such as the proof page with `python3 -I -m http.server <port> --bind 127.0.0.1` from its folder, in the background, and open it on `127.0.0.1`.
-
-Without Chrome connected: `open -na "Google Chrome" --args --new-window <urls>`, then group them with `chrome-tab-group.sh`, one `match` per url.
+Open every difit in Chrome, as the chrome-tab-groups skill says: one group per session, named after this session's Ghostty tab, with a tab per difit titled for its review. Close a tab when its server shuts down.
 
 ## Wait
 

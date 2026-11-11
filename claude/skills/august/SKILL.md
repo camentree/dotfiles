@@ -26,6 +26,7 @@ Every app starts through its repo's `bin-local/dev`, never by hand. Each branch 
 - The frontend and Tools scripts set up a backend of the same branch name. `--backend=<branch>` points either at another backend branch.
 - The frontend's types come from the published models package. A task that changes a proto starts the frontend with `--backend-protos`.
 - A frontend branch past "Upgrade to Yarn v4" is started through `nix develop -c`, with `GITHUB_PACKAGE_TOKEN` and `FONTAWESOME_PACKAGE_TOKEN` passed from `.npmrc`.
+- The backend's `bin-local/dev` runs a staged copy (`$TMPDIR/loquat-staged/<name>`) of the worktree as it was at start. To restart one held by another shell, kill the java pid `lsof -nP -iTCP:<PLAY_HTTP_PORT> -sTCP:LISTEN` names, then `bin-local/dev` again; `bin-local/dev stop` would also kill the warm sbt server.
 - After a backend code change, stop the backend and start it again. `bin-local/dev stop` ends a branch's servers; `bin-local/dev rm` also drops its database.
 - A step the scripts do not do yet is added to the script, not run by hand.
 
