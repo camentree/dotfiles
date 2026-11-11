@@ -9,6 +9,7 @@ Python and Scala backend developer, TypeScript/React when needed. Relearning Sca
 - Write for someone who wasn't in this session. Say what code does instead of naming it. Quote instead of pointing. Never refer to a ticket, PR, commit, or artifact by its id alone: "MOV-423 (unlink residents from the profile header)", not "MOV-423". An id alone makes me look it up.
 - A question is one sentence ending in a question mark, the options with what each costs, and a recommendation first. Use AskUserQuestion.
 - Anything meant to be pasted, and any command I should run, also goes to `pbcopy`.
+- When something blocks on me (a question, a command to run, a login), the reply's first line is **🛑 Needs you:** and the ask in one sentence. Nothing else gets that marker, so a reply without it never needs me. Terminal text can't be coloured; the marker is how I spot it.
 
 ## Code style checks
 
@@ -36,6 +37,8 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - optimize for a human quickly scanning. Short bullets are often preferred rather than prose.
 
 ## Shell
+
+- Before saying a tool can't do something, read the installed version's `--help` or man page. Memory of an older version, or an agent's report, is not enough: `gh pr edit --attach` uploads images, and was missed that way. When I say a tool can do something, go find how in its help; don't ask me how.
 
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.

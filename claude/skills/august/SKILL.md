@@ -22,10 +22,14 @@ Every app starts through its repo's `bin-local/dev`, never by hand. Each branch 
 | Frontend | `<frontend worktree>` | `bin-local/dev` | the app root answers on the branch's port |
 | Experimental Tools | `<tools worktree>` | `bin-local/dev --tools=<branch>` | Vite prints its URL |
 
+- Running a Tools import (not its preview) uploads the file to S3 and answers 500 "Something went wrong!" while the AWS SSO session is expired. Check `aws sts get-caller-identity --profile us-developer` before recording one; only Camen can run `aws sso login`, which opens a browser.
 - Ports are never 9000 or 3000. The backend's are in the sandbox block of its worktree's `.env`; the frontend prints its own, and it is fixed per branch.
 - The frontend and Tools scripts set up a backend of the same branch name. `--backend=<branch>` points either at another backend branch.
 - The frontend's types come from the published models package. A task that changes a proto starts the frontend with `--backend-protos`.
-- A frontend branch past "Upgrade to Yarn v4" is started through `nix develop -c`, with `GITHUB_PACKAGE_TOKEN` and `FONTAWESOME_PACKAGE_TOKEN` passed from `.npmrc`.
+- A frontend branch past "Upgrade to Yarn v4" is started through `nix develop -c`, with `GITHUB_PACKAGE_TOKEN` and `FONTAWESOME_PACKAGE_TOKEN` passed from `.npmrc`: `GITHUB_PACKAGE_TOKEN=$(grep 'npm.pkg.github.com/:_authToken' .npmrc | cut -d= -f2) FONTAWESOME_PACKAGE_TOKEN=$(grep 'npm.fontawesome.com/:_authToken' .npmrc | cut -d= -f2) nix develop -c bin-local/dev`. Its tests run the same way: `nix develop -c yarn test <paths>`.
+- Mock sign-in needs `authMethod: 'none'` in the `local` block of the worktree's `src/shared/environment.ts`, left uncommitted; a new worktree has `'cookie'` and `bin-local/dev` only prints a reminder. Say so when handing over, so it is not committed.
+- A feature flag is turned on for one community with `POST <backend>/featureFlags/<id>/featureFlagConfiguration` `{"enabled":true,"configurationTargetId":<facilityId>,"configurationTargetType":"Facility"}`; the id is in `GET /featureFlags`.
+- A resident made through `POST .../facilities/<id>/people` needs `admissionsInformation.startDate`, and comes with its own Self contact.
 - The backend's `bin-local/dev` runs a staged copy (`$TMPDIR/loquat-staged/<name>`) of the worktree as it was at start. To restart one held by another shell, kill the java pid `lsof -nP -iTCP:<PLAY_HTTP_PORT> -sTCP:LISTEN` names, then `bin-local/dev` again; `bin-local/dev stop` would also kill the warm sbt server.
 - After a backend code change, stop the backend and start it again. `bin-local/dev stop` ends a branch's servers; `bin-local/dev rm` also drops its database.
 - A step the scripts do not do yet is added to the script, not run by hand.
@@ -41,14 +45,15 @@ The full detail, with every trap, is in each repo's CLAUDE.local.md: the fronten
 - The backend's `bin-local/dev` takes a branch: `<main backend checkout>/loquat/bin-local/dev <branch>` creates the worktree with `wk`, a database from `seed`, and starts it; a first build takes about three minutes.
 - When the frontend branch's own port is already held by another server of the same worktree, `bin-local/dev` prints "Already running" and exits without preparing the backend; `--port=<another>` runs a second one beside it.
 - A page that reloads over and over has the wrong user for that database.
-- A call straight to the backend carries `Authorization: Bearer <token>`. Mint one from `loquat/` with `../demo-data/bin/python ../demo-data/test_token.py -e <email>`; it is for that worktree's database only.
+- A call straight to the backend carries `Authorization: Bearer <token>`. Mint one from `loquat/` with `../demo-data/bin/python ../demo-data/test_token.py -e <email>`; it is for that worktree's database only. A worktree has no `demo-data/bin/python`: use the main checkout's, `~/Projects/august-fullstack/august-backend/demo-data/bin/python -c "import jwt; print(jwt.encode({'cognito:username': '<username_uuid>'}, 'testKey', algorithm='HS256', headers={'kid': 'my_test_key'}))"`, with the uuid from `bin-local/users`. The external API takes the same token; the superuser needs no extra per-user flag for contact writes.
 - Experimental Tools signs in with a username and password, with MFA on a 409.
 
 ## Data
 
-- Every branch database is a copy of the same seed: five orgs with their communities, residents, prospects, contacts, billing sources and medications. Use Oak River Villas, org 30 facility 135. Org 1 / facility 1 does not exist.
+- Every branch database is a copy of the same seed: five orgs with their communities, residents, prospects, contacts, billing sources and medications. Use Oak River Villas, org 30 facility 135. Org 1 / facility 1 does not exist. No resident in the seed has a SELF contact.
 - Data the seed lacks is created through the backend's API on the task's own port, with the client and builders in the backend's `demo-data`. SQL only for what the API cannot reach.
 - A feature that seems missing may be behind a flag that is off for that community: check `GET <backend>/organizations/<orgId>/facilities/<facilityId>/enabledFeatureFlags`.
+- A current resident POSTed to `/organizations/<orgId>/facilities/<facilityId>/people` needs `admissionsInformation.startDate`, or it is a 400 "A resident must have a move-in date"; creating one also creates its Self contact.
 - People's names take letters only. For a row unique to a run, build a suffix from letters, not digits.
 
 ## Getting around the frontend

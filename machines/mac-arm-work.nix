@@ -25,6 +25,20 @@
     }))
   ];
 
+  launchd.user.agents.find-reviews = {
+    serviceConfig = {
+      ProgramArguments = [
+        "${pkgs.writeShellScriptBin "find-reviews" ''
+          cd /Users/camen/Documents/notes
+          exec /bin/zsh -lc "/Users/camen/.local/bin/claude -p /find-reviews --permission-mode acceptEdits --allowedTools 'Read' 'Edit' 'Write' 'Skill' 'Bash(gh:*)' 'Bash(jq:*)' 'Bash(osascript:*)' 'Bash(bash /Users/camen/.claude/scripts/chrome-tab-group.sh:*)'"
+        ''}/bin/find-reviews"
+      ];
+      StartCalendarInterval = map (weekday: { Weekday = weekday; Hour = 8; Minute = 30; }) [ 1 2 3 4 5 ];
+      StandardOutPath = "/tmp/find-reviews.stdout.log";
+      StandardErrorPath = "/tmp/find-reviews.stderr.log";
+    };
+  };
+
   home-manager.users.camen = {
     # mise — version manager for node / java / sbt. Work machine only.
     # Writes ~/.config/mise/config.toml; shell activation lives in home/zshenv

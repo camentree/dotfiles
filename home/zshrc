@@ -222,6 +222,7 @@ function wk-create () {
   print -r -- "$PWD"
 }
 function wk-share-files () {
+  setopt local_options extended_glob bare_glob_qual
   local repo_root="$1" worktree_path="$2"
   local -A share_sources=()
   local share_file share_pattern share_source share_target share_mode

@@ -112,6 +112,7 @@ in
     ".vimrc"             = liveLink "home/vimrc";
     ".gitignore_global"  = liveLink "home/gitignore_global";
     ".prettierrc"        = liveLink "home/prettierrc";
+    ".sbt/1.0/global.sbt" = liveLink "home/sbt/global.sbt";
     ".ipython/profile_default/startup/00-imports.py" = liveLink "home/ipython_startup_imports.py";
 
     # Starship prompt
