@@ -7,14 +7,14 @@ description: How to run a difit server for Camen - starting it, posting threads,
 
 The mechanics every difit review shares. What to post and how to answer is the calling skill's business; this is how.
 
-`<name>` comes from the calling skill. Two files sit in `~/.claude/tasks/` for the length of the review:
+Two files sit in the pull request's task directory, `~/.claude/tasks/<repo>/<branch>/` (the README's "The task directory"), for the length of the review. A server for a slice or a single commit, which the calling skill names `<slice>`, uses `<slice>.difit.json` and `<slice>.comments.json` there instead.
 
-- `<name>.difit.json`: the running server's `url`, `pid`, and `base`. Deleted when the review ends.
-- `<name>.comments.json`: every thread, rewritten after every change. Never deleted.
+- `difit.json`: the running server's `url`, `pid`, and `base`. Deleted when the review ends.
+- `comments.json`: every thread, rewritten after every change. Never deleted.
 
 ## Start
 
-If `<name>.difit.json` exists, its `pid` is alive, and `curl -X GET <url>/api/comments-json` answers, the server is already running: skip to Wait. A url that answers is not enough: difit takes the next free port, so a dead server's port is often held by another worktree's review.
+If `difit.json` exists, its `pid` is alive, and `curl -X GET <url>/api/comments-json` answers, the server is already running: skip to Wait. A url that answers is not enough: difit takes the next free port, so a dead server's port is often held by another worktree's review.
 
 Otherwise, from the worktree's git root:
 
@@ -30,7 +30,7 @@ npx --yes difit . <base> --keep-alive --no-open --clean --host 0.0.0.0 < /dev/nu
 - A server on `0.0.0.0` doesn't stop another process from binding `127.0.0.1` on the same port later, and that process then answers every `localhost:<port>` request: his tab and your curls alike. On each monitor re-arm, check that `lsof -nP -iTCP:<port> -sTCP:LISTEN` lists only difit's pid. If it doesn't, restart on a port nothing listens on (see Keeping threads alive) and point his tab there. Leave the other session's server alone. Seen 2026-11-09: another session's `python -m http.server 4971 --bind 127.0.0.1` took over a review's localhost.
 - The target is `.`, not `@`: with `.` difit watches the worktree and `.git`, invalidates its diff cache on every change, and shows Camen a reload button after each commit. With `@` and a compare branch it treats the pair as fixed commits, never watches, and caches the diff for the life of the server.
 
-Save `url`, `pid`, and `base` as `<name>.difit.json`. If `<name>.comments.json` already exists, the previous server died: restore it with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @<name>.comments.json`, then skip to Wait.
+Save `url`, `pid`, and `base` as `difit.json`. If `comments.json` already exists, the previous server died: restore it with `curl -X POST <url>/api/comments -H 'Content-Type: application/json' -d @comments.json`, then skip to Wait.
 
 ## Posting threads
 
@@ -46,11 +46,11 @@ A reply lands on the most recently updated thread at that file and line, so when
 
 On a server he is using, never add replies or move threads by editing the JSON and POSTing it to `/api/comments`: that replaces every thread, so a comment he posts between your GET and your POST is deleted with no copy anywhere. Restore through `/api/comments` only into a freshly started server.
 
-Hand him both urls, `http://localhost:<port>` and the LAN one, localhost on `pbcopy`, and notify: `osascript -e 'display notification "<name> ready for review" with title "Claude"'`. Arm the Wait monitor in the same turn. Every server you start gets one.
+Hand him both urls, `http://localhost:<port>` and the LAN one, localhost on `pbcopy`, and notify: `osascript -e 'display notification "<branch> ready for review" with title "Claude"'`. Arm the Wait monitor in the same turn. Every server you start gets one.
 
 ## In Chrome
 
-Open every difit in Chrome, as the chrome-tab-groups skill says: one group per review, named the way the review's terminal tab is (`jkramer - remove tasks`), holding its difit tab, the pull request on GitHub when there is one, and, where there is one, the running frontend and the proof page. Several reviews in one session still get a group each. Without Claude in Chrome, `open -a "Google Chrome" <urls>` then `chrome-tab-group.sh match=<port or path part> ... "title=<name>"` per review. Title each tab by what it is, then the review's feature, with `tabtitle=`: `(difit) remove tasks`, `(github) remove tasks`, `(ui) remove tasks`, `(proof) remove tasks`. Close the group's tabs when its server shuts down.
+Open every difit in Chrome, as the chrome-tab-groups skill says: one group per review, named the way the review's terminal tab is (`jkramer - remove tasks`), holding its difit tab, the pull request on GitHub when there is one, and, where there is one, the running frontend, the proof page, the Linear ticket and the plan. Each tab joins the group when its page exists, so the proof tab arrives with the proof. Several reviews in one session still get a group each. Without Claude in Chrome, `open -a "Google Chrome" <urls>` then `chrome-tab-group.sh match=<port or path part> ... "title=<group>"` per review. Title each tab by what it is, then the review's feature, with `tabtitle=`: `(difit) remove tasks`, `(github) remove tasks`, `(ui) remove tasks`, `(proof) remove tasks`, `(linear) remove tasks`, `(plan) remove tasks`. Close the group's tabs when its server shuts down.
 
 ## Wait
 
@@ -65,9 +65,9 @@ curl -N -s localhost:<port>/api/watch | grep --line-buffered commentsChanged | w
 done
 ```
 
-The server broadcasts `commentsChanged` for every change, your own replies included; the count filter keeps it to his new messages so you do not wake yourself. On each event, fetch `/api/comments-json`, find the threads whose last message isn't `claude`'s, and write the body to `<name>.comments.json`.
+The server broadcasts `commentsChanged` for every change, your own replies included; the count filter keeps it to his new messages so you do not wake yourself. On each event, fetch `/api/comments-json`, find the threads whose last message isn't `claude`'s, and write the body to `comments.json`.
 
-Never write a response holding fewer threads than `<name>.comments.json` already has without knowing why. That file is the only copy, so one blind write turns a short response into permanent loss. Count both first. Resolving a thread removes it from the response, and he resolves as he goes: a missing thread on a line still in the diff is his doing, not loss, so don't re-post it. A missing thread on a line that left the diff is loss: recover it (below) before saving.
+Never write a response holding fewer threads than `comments.json` already has without knowing why. That file is the only copy, so one blind write turns a short response into permanent loss. Count both first. Resolving a thread removes it from the response, and he resolves as he goes: a missing thread on a line still in the diff is his doing, not loss, so don't re-post it. A missing thread on a line that left the diff is loss: recover it (below) before saving.
 
 The monitor survives the event it reported, so arm a new one only after an expiry notice, never after replying, or two of them wake you for every comment. On each re-arm, first list threads whose last message isn't `claude`'s: a comment posted between expiry and re-arm fires no event.
 
@@ -77,7 +77,7 @@ The monitor survives the event it reported, so arm a new one only after an expir
 - A thread whose anchor line is no longer in the diff is dropped from the server on the next write, with no warning, so a round of fixes that deletes lines takes the threads above them with it. Before each import round, diff the saved file against what the server returns, and re-post whatever went missing at the line its code sits on now. difit draws a thread only on a line in the diff, so an orphaned thread looks deleted to him.
 - Threads are keyed on the merge-base commit, so commits leave them alone. Anything that moves `HEAD` backwards does not: a `git reset`, dropping a commit, or any other rewrite re-resolves the diff and drops every thread, with no `base=` query to bring them back. Save the threads first, rewrite, then re-post them through `/api/comment-imports`, the first message of each as `thread` and the rest as `reply`, each keeping its `author`.
 - A rebase onto a moved base changes the key: the page shows no threads, but the old ones are still on the server. Fetch them with `curl -X GET 'localhost:<port>/api/comments-json?base=<old merge-base short sha>&target=.&baseMode=merge-base'` and re-post them under the new key.
-- Restarting mid-review keeps the url: `--port <port>` from `<name>.difit.json`, no `--clean`, restore the threads with the `/api/comments` call above, save the new pid, and re-arm the monitor (it ended with the old server). Tell him to reload the tab: one open from before the restart keeps its old threads.
+- Restarting mid-review keeps the url: `--port <port>` from `difit.json`, no `--clean`, restore the threads with the `/api/comments` call above, save the new pid, and re-arm the monitor (it ended with the old server). Tell him to reload the tab: one open from before the restart keeps its old threads.
 - The servers are this session's background tasks, so resuming the session restarts them the same way.
 
 ## Fixed-pair servers
@@ -86,6 +86,6 @@ A server on two fixed commits (`difit <target> <base>`, for a slice or a single 
 
 ## Shut down
 
-Write `<name>.comments.json` one last time (the thread-count rule above still holds), stop the monitor with TaskStop, `kill <pid>`, delete `<name>.difit.json`, and close any Chrome tab you opened for it.
+Write `comments.json` one last time (the thread-count rule above still holds), stop the monitor with TaskStop, `kill <pid>`, delete `difit.json`, and close any Chrome tab you opened for it.
 
 If a step here fails or is missing, fix it, then record the fix once: how to run difit → this skill; what to post or how to answer → the calling skill. Rule and one-line why, edit an existing entry over adding one.

@@ -5,7 +5,7 @@ description: Work through the review comments on a pull request with Camen. Fetc
 
 # Address comments
 
-Input: a pull request number or URL, else the current branch's pull request. Run from the branch's worktree. The plan file, when there is one, is under `~/.claude/tasks/`, found as `/review` finds it.
+Input: a pull request number or URL, else the current branch's pull request. Run from the branch's worktree. The plan file, when there is one, is `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`.
 
 1. Find the pull request and who wrote it: `gh pr view --json number,url,author,baseRefName,headRefName`.
 2. Fetch every thread, with who said what and where:

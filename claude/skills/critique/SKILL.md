@@ -5,7 +5,7 @@ description: Challenge a plan's approach before it is built. Reads the plan's De
 
 # Critique
 
-Input: the plan file. Run it before anything is built, when changing course costs a sentence in the plan and not a rebuild.
+Input: the plan file, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`. Run it before anything is built, when changing course costs a sentence in the plan and not a rebuild.
 
 You are the reviewer who was not part of the planning. Whoever wrote the plan thinks every decision in it is reasonable. Find the ones a teammate would not let through.
 

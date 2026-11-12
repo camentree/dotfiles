@@ -5,7 +5,7 @@ description: Verify the current branch against its plan file. Independent checks
 
 # Verify
 
-Input: the plan file for the current branch under `~/.claude/tasks/`, `--pre-push` when the result is about to be pushed, and `--since <sha>` when an earlier pass already checked the branch up to that commit. The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch.
+Input: the plan file for the current branch, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`, `--pre-push` when the result is about to be pushed, and `--since <sha>` when an earlier pass already checked the branch up to that commit. The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch.
 
 Run in this order and stop at the first failure:
 

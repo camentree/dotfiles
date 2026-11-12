@@ -5,7 +5,7 @@ description: Show that a change works, in a form a person can look at - a record
 
 # Proof
 
-Input: the plan file. `<name>` is the plan file's name without `.md`, and the proof directory is `<name>.proof/` beside the plan. Output: `~/.claude/tasks/<name>.proof/index.html`, one self-contained file, with what it was built from beside it.
+Input: the plan file. The proof directory is `proof/` in the pull request's branch directory, `~/.claude/tasks/<repo>/<branch>/proof/`, found from the worktree: `<repo>` is the `basename` of `git remote get-url origin` without `.git`, `<branch>` is `git branch --show-current`. Each pull request of a task has its own. Output: `index.html` in the proof directory, one self-contained file, with what it was built from beside it.
 
 The page is for Camen, who has not read the code and will not read it here. It replaces "I checked it" with something he can watch, so nothing goes on it that you did not see happen.
 

@@ -5,7 +5,7 @@ description: Push the current branch and open or update its pull request, with t
 
 # PR
 
-Input: the current branch and, if there is one, its plan file under `~/.claude/tasks/`.
+Input: the current branch and, if there is one, its plan file, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`.
 
 1. `/verify <plan> --pre-push` has passed on HEAD. `/task-review` has just run it; by hand, run it first and fix what it finds before coming back here.
 2. Read the project's CLAUDE.md or CLAUDE.local.md for the PR template, title convention, labels, and assignee. 

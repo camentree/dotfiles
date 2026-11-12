@@ -5,7 +5,7 @@ description: Session two of a task, started by /manage when Camen says to review
 
 # Task review
 
-Input: the plan file.
+Input: the plan file, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`.
 
 1. `/review`. Ends when Camen says the branch is good.
 2. Verify. Each pass is a `worker` subagent whose whole prompt is `Run /verify <plan> --pre-push`. Its findings go into the plan, whole, under a group named `fixes`, and a `worker` builds it, `Build fixes of <plan>`, then verify again. When a pass fixes less than the one before, or a finding comes back: say what is failing, end the turn without pushing.

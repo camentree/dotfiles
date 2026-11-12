@@ -58,9 +58,29 @@ What agents learn is written down where the next one will find it, by how far it
 
 An agent writes only when what it was given was wrong or missing and cost it time. Skill edits land as uncommitted changes in this repo's main checkout, which is where they get reviewed.
 
+## The task directory
+
+Everything about one pull request lives in `~/.claude/tasks/<repo>/<branch>/`:
+
+```
+plan.md          the /manage plan
+proof/           /proof output: index.html, proof.json, checked.md, scripts, media
+review/          /review collateral: repro scripts and output, findings transcripts, a teammate's proof page
+difit.json       running difit server: url, pid, base (deleted when the review ends)
+comments.json    every difit thread (never deleted)
+<slice>.difit.json / <slice>.comments.json   extra difit servers for one review (a slice, or one per PR-comment commit: `pr-<NN>-<slug>`)
+anything else    notes, handoffs, ops messages, old comment snapshots
+```
+
+- `<repo>` is the GitHub repository name (`august-backend`, `dotfiles`), `<branch>` the branch name exactly, slashes kept as subdirectories, the same shape as `wk` worktrees. Both come from the worktree alone: `basename` of `git remote get-url origin` without `.git`, and `git branch --show-current`.
+- A teammate's pull request gets the same directory under its head branch, with no `plan.md`.
+- A task that becomes several pull requests, or spans repos, keeps its plan in the directory of the branch `/manage` runs from; every other branch it produces gets `plan.md` as a symlink to that file. Each branch has its own `proof/`.
+- `~/.claude/tasks/archive/` holds files from before this layout that no branch claims.
+- The directory is volatile: it is moved, archived and deleted with its branch. A skill or agent never points into it. A script worth reusing moves into the skill that uses it, beside its `SKILL.md`, and the skill names it as `~/.claude/skills/<skill>/<file>`.
+
 ## The proof page
 
-`~/.claude/tasks/<name>.proof/index.html`, built by `/proof`. One self-contained file: each acceptance criterion with its status (`shown`, `failed`, `not shown`) and something to look at — a recording of the app with its steps beside it, screenshots, or a request and response.
+`proof/index.html` in the task directory, built by `/proof`. One self-contained file: each acceptance criterion with its status (`shown`, `failed`, `not shown`) and something to look at — a recording of the app with its steps beside it, screenshots, or a request and response.
 
 - `scripts/proof/walkthrough.cjs` drives a headless Chromium at a person's pace (a visible pointer, key-by-key typing, pauses) and records it, with a screenshot per step.
 - `scripts/proof/page.cjs` builds the page from `proof.json` and embeds every recording and image.
@@ -68,7 +88,7 @@ An agent writes only when what it was given was wrong or missing and cost it tim
 
 ## The plan file
 
-`~/.claude/tasks/<name>.md`, written by `/manage`, which holds the template. Six sections:
+`plan.md` in the task directory, written by `/manage`, which holds the template. Six sections:
 
 - the task restated, with its source, branch, and worktrees
 - Acceptance Criteria: checkable sentences about behavior, numbered

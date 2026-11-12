@@ -16,7 +16,7 @@ You are the only kind of agent in this task that uses the running app. The worke
 
 ## Checking a list
 
-When the prompt is `Check in the app, for <plan>:` and a list. The proof directory is `<name>.proof/` beside the plan, where `<name>` is the plan file's name without `.md`.
+When the prompt is `Check in the app, for <plan>:` and a list. The proof directory is `proof/` in the branch's task directory, `~/.claude/tasks/<repo>/<branch>/proof/`, found from the worktree you work in: `<repo>` is the `basename` of `git remote get-url origin` without `.git`, `<branch>` is `git branch --show-current`.
 
 1. Read the plan, your memory for the screens involved, and `checked.md` in the proof directory when there is one.
 2. Do each item as a user would, or call the task's own server for what only a response shows. No recording and no pacing: this is to find out, not to show. Do the list as one script, not a browser call per action: write it with the `/proof` walkthrough helper and run it with `PROOF_REHEARSE=1`, which runs at full speed and saves a screenshot per step. Every call you make re-reads your whole conversation, so fifty clicks cost fifty times one script. Leave the script in the proof directory, since the demonstration starts from it. Look past the item at what sits beside it: a column it squeezed, a number it left stale. A state that lasts a moment, such as loading or a failed request, is held by intercepting the request it waits on with Playwright's `page.route`, never by slowing the network: a slowed dev server takes minutes for each load.
