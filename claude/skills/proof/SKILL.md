@@ -64,6 +64,7 @@ Working the path out:
 - A criterion about what is stored is shown through the endpoint that reads it back. SQL only when no endpoint reaches it.
 - A criterion that something is absent is shown by the response without it, with a line naming what was looked for.
 - A test as evidence is its name and its output from a run made now. A result carried over from an earlier check says so.
+- A generated PDF is shown as an image of its page: `sips -s format png -Z 2200 <file>.pdf --out <file>.png` renders page 1 (no ghostscript here), `magick <png> -crop WxH+X+Y +repage` cuts out the field.
 
 ## The page
 

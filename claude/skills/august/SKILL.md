@@ -46,6 +46,7 @@ The full detail, with every trap, is in each repo's CLAUDE.local.md: the fronten
 - When the frontend branch's own port is already held by another server of the same worktree, `bin-local/dev` prints "Already running" and exits without preparing the backend; `--port=<another>` runs a second one beside it.
 - A page that reloads over and over has the wrong user for that database.
 - A call straight to the backend carries `Authorization: Bearer <token>`. Mint one from `loquat/` with `../demo-data/bin/python ../demo-data/test_token.py -e <email>`; it is for that worktree's database only. A worktree has no `demo-data/bin/python`: use the main checkout's, `~/Projects/august-fullstack/august-backend/demo-data/bin/python -c "import jwt; print(jwt.encode({'cognito:username': '<username_uuid>'}, 'testKey', algorithm='HS256', headers={'kid': 'my_test_key'}))"`, with the uuid from `bin-local/users`. The external API takes the same token; the superuser needs no extra per-user flag for contact writes.
+- A machine API user (`GROUP_TYPE_API_FULL_READ` and the other `GROUP_TYPE_API_*`) is a 400 "not supported by this endpoint" from `bin-local/users add`: add it as `GROUP_TYPE_FACILITY_STAFF`, then `bin-local/users set` it to the API group. `API_FULL_READ` on org 30 / facility 135 reads the external person and census endpoints.
 - Experimental Tools signs in with a username and password, with MFA on a 409.
 
 ## Data
@@ -54,6 +55,12 @@ The full detail, with every trap, is in each repo's CLAUDE.local.md: the fronten
 - Data the seed lacks is created through the backend's API on the task's own port, with the client and builders in the backend's `demo-data`. SQL only for what the API cannot reach.
 - A feature that seems missing may be behind a flag that is off for that community: check `GET <backend>/organizations/<orgId>/facilities/<facilityId>/enabledFeatureFlags`.
 - A current resident POSTed to `/organizations/<orgId>/facilities/<facilityId>/people` needs `admissionsInformation.startDate`, or it is a 400 "A resident must have a move-in date"; creating one also creates its Self contact.
+- A person `PATCH` takes `Content-Type: application/merge-patch+json` and answers 200 to a field Person does not have (such as `preferredName`), changing nothing: read the field back from the response before calling an update shown. `{"gender":"GENDER_FEMALE"}` is a real non-name change.
+- Backend responses wrap the body in `{"data": ...}`.
+- A state form (VA UAI, CA 601, ...) applies by the community's state: `PATCH /organizations/30/facilities/136` with `{"address": {...the existing address, "state": "VA"}}` (merge-patch), then `GET .../people/<id>/forms/<DATA_TYPE>.json` gives the filled fields and `.pdf` the form. Seed communities are all CA.
+- A contact POSTed to `.../people/<id>/contacts` takes `name` and `relationship` (proto enum names, e.g. `["CONTACT_RELATIONSHIP_PERSONAL","CONTACT_RELATIONSHIP_SELF"]`) and no `category`: an unknown field is a 400 "Cannot find field".
+- An outbound HL7 pharmacy message is captured locally in minutes: `POST .../facilities/<id>/pharmacyIntegration` a `PHARMACY_PARTNER_REDSAIL_QS1` facility with `supportedOutboundMessageTypes: ["HL7_MESSAGE_TYPE_ADT_A08"]` and `partnerSpecificConfiguration.redsailQs1.clientConfig` pointing at a local MLLP listener that ACKs (`~/.claude/tasks/self-contact-read-pharmacy.proof/mllp_listener.py`); any resident PATCH then sends an ADT A08 within a second.
+- A SELF contact can be removed with `DELETE .../people/<id>/contacts/<contactId>`, for a resident without one.
 - People's names take letters only. For a row unique to a run, build a suffix from letters, not digits.
 
 ## Getting around the frontend

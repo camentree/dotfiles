@@ -23,7 +23,7 @@ Claude in Chrome names its group "Claude (MCP)" and has no tool to rename it. Th
 - **Colour:** `color=<grey|blue|red|yellow|green|pink|purple|cyan|orange>` on any of these.
 - `match` repeats, and matches any tab whose url contains it.
 
-It acts silently, and does nothing when nothing matches. Check with `chrome-tab-group.sh list`, one line per group: "group <name> - <n> Tabs, • <tab title>, …". A group renamed this way keeps its name through later `tabs_context_mcp` calls (checked 2026-11-09).
+It acts silently, and does nothing when nothing matches. Check with `chrome-tab-group.sh list`, one line per group: "<name> (<colour>) - <n> tabs: <tab title>, …". The extension reports through its page's title, so the check needs no Accessibility grant. A group renamed this way keeps its name through later `tabs_context_mcp` calls (checked 2026-11-09).
 
 Unless the caller says otherwise, name the group after this session's Ghostty tab as he sees it: `osascript -e 'tell application "System Events" to get name of every window of process "Ghostty"'` (the front tab's title per window). Not `~/.claude/tab-names/`, which holds only what `tabname` last wrote and misses a title he set in Ghostty himself.
 

@@ -38,6 +38,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, change, tab) => {
   const url = tab.url || "";
   if (!url.startsWith(chrome.runtime.getURL("group.html"))) return;
   const parameters = new URL(url).searchParams;
+  if (parameters.has("list")) return;
   await chrome.tabs.remove(tabId);
   if (parameters.has("reload")) {
     chrome.runtime.reload();
