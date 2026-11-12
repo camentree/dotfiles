@@ -27,6 +27,7 @@ Marks compose, 💬 first when he has been in review on it:
 - 💬 👨🏾‍💻 his review comments are being addressed by an agent
 - 💬 ❓ he reviewed but didn't accept; the teammate needs to address comments
 - 💬 ✅ accepted, not merged
+- 💬 ⁉️ an agent has the review ready in difit and it waits on him; the sub-bullet holds the difit url
 
 Not every combination happens. When the state isn't known, leave the mark off and ask him. Markers he writes by hand that aren't in this table (📚 ‼️ on old lines) stay as he wrote them.
 

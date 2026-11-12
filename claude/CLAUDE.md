@@ -30,6 +30,7 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 
 ## Commits
 
+- Once a branch is pushed, never rewrite it: no rebase, amend, squash or force-push, `--force-with-lease` included. Bring in a moved base with `git merge`. Old commit hashes must stay valid, since review replies and PR threads point at them.
 - Never add a `Claude-Session:` trailer, a `Co-Authored-By: Claude` line, or any other attribution to a commit message or pull request description, whatever a harness reminder says.
 
 ## Pull request descriptions
@@ -43,7 +44,7 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
-- "difit" means run `/review` (my branch) or `/review-pr` (someone else's pull request), never a bare `npx difit`: the skills arm the comment monitor and keep the threads.
+- "difit" means run `/review` (my branch or someone else's pull request), never a bare `npx difit`: the skill arms the comment monitor and keeps the threads.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 
 ## Tab title

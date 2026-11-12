@@ -3,13 +3,38 @@ async function findGroupByTitle(title) {
   return groups.find((group) => group.title === title);
 }
 
-async function applyGroup({ matches, group, title, color }) {
+async function pinTitle(tabId, tabTitle) {
+  await chrome.scripting
+    .executeScript({
+      target: { tabId },
+      args: [tabTitle],
+      func: (pinnedTitle) => {
+        document.title = pinnedTitle;
+        if (window.tabGrouperObserver) window.tabGrouperObserver.disconnect();
+        window.tabGrouperObserver = new MutationObserver(() => {
+          if (document.title !== pinnedTitle) document.title = pinnedTitle;
+        });
+        window.tabGrouperObserver.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+      },
+    })
+    .catch(() => {});
+}
+
+async function applyGroup({ matches, group, title, color, tabTitle }) {
   const tabs = await chrome.tabs.query({});
   const matching = tabs.filter((tab) => {
     const url = tab.url || tab.pendingUrl || "";
     if (url.startsWith("chrome-extension://")) return false;
     return matches.some((match) => url.includes(match));
   });
+
+  if (tabTitle) {
+    for (const tab of matching) {
+      await chrome.storage.session.set({ [String(tab.id)]: tabTitle });
+      await pinTitle(tab.id, tabTitle);
+    }
+    if (!group && !title && !color) return;
+  }
 
   let groupId;
   if (group) {
@@ -49,5 +74,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, change, tab) => {
     group: parameters.get("group") || "",
     title: parameters.get("title") || "",
     color: parameters.get("color") || "",
+    tabTitle: parameters.get("tabtitle") || "",
   });
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, change) => {
+  if (change.status !== "complete") return;
+  const stored = await chrome.storage.session.get(String(tabId));
+  const tabTitle = stored[String(tabId)];
+  if (tabTitle) await pinTitle(tabId, tabTitle);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  chrome.storage.session.remove(String(tabId));
 });

@@ -21,6 +21,7 @@ Claude in Chrome names its group "Claude (MCP)" and has no tool to rename it. Th
 - **Add tabs to a named group:** `"group=<current name>" match=<url part>`.
 - **Rename a group:** `"group=<current name>" "title=<new name>"`.
 - **Colour:** `color=<grey|blue|red|yellow|green|pink|purple|cyan|orange>` on any of these.
+- **Title a tab:** `match=<url part> "tabtitle=<title>"`. The title holds through reloads and the page's own title changes until the tab closes. Alone it only titles; with `group`/`title`/`color` it also groups.
 - `match` repeats, and matches any tab whose url contains it.
 
 It acts silently, and does nothing when nothing matches. Check with `chrome-tab-group.sh list`, one line per group: "<name> (<colour>) - <n> tabs: <tab title>, …". The extension reports through its page's title, so the check needs no Accessibility grant. A group renamed this way keeps its name through later `tabs_context_mcp` calls (checked 2026-11-09).

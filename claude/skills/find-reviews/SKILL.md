@@ -24,7 +24,9 @@ Keep a PR when any of these holds:
 - label `move-ins` or `integrations`, title containing `(move-ins)` or `(integrations)`, or a `MOV-`/`INT-` ticket in the branch or title (any case)
 - `camentree` has reviewed or commented on it, or is `@camentree`-mentioned in a comment or review body
 
-Then drop a kept PR when `reviewDecision` is `APPROVED` and `camentree` has no unresolved review threads on it, unless someone other than him `@camentree`-mentioned him and he hasn't replied since.
+Then drop a kept PR, unless someone other than him `@camentree`-mentioned him and he hasn't replied since, when `camentree` has no unresolved review threads on it and either:
+- `reviewDecision` is `APPROVED`
+- someone approved it, counting an approval since dismissed by a push (a `DISMISSED` entry in `latestReviews`), and Jesse or Josh Kramer, not as the author, has reviewed or commented. A move-ins teammate already covers it. (august-backend 7850, the PDF field-name sanitizing, stayed listed after its approval was dismissed and Jesse had commented.)
 
 ## 3. Status
 
@@ -41,15 +43,17 @@ Highest first:
 2. Someone asked him a question he hasn't answered (an unanswered `@camentree` mention)
 3. `move-ins` label
 4. Backend over frontend over Experimental-Tools (include all of them)
-5. Not already reviewed by Jesse or Josh Kramer (a `latestReviews` entry or a comment from them puts it lower)
+5. Not already reviewed by anyone other than him and the author (a `latestReviews` entry or a review thread from them puts it lower)
 
 Ties: oldest PR first.
+
+A PR someone else has already reviewed goes under `### Backlog`, even when it is already listed under `## Reviews`, unless rule 1 or 2 holds for it. (august-frontend 9465, the Remove Tasks modal migration, held a slot after another reviewer left ten threads on it.)
 
 ## 5. Write organize.md
 
 Read `~/Documents/notes/organize.md` first. Replace only the lines between `## Reviews` and `### Backlog`, and between `### Backlog` and the next `## ` heading. Leave every other section as it is.
 
-PRs already listed under `## Reviews` that still qualify stay there, in place. Fill the remaining slots, to five, from the top of the ranking. Everything else goes under `### Backlog`, in rank order.
+PRs already listed under `## Reviews` that still qualify, and aren't sent to the backlog by step 4, stay there, in place. Fill the remaining slots, to five, from the top of the ranking. Everything else goes under `### Backlog`, in rank order.
 
 Line format, one per PR, a blank line after the heading:
 

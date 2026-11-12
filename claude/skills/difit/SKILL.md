@@ -1,6 +1,6 @@
 ---
 name: difit
-description: How to run a difit server for Camen - starting it, posting threads, watching for his comments, replying, keeping the threads alive through commits and restarts, opening it in Chrome, and shutting it down. Read by /review and /review-pr before they start one; not a review on its own.
+description: How to run a difit server for Camen - starting it, posting threads, watching for his comments, replying, keeping the threads alive through commits and restarts, opening it in Chrome, and shutting it down. Read by /review before it starts one; not a review on its own.
 ---
 
 # difit
@@ -50,7 +50,7 @@ Hand him both urls, `http://localhost:<port>` and the LAN one, localhost on `pbc
 
 ## In Chrome
 
-Open every difit in Chrome, as the chrome-tab-groups skill says: one group per session, named after this session's Ghostty tab, with a tab per difit titled for its review. Close a tab when its server shuts down.
+Open every difit in Chrome, as the chrome-tab-groups skill says: one group per review, named the way the review's terminal tab is (`jkramer - remove tasks`), holding its difit tab, the pull request on GitHub when there is one, and, where there is one, the running frontend and the proof page. Several reviews in one session still get a group each. Without Claude in Chrome, `open -a "Google Chrome" <urls>` then `chrome-tab-group.sh match=<port or path part> ... "title=<name>"` per review. Title each tab by what it is, then the review's feature, with `tabtitle=`: `(difit) remove tasks`, `(github) remove tasks`, `(ui) remove tasks`, `(proof) remove tasks`. Close the group's tabs when its server shuts down.
 
 ## Wait
 

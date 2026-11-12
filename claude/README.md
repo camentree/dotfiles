@@ -21,14 +21,14 @@ One session per task that Camen talks to, and a second for his review, so the re
    |                   unclear what is wanted ........... Camen is asked before it is built
    |
 /task-review       session two, started by /manage when Camen says to review
-   /review           Camen in difit, walkthrough comments, fixes in place      in session
+   /review           Camen in difit, walkthrough and findings, fixes committed in session
    |                   "good" ................... rules proposed from his comments
    /verify           the repo's pre-push checks                                worker
    /pr               push and open, description from the plan
    |
 /address-comments  teammates' comments with Camen: changes, replies, rules proposed
 
-/review-pr         a teammate's pull request: run it, findings with collateral in difit,
+/review            a teammate's pull request: run it, findings with collateral in difit,
                    his marked comments posted as one review
 ```
 
@@ -100,7 +100,7 @@ Review comments become rules. `/review` and `/address-comments` each end by prop
 CLAUDE.md          who Camen is, how to write, how to code, what done means
 settings.json      deny list, status line
 scripts/           status line, proof recorder and page builder
-skills/            manage, critique, verify, proof, review, review-pr, difit, address-comments, pr, task-review, todo, august, scrawl
+skills/            manage, critique, verify, proof, review, difit, address-comments, pr, task-review, todo, august, scrawl
 skills/archive/    skills no longer used: plan, build, task-build, dispatch, monitor-prs, explain
 agents/            scout, worker and driver, the subagents /manage starts
 ```
