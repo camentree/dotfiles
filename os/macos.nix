@@ -72,6 +72,7 @@
     _1password-cli
     awscli2
     blueutil
+    corepack
     coursier
     curl
     fd
@@ -97,7 +98,6 @@
     uv
     vscode-langservers-extracted
     wget
-    yarn
   ];
 
   # ============================================================

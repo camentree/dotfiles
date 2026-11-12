@@ -16,6 +16,8 @@ unset DIRHELPER_USER_DIR_SUFFIX
 
 export SBT_NATIVE_CLIENT=true
 
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
 # Base python virtual environment
 # Suppress the (base3.13) PS1 prefix — Starship shows the venv via its python module
 export VIRTUAL_ENV_DISABLE_PROMPT=1
