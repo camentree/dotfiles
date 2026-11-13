@@ -24,6 +24,10 @@ Python and Scala backend developer, TypeScript/React when needed. Relearning Sca
 
 Edit files with the Edit and Write tools, never `sed` or inline scripts.
 
+## Agents
+
+"Run an agent in the background" means a session of its own, `claude --bg -n "<name>" "<prompt>"` from the right directory, which I can open and talk to in agent view. "Subagent" means one under this session (the Agent tool), which I can't open.
+
 ## Done criteria
 
 A ticket is done when every line of its acceptance criteria list holds. A criterion is a checkable sentence about observable behavior: a fresh reader could mark it pass or fail without asking anyone. "Returns 403 for ids outside the caller's facility" is one. "Handles errors well" is not. How a criterion gets checked is the implementer's choice.

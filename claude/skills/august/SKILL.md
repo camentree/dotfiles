@@ -34,7 +34,8 @@ Every app starts through its repo's `bin-local/dev`, never by hand. Each branch 
 - A resident made through `POST .../facilities/<id>/people` needs `admissionsInformation.startDate`, and comes with its own Self contact.
 - The backend's `bin-local/dev` runs a staged copy (`$TMPDIR/loquat-staged/<name>`) of the worktree as it was at start. To restart one held by another shell, kill the java pid `lsof -nP -iTCP:<PLAY_HTTP_PORT> -sTCP:LISTEN` names, then `bin-local/dev` again; `bin-local/dev stop` would also kill the warm sbt server.
 - A backend that dies at start with "remaining connection slots are reserved" has hit the shared Postgres' 200 connections (each running server holds about 20; `docker exec db psql -U postgres -At -c "select datname, count(*) from pg_stat_activity group by 1"` shows whose). Start yours with a small pool instead of stopping someone else's: `JAVA_OPTS="-Ddb.default.db.numThreads=5 -Ddb.default.db.maxConnections=5" bin-local/dev` (and the same for `--api`).
-- The frontend's `bin-local/dev stop` can leave a Vite server started by another shell listening: check `lsof -nP -iTCP:<port> -sTCP:LISTEN`, confirm its cwd is the worktree (`lsof -a -p <pid> -d cwd`), and `kill` it.
+- A backend worktree whose `.env` has no `AWS_PROFILE` line uses the default AWS profile, whose token is invalid: put `AWS_PROFILE=us-developer` in front of `bin-local/dev` and `sbt "it-only ..."`, or KMS calls (the example import sheet's SSNs, uploads) fail.
+- The frontend's `bin-local/dev stop` can leave a Vite server listening, even one the same shell started: check `lsof -nP -iTCP:<port> -sTCP:LISTEN`, confirm its cwd is the worktree (`lsof -a -p <pid> -d cwd`), and `kill` it.
 - After a backend code change, stop the backend and start it again. `bin-local/dev stop` ends a branch's servers; `bin-local/dev rm` also drops its database.
 - A step the scripts do not do yet is added to the script, not run by hand.
 

@@ -3,6 +3,27 @@ set -uo pipefail
 
 page="chrome-extension://jefoichdnlokggnejahekcndonjkdaap/group.html"
 
+previous_app=$(osascript -e 'tell application "System Events" to get bundle identifier of first process whose frontmost is true' 2>/dev/null)
+restore_focus() {
+  [ -n "$previous_app" ] && [ "$previous_app" != "com.google.Chrome" ] && osascript -e "tell application id \"$previous_app\" to activate" 2>/dev/null
+}
+trap restore_focus EXIT
+
+if [ "${1:-}" = "open" ]; then
+  shift
+  for url in "$@"; do
+    osascript - "$url" <<'EOF'
+on run arguments
+  tell application "Google Chrome"
+    if (count of windows) is 0 then make new window
+    make new tab at end of tabs of front window with properties {URL:item 1 of arguments}
+  end tell
+end run
+EOF
+  done
+  exit 0
+fi
+
 # The extension writes the groups into its page's title, read here through
 # Chrome's AppleScript. The old System Events walk of Chrome's window needed
 # Accessibility for whatever shell ran this, including the find-reviews job.

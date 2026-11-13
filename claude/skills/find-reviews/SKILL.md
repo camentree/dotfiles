@@ -66,7 +66,7 @@ Line format, one per PR, a blank line after the heading:
 The tabs to show are the PRs under `## Reviews`, never the backlog.
 
 - Close tabs whose url is a PR from this run's candidate list but not under `## Reviews`. Never close any other tab: his own PRs and other pages stay.
-- Open each missing one with `osascript -e 'tell application "Google Chrome" to tell window 1 to make new tab with properties {URL:"<url>"}'`, one call per url. `open -a "Google Chrome" <many urls>` times out (error -1712).
+- Open the missing ones with `bash ~/.claude/scripts/chrome-tab-group.sh open <urls>`, which hands focus back to his app afterwards. `open -a "Google Chrome" <many urls>` times out (error -1712).
 - Once they're open, group them with the Tab Grouper extension: `bash ~/.claude/scripts/chrome-tab-group.sh match=<url> match=<url> … "title=reviews"`. Check with `bash ~/.claude/scripts/chrome-tab-group.sh list`.
 
 Don't use Claude in Chrome here: its tabs land in its own "Claude (MCP)" group.

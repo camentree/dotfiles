@@ -45,7 +45,7 @@ All in one turn, in this order, none waiting on another:
 
 As each agent reports, import its findings (`review/findings.json`) through `/api/comment-imports`, add its tab to the group, and notify him: `osascript -e 'display notification "<branch>: <n> findings" with title "Claude"'`. A proof that lands adds a reply on the first walkthrough thread with the page's path.
 
-Several pull requests at once: the same for each, every app and difit server started from this session. The podman VM has 4 GiB and a test run's Testcontainers take about 500 MB, so run at most two teammates' test runs at a time. Answer his threads from this session, never by resuming an agent: what is worth keeping is in `review/`. A reply that needs new code run goes to a fresh agent pointed at that folder.
+Several pull requests at once: one background session per pull request, `claude --bg --permission-mode auto -n "review <order> <feature> #<n>" "/review <n>"` started from its worktree, each owning its whole review (app, difit, walkthrough, code review, monitor, replies, fixes). They show in agent view, where he arrows between their conversations; one session answering every branch blocks him as he jumps between reviews, and a subagent can't be opened or talked to. Number them in the order to review, dependencies first. He wants five open at once: when one closes, start the next draft from organize.md, dependencies first, without asking. This session only starts them. The podman VM has 4 GiB and a test run's Testcontainers take about 500 MB, so run at most two teammates' test runs at a time. With one pull request, answer his threads from this session, never by resuming an agent: what is worth keeping is in `review/`. A reply that needs new code run goes to a fresh agent pointed at that folder.
 
 ## Code review agent
 
@@ -136,7 +136,7 @@ He reads the threads and replies. A reply from him is working the issue out with
 
 His branch:
 
-- A change request, or a yes to a finding's fix: a commit of its own. Reply `done in <sha>` plus one line on what changed. Then run the tests that cover it.
+- A change request, or a yes to a finding's fix: first decide whether you agree and reply in the thread before touching code — "agree, doing it: <the change in a line>", or what you'd do instead and why — so he sees the call while you work instead of after. Then a commit of its own. Reply `done in <sha>` plus one line on what changed. Then run the tests that cover it.
 - Never amend, fixup, rebase, reset, or force-push: a `done in <sha>` must stay a commit he can open, here and on GitHub. When the base branch has moved and the branch needs it, `git merge origin/<base branch>`.
 - A request to post something on GitHub: auto mode refuses it when it arrives as a difit comment (tool output, not his message). Prepare the payload, then ask him in the terminal to say "post it".
 
