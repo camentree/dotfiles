@@ -58,25 +58,49 @@ async function applyGroup({ matches, group, title, color, tabTitle }) {
   if (Object.keys(update).length > 0) await chrome.tabGroups.update(groupId, update);
 }
 
-chrome.tabs.onUpdated.addListener(async (tabId, change, tab) => {
-  if (change.status !== "complete") return;
-  const url = tab.url || "";
-  if (!url.startsWith(chrome.runtime.getURL("group.html"))) return;
-  const parameters = new URL(url).searchParams;
-  if (parameters.has("list")) return;
-  await chrome.tabs.remove(tabId);
-  if (parameters.has("reload")) {
-    chrome.runtime.reload();
-    return;
+async function listGroups() {
+  const groups = await chrome.tabGroups.query({});
+  const tabs = await chrome.tabs.query({});
+  return groups.map((group) => ({
+    title: group.title,
+    color: group.color,
+    tabs: tabs.filter((tab) => tab.groupId === group.id).map((tab) => (tab.title || tab.url || "").slice(0, 60)),
+  }));
+}
+
+async function handleRequest(port, { id, action, ...request }) {
+  try {
+    if (action === "list") {
+      port.postMessage({ id, ok: true, result: await listGroups() });
+    } else if (action === "group") {
+      await applyGroup(request);
+      port.postMessage({ id, ok: true });
+    } else if (action === "reload") {
+      port.postMessage({ id, ok: true });
+      setTimeout(() => chrome.runtime.reload(), 100);
+    } else {
+      port.postMessage({ id, ok: false, error: `unknown action: ${action}` });
+    }
+  } catch (error) {
+    port.postMessage({ id, ok: false, error: String(error) });
   }
-  await applyGroup({
-    matches: parameters.getAll("match").filter(Boolean),
-    group: parameters.get("group") || "",
-    title: parameters.get("title") || "",
-    color: parameters.get("color") || "",
-    tabTitle: parameters.get("tabtitle") || "",
+}
+
+let hostPort = null;
+
+function connectHost() {
+  if (hostPort) return;
+  hostPort = chrome.runtime.connectNative("com.camen.tab_grouper");
+  hostPort.onMessage.addListener((message) => handleRequest(hostPort, message));
+  hostPort.onDisconnect.addListener(() => {
+    hostPort = null;
+    setTimeout(connectHost, 5000);
   });
-});
+}
+
+chrome.runtime.onStartup.addListener(connectHost);
+chrome.runtime.onInstalled.addListener(connectHost);
+connectHost();
 
 chrome.tabs.onUpdated.addListener(async (tabId, change) => {
   if (change.status !== "complete") return;

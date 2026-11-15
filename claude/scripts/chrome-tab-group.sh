@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-page="chrome-extension://jefoichdnlokggnejahekcndonjkdaap/group.html"
-
-previous_app=$(osascript -e 'tell application "System Events" to get bundle identifier of first process whose frontmost is true' 2>/dev/null)
-restore_focus() {
-  [ -n "$previous_app" ] && [ "$previous_app" != "com.google.Chrome" ] && osascript -e "tell application id \"$previous_app\" to activate" 2>/dev/null
-}
-trap restore_focus EXIT
+socket="$HOME/.cache/tab-grouper.sock"
 
 if [ "${1:-}" = "open" ]; then
+  previous_app=$(osascript -e 'tell application "System Events" to get bundle identifier of first process whose frontmost is true' 2>/dev/null)
+  restore_focus() {
+    [ -n "$previous_app" ] && [ "$previous_app" != "com.google.Chrome" ] && osascript -e "tell application id \"$previous_app\" to activate" 2>/dev/null
+  }
+  trap restore_focus EXIT
   shift
   for url in "$@"; do
     osascript - "$url" <<'EOF'
@@ -24,41 +23,40 @@ EOF
   exit 0
 fi
 
-# The extension writes the groups into its page's title, read here through
-# Chrome's AppleScript. The old System Events walk of Chrome's window needed
-# Accessibility for whatever shell ran this, including the find-reviews job.
-if [ "${1:-}" = "list" ]; then
-  result=$(osascript <<EOF
-tell application "Google Chrome"
-  open location "$page?list"
-  repeat 50 times
-    repeat with chromeWindow in windows
-      repeat with chromeTab in tabs of chromeWindow
-        if URL of chromeTab starts with "$page?list" and title of chromeTab starts with "groups:" then
-          set groupsTitle to title of chromeTab
-          close chromeTab
-          return groupsTitle
-        end if
-      end repeat
-    end repeat
-    delay 0.1
-  end repeat
-end tell
-EOF
-  )
-  if [ -z "$result" ]; then
-    echo "no answer from the Tab Grouper extension; reload it in chrome://extensions" >&2
+send() {
+  local response
+  response=$(printf '%s\n' "$1" | nc -U -w 10 "$socket" 2>/dev/null)
+  if [ -z "$response" ]; then
+    echo "no answer from the Tab Grouper extension: Chrome must be running with it loaded; reload it in chrome://extensions" >&2
     exit 1
   fi
-  jq -r '.[] | "\(.title) (\(.color)) - \(.tabs | length) tabs: \(.tabs | join(", "))"' <<<"${result#groups:}"
+  if [ "$(jq -r '.ok' <<<"$response")" != "true" ]; then
+    jq -r '.error' <<<"$response" >&2
+    exit 1
+  fi
+  printf '%s' "$response"
+}
+
+if [ "${1:-}" = "list" ]; then
+  response=$(send '{"action":"list"}') || exit 1
+  jq -r '.result[] | "\(.title) (\(.color)) - \(.tabs | length) tabs: \(.tabs | join(", "))"' <<<"$response"
   exit 0
 fi
 
-query=""
+if [ "${1:-}" = "reload=1" ]; then
+  send '{"action":"reload"}' >/dev/null
+  exit 0
+fi
+
+request='{"action":"group","matches":[],"group":"","title":"","color":"","tabTitle":""}'
 for pair in "$@"; do
   key="${pair%%=*}"
   value="${pair#*=}"
-  query="${query}&${key}=$(jq -rn --arg value "$value" '$value | @uri')"
+  case "$key" in
+    match) request=$(jq -c --arg value "$value" 'if $value == "" then . else .matches += [$value] end' <<<"$request") ;;
+    group | title | color) request=$(jq -c --arg key "$key" --arg value "$value" '.[$key] = $value' <<<"$request") ;;
+    tabtitle) request=$(jq -c --arg value "$value" '.tabTitle = $value' <<<"$request") ;;
+  esac
 done
 
-osascript -e "tell application \"Google Chrome\" to open location \"$page?${query#&}\""
+send "$request" >/dev/null

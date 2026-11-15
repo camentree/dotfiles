@@ -130,6 +130,18 @@ in
     "Library/Application Support/Code/User/settings.json" = liveLink "home/vscode/settings.json";
     "Library/Application Support/Code/User/keybindings.json" = liveLink "home/vscode/keybindings.json";
 
+    # Tab Grouper extension's native messaging host
+    "Library/Application Support/Google/Chrome/NativeMessagingHosts/com.camen.tab_grouper.json" = {
+      text = builtins.toJSON {
+        name = "com.camen.tab_grouper";
+        description = "Tab Grouper relay for chrome-tab-group.sh";
+        path = "${dotfilesRepo}/chrome/tab-grouper/native-host.py";
+        type = "stdio";
+        allowed_origins = [ "chrome-extension://jefoichdnlokggnejahekcndonjkdaap/" ];
+      };
+      force = true;
+    };
+
   } // (
     # settings.json is excluded here and symlinked via an activation script —
     # Claude Code's /effort et al. must be able to write it.
