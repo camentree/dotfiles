@@ -17,11 +17,12 @@ Claude in Chrome refuses `file://` urls ("Can't interact with browser-internal o
 
 Claude in Chrome names its group "Claude (MCP)" and has no tool to rename it. The Tab Grouper extension (`chrome/tab-grouper` in dotfiles, loaded unpacked in his Chrome) does it, triggered from the shell once the tabs have loaded:
 
-- **Name the group a tab is in, or group ungrouped tabs:** `bash ~/.claude/scripts/chrome-tab-group.sh match=<url part> "title=<name>"`. A matched tab already in a group renames that group in place, so Claude in Chrome keeps its tabs within reach. Matches in no group get a new group.
+- **Name the group a tab is in, or group ungrouped tabs:** `bash ~/.claude/scripts/chrome-tab-group.sh match=<url part> "title=<name>"`. A matched tab already in a group renames that group in place, so Claude in Chrome keeps its tabs within reach. Matches in no group get a new group. `tabtitle=` applies to every match in the call, so set titles one tab per call after the grouping call.
 - **Add tabs to a named group:** `"group=<current name>" match=<url part>`.
 - **Rename a group:** `"group=<current name>" "title=<new name>"`.
 - **Colour:** `color=<grey|blue|red|yellow|green|pink|purple|cyan|orange>` on any of these.
 - **Title a tab:** `match=<url part> "tabtitle=<title>"`. The title holds through reloads and the page's own title changes until the tab closes. Alone it only titles; with `group`/`title`/`color` it also groups.
+- A `match` that another review's tab also contains (a Linear ticket two pull requests share) renames that review's group: open a shared url with a query only this review uses (`?review=<feature>`) and match on that (seen 2026-11-13).
 - `match` repeats, and matches any tab whose url contains it. Group a review's tabs in one call with every `match` and the `title`, then title each tab: separate `title=` calls on ungrouped tabs make one same-named group per tab (seen 2026-11-12).
 
 It acts silently, and does nothing when nothing matches. Check with `chrome-tab-group.sh list`, one line per group: "<name> (<colour>) - <n> tabs: <tab title>, …". The extension reports through its page's title, so the check needs no Accessibility grant. A group renamed this way keeps its name through later `tabs_context_mcp` calls (checked 2026-11-09).

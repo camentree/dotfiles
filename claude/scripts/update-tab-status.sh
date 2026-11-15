@@ -6,6 +6,8 @@ BLOCKED_GLYPH="♦️"
 WORKING_GLYPH="🔸"
 mode="${1:-}"
 
+[ -n "${CLAUDE_JOB_DIR:-}" ] && exit 0
+
 device="${OUTER_TTY:-/dev/tty}"
 { true > "$device"; } 2>/dev/null || exit 0
 

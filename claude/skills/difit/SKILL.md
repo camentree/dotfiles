@@ -42,7 +42,7 @@ curl -X POST localhost:<port>/api/comment-imports -H 'Content-Type: application/
 
 with `[{"type":"thread","author":"claude","filePath":"<repo-relative path>","position":{"side":"new","line":<n>},"body":"..."}, ...]`. A reply is the same with `"type":"reply"` and the thread's `filePath` and `position`. Every message you post carries `"author":"claude"`; his don't. Build the JSON in a file in the scratchpad (`jq -n --rawfile` for a body with quotes), never inline in the shell. Keep every body you post there for the length of the review: they are what you rebuild from when threads go missing.
 
-A reply lands on the most recently updated thread at that file and line, so when two threads share a line, check it landed where you meant.
+A reply lands on the most recently updated thread at that file and line, so when two threads share a line, check it landed where you meant; a finding just imported on a walkthrough's line takes that walkthrough's next reply. To move a misplaced reply, `curl -X DELETE localhost:<port>/api/comments/<threadId>` the thread that took it, post the reply again, then re-post the deleted thread (seen 2026-11-13).
 
 On a server he is using, never add replies or move threads by editing the JSON and POSTing it to `/api/comments`: that replaces every thread, so a comment he posts between your GET and your POST is deleted with no copy anywhere. Restore through `/api/comments` only into a freshly started server.
 
