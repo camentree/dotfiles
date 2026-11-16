@@ -196,6 +196,7 @@ $(tail -c 8000 "$output")"
         location /api/ {
           proxy_pass http://127.0.0.1:8787;
           proxy_read_timeout 100s;
+          client_max_body_size 96m;
         }
         location /webhook/ { proxy_pass http://127.0.0.1:8787; }
         location /mcp {
