@@ -147,15 +147,21 @@ in
     # Claude Code's /effort et al. must be able to write it.
     # The ./claude path literal is used only to enumerate filenames; each entry
     # is then live-linked back to the working tree by relative path.
+    # skills, agents and scripts are excluded too: each is linked as a whole
+    # directory by an activation script, so a file an agent adds there is live
+    # without a rebuild.
     let
       claudeRoot = toString ./claude;
       relativeTo = file: lib.removePrefix "${claudeRoot}/" (toString file);
+      inLiveDirectory = file: builtins.any
+        (directory: lib.hasPrefix "${directory}/" (relativeTo file))
+        [ "skills" "agents" "scripts" ];
     in builtins.listToAttrs (map (file: {
         name = ".claude/${relativeTo file}";
         value = liveLink "claude/${relativeTo file}";
       })
     (builtins.filter
-        (file: relativeTo file != "settings.json")
+        (file: relativeTo file != "settings.json" && !(inLiveDirectory file))
         (lib.filesystem.listFilesRecursive ./claude)))
   ) // {
 
@@ -191,11 +197,52 @@ in
   };
 
   # ============================================================
+  # Day plan page — serves ~/Documents/notes/today on port 4980 and saves
+  # ticks and notes to state.json there, where planning agents read them.
+  # ============================================================
+  launchd.agents.today-page = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "${pkgs.nodejs}/bin/node"
+        "${config.home.homeDirectory}/Documents/notes/today/server.cjs"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/today-page.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/today-page.log";
+    };
+  };
+
+  # ============================================================
   # Activation scripts — for files that need to be writable
   # ============================================================
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD ln -sfn $VERBOSE_ARG \
       ${dotfilesRepo}/claude/settings.json \
       ${config.home.homeDirectory}/.claude/settings.json
+  '';
+
+  # ~/.claude/{skills,agents,scripts} are symlinks to the working tree's
+  # directories. Runs after linkGeneration so the per-file links of an older
+  # generation are already gone; anything else left in the old directory
+  # (Claude's own skills/synced) moves into the working tree first.
+  home.activation.claudeLiveDirectories = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    for directory in skills agents scripts; do
+      target=${config.home.homeDirectory}/.claude/$directory
+      source=${dotfilesRepo}/claude/$directory
+      if [ -d "$target" ] && [ ! -L "$target" ]; then
+        for entry in "$target"/* "$target"/.[!.]*; do
+          [ -e "$entry" ] || [ -L "$entry" ] || continue
+          if [ -e "$source/$(basename "$entry")" ]; then
+            $DRY_RUN_CMD rm -rf "$entry"
+          else
+            $DRY_RUN_CMD mv "$entry" "$source/"
+          fi
+        done
+        $DRY_RUN_CMD rmdir "$target"
+      fi
+      $DRY_RUN_CMD ln -sfn $VERBOSE_ARG "$source" "$target"
+    done
   '';
 }

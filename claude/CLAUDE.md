@@ -59,7 +59,13 @@ Once the session's work is clear, name the terminal tab with `tabname '<group> -
 
 Managed by Nix. Source of truth is `~/Projects/dotfiles/`, and files in `$HOME` are symlinks into the store. Edit the repo and ask user to run `nix-rebuild` rather than editing in place.
 
+The exception is `~/.claude/skills`, `~/.claude/agents` and `~/.claude/scripts`: each is a link to the whole directory in `~/Projects/dotfiles/claude/`, so an edit or a new file there is live for every session at once, with no rebuild.
+
 Do not use homebrew.
+
+## Skills
+
+When a skill's steps were wrong or missing and it cost time, or I correct how a skill's work went, update the skill right then: one line in the section it belongs to, the rule and its why in a clause, editing an existing line over adding one. Then tell me in one line what changed. Don't ask first; I review skill edits as uncommitted changes in the dotfiles repo. Skills are read on every run, so keep them short: a learning that needs a paragraph goes in a reference file beside the skill.
 
 ## Context size
 
