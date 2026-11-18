@@ -1,6 +1,6 @@
 ---
 name: difit
-description: How to run a difit server for Camen - starting it, posting threads, watching for his comments, replying, keeping the threads alive through commits and restarts, opening it in Chrome, and shutting it down. Read by /review before it starts one; not a review on its own.
+description: How to run a difit server for Camen - starting it, posting threads, watching for his comments, replying, keeping the threads alive through commits and restarts, opening it in a Safari tab group, and shutting it down. Read by /review before it starts one; not a review on its own.
 ---
 
 # difit
@@ -48,11 +48,11 @@ On a server he is using, never add replies or move threads by editing the JSON a
 
 Hand him both urls, `http://localhost:<port>` and the LAN one, localhost on `pbcopy`, and notify: `osascript -e 'display notification "<branch> ready for review" with title "Claude"'`. Arm the Wait monitor in the same turn. Every server you start gets one.
 
-## In Chrome
+## In Safari
 
-Open every difit in Chrome, as the chrome-tab-groups skill says: one group per review, named the way the review's terminal tab is (`jkramer - remove tasks`), holding its difit tab, the pull request on GitHub when there is one, and, where there is one, the running frontend, the proof page, the Linear ticket and the plan. Each tab joins the group when its page exists, so the proof tab arrives with the proof. Several reviews in one session still get a group each. Without Claude in Chrome, `chrome-tab-group.sh open <urls>` then `chrome-tab-group.sh match=<port or path part> ... "title=<group>"` per review. Title each tab by what it is, then the review's feature, with `tabtitle=`: `(difit) remove tasks`, `(github) remove tasks`, `(ui) remove tasks`, `(proof) remove tasks`, `(linear) remove tasks`, `(plan) remove tasks`. Close the group's tabs when its server shuts down.
+Open every difit in Safari, not Chrome (he moved reviews there 2026-11-18): one Safari tab group per review, named the way the review's terminal tab is (`jkramer - remove tasks`), made as the chrome-tab-groups skill's Safari section says, holding its difit tab, the pull request on GitHub when there is one, and, where there is one, the summary page, the running frontend, the proof page, the Linear ticket and the plan. Each tab joins the group when its page exists. A tab group shows as its own window, named `<group> — <page title>`, so a later tab goes into the window whose name starts with the group's: `tell w to make new tab at end of tabs with properties {URL:"<url>"}`. Several reviews in one session still get a group each. Safari can't retitle a tab, so the pages' own titles stand. Close the group's tabs when its server shuts down.
 
-Open the difit tab on `http://localhost:<port>`, never the LAN address: the LAN address changes when the network does, and a tab on the old one hangs on reload (seen 2026-11-12). The LAN url is only for his other device. To move an open tab without losing its group, set its URL in place: `osascript -e 'tell application "Google Chrome"' -e 'repeat with w in windows' -e 'repeat with t in tabs of w' -e 'if URL of t contains ":<port>" then set URL of t to "http://localhost:<port>"' -e 'end repeat' -e 'end repeat' -e 'end tell'`.
+Open the difit tab on `http://localhost:<port>`, never the LAN address: the LAN address changes when the network does, and a tab on the old one hangs on reload (seen 2026-11-12). The LAN url is only for his other device. To move or reload an open tab without losing its group, set its URL in place: `osascript -e 'tell application "Safari" to repeat with t in tabs of every window' -e 'repeat with u in t' -e 'if URL of u contains ":<port>" then set URL of u to "http://localhost:<port>"' -e 'end repeat' -e 'end repeat'`.
 
 ## Wait
 
@@ -88,6 +88,6 @@ A server on two fixed commits (`difit <target> <base>`, for a slice or a single 
 
 ## Shut down
 
-Write `comments.json` one last time (the thread-count rule above still holds), stop the monitor with TaskStop, `kill <pid>`, delete `difit.json`, and close any Chrome tab you opened for it.
+Write `comments.json` one last time (the thread-count rule above still holds), stop the monitor with TaskStop, `kill <pid>`, delete `difit.json`, and close any Safari tab you opened for it.
 
 If a step here fails or is missing, fix it, then record the fix once: how to run difit → this skill; what to post or how to answer → the calling skill. Rule and one-line why, edit an existing entry over adding one.

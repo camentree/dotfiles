@@ -9,7 +9,7 @@ description: Open pages in Camen's Chrome in a named tab group - creating a grou
 
 With Claude in Chrome connected (the session was started with `claude --chrome`): `tabs_context_mcp {createIfEmpty: true}` makes the session's group with one empty tab; navigate it, and `tabs_create_mcp` for the rest, in one `browser_batch`. A session gets one group from the extension: later tabs go into it, never a second one. Closing a group's last tab removes the group, and the next `tabs_context_mcp` creates it again. Set a tab's `document.title` through `javascript_tool` to label it; a reload loses it.
 
-Without Claude in Chrome: `bash ~/.claude/scripts/chrome-tab-group.sh open <urls>`, into the existing front window, never `open -a`, `-n` or `--new-window`: a new window hides his other review groups behind it (seen 2026-11-12), and every Chrome call steals his focus unless the script hands it back to the app he was in.
+Without Claude in Chrome: `bash ~/.claude/scripts/chrome-tab-group.sh open <urls>`, into the existing front window, never `open -a`, `-n` or `--new-window`: a new window hides his other review groups behind it (seen 2026-11-12), and every Chrome call steals his focus unless the script hands it back to the app he was in. `open` drives Chrome through AppleScript, which lands in a chrome-devtools automation Chrome when one is running (`ps` shows `--enable-automation` / `--allow-pre-commit-input`), so its tabs never reach his groups: then pass the urls to `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --profile-directory=Default <urls> &`, which hands them to his running Chrome as tabs (seen 2026-11-15).
 
 Claude in Chrome refuses `file://` urls ("Can't interact with browser-internal or unparseable URLs"), so serve a local page with `python3 -I -m http.server <port> --bind 127.0.0.1` from its folder, in the background, and open it on `127.0.0.1`.
 
@@ -30,3 +30,7 @@ It acts silently, and does nothing when nothing matches. Check with `chrome-tab-
 Unless the caller says otherwise, name the group after this session's Ghostty tab as he sees it: `osascript -e 'tell application "System Events" to get name of every window of process "Ghostty"'` (the front tab's title per window). Not `~/.claude/tab-names/`, which holds only what `tabname` last wrote and misses a title he set in Ghostty himself.
 
 After editing the extension's files, `chrome-tab-group.sh reload=1` reloads it.
+
+## Safari
+
+Safari's scripting dictionary has no tab groups, but UI scripting makes one (worked 2026-11-18, Safari 26.5): `click menu item "New Empty Tab Group" of menu "File" of menu bar 1` in System Events, then `set URL of current tab of front window` and `make new tab at end of tabs` for the rest. Typing the name and pressing Return leaves it "Untitled"; set `value` of the sidebar's `text field 1 of UI element 1 of UI element 1 of row 3 of outline 1 of scroll area 1 of splitter group 1 of front window`, then `perform action "AXConfirm"` on it. The window's name reads `<group> — <page title>` once it took. Closing tabs inside a `repeat with t in tabs` loop skips or errors as the list shrinks: close one match per `osascript` call (`close t` then `exit repeat`) and repeat the call.

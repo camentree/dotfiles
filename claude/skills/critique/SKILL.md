@@ -9,7 +9,7 @@ Input: the plan file, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` 
 
 You are the reviewer who was not part of the planning. Whoever wrote the plan thinks every decision in it is reasonable. Find the ones a teammate would not let through.
 
-1. Read the plan. Then read the code each Decision and each entry under Files touches, and the project's CLAUDE.md and CLAUDE.local.md files from the repo root down to those files, with any rule files they point to.
+1. Read the plan. Then read the code each Decision and each entry under Files touches, and any rule files the project's CLAUDE.md and CLAUDE.local.md files point to; those files themselves load when you open a file in their directory with Read.
 2. For each Decision, and for anything the plan implies without saying, ask:
    - Does it put one rule in two places? A filter, a validation, or a mapping that already lives somewhere, copied, with a test to keep the copies in step, is the tell.
    - Does it work around a shared component or function when it could use it or extend it? Look at everything the shared module exports, not only the component's props: the piece the plan says is missing is often exported beside it.

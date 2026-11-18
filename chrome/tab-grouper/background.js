@@ -31,7 +31,7 @@ async function applyGroup({ matches, group, title, color, tabTitle }) {
   if (tabTitle) {
     for (const tab of matching) {
       await chrome.storage.session.set({ [String(tab.id)]: tabTitle });
-      await pinTitle(tab.id, tabTitle);
+      pinTitle(tab.id, tabTitle);
     }
     if (!group && !title && !color) return;
   }

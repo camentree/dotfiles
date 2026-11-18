@@ -1,0 +1,9 @@
+# Driving the browser
+
+Traps in driving the August frontend from `chrome-devtools-mcp` or another CDP client.
+
+- `chrome-devtools-mcp` is configured in `~/.claude.json` without `--isolated`, so it owns `~/.cache/chrome-devtools-mcp/chrome-profile` and only one session can use it. A second session gets "The browser is already running for ..." and `isolatedContext` does not help: that fails at launch, before any context is made. Don't kill the other session's Chrome; run a separate one.
+- `<frontend worktree>/bin-local/dev-browser <username_uuid> --backend <user>/<branch> --url <url>` is that separate one: its own profile and CDP port, `mock_auth_username` set before the app boots, and an `Authorization` header injected into every backend request. It prints whether the PDF rendered, so a failed run says so rather than looking idle.
+- **The PDF template editor needs that injection.** `pdfUrl` in `src/shared/legacy_routes.ts` hands react-pdf a bare URL, so the PDF is fetched with no bearer and no cookie; under `authMethod: 'none'` it 401s and the pane reads "Failed to load PDF". `GET /forms/:id/template.pdf` takes no query token, so there is no way round it from the browser alone.
+- **`@shared/ui` `Listbox` ignores a chrome-devtools `click`.** It opens on pointer events: from `evaluate_script`, dispatch `pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click` on the trigger, then the same on the `[role=option]`. In a long modal the sticky footer covers fields near the bottom, so a coordinate click lands on the footer and silently does nothing; `.click()` the element from `evaluate_script` instead.
+- **CDP allows one client per page.** Attaching a second debugger to a tab silently evicts the first, and whatever it had enabled (header injection, request blocking) stops with no error. Inspect a driven tab by having the driver report, not by attaching beside it.

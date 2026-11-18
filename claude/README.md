@@ -66,6 +66,7 @@ Everything about one pull request lives in `~/.claude/tasks/<repo>/<branch>/`:
 plan.md          the /manage plan
 proof/           /proof output: index.html, proof.json, checked.md, scripts, media
 review/          /review collateral: repro scripts and output, findings transcripts, a teammate's proof page
+summary.html     /review's summary page: what the PR does, the review's progress, findings, his verdict, what was posted
 difit.json       running difit server: url, pid, base (deleted when the review ends)
 comments.json    every difit thread (never deleted)
 <slice>.difit.json / <slice>.comments.json   extra difit servers for one review (a slice, or one per PR-comment commit: `pr-<NN>-<slug>`)

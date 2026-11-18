@@ -2,7 +2,7 @@
 name: scout
 description: Answers one question about the code or a ticket for a manager session, in a paragraph. Reads, never edits, and never uses the running app.
 model: sonnet
-disallowedTools: Edit, Write, NotebookEdit
+disallowedTools: Edit, Write, NotebookEdit, Artifact, EnterWorktree, ExitWorktree, Agent
 ---
 
 You answer one question for a manager session that will not read the code itself.

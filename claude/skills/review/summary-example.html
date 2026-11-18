@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editable Care Rate Review</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1f2328; --muted: #656d76; --card: #ffffff; --line: #e4e1da;
+  --accent: #2f6f5e; --done: #1a7f37; --active: #9a6700; --waiting: #8250df; --todo: #8c959f; --bad: #cf222e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --fg: #e6e6e3; --muted: #9aa1a9; --card: #1d2024; --line: #30343a;
+    --accent: #6fc2a8; --done: #4ac26b; --active: #d4a72c; --waiting: #b392f0; --todo: #6e7681; --bad: #ff7b72;
+  }
+}
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+h1 { font-size: 1.6rem; margin: 0 0 12px; }
+h3 { font-size: 1.02rem; margin: 20px 0 6px; }
+a { color: var(--accent); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.links a { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 3px 10px; text-decoration: none; font-size: .9rem; }
+.progress { display: flex; list-style: none; padding: 0; margin: 0 0 26px; }
+.progress li { flex: 1; position: relative; min-width: 0; }
+.progress li + li::before { content: ""; position: absolute; top: 19px; right: 50%; width: 100%; height: 2px; background: var(--line); z-index: 0; }
+.progress li.is-done + li::before { background: var(--done); }
+.progress a { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; color: var(--fg); padding: 0 4px; }
+.progress .dot { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 1.05rem; font-weight: 700; background: var(--card); border: 2px solid currentColor; }
+.progress .is-done .dot { background: var(--done); border-color: var(--done); color: var(--card); }
+.progress .name { font-weight: 600; font-size: .9rem; margin-top: 6px; }
+.progress .state { font-size: .78rem; line-height: 1.3; margin-top: 2px; }
+.progress a:hover .name { color: var(--accent); }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
+details > summary { cursor: pointer; padding: 11px 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: "▸"; margin-left: auto; color: var(--muted); }
+details[open] > summary::after { content: "▾"; }
+details > .body { padding: 0 18px 14px; border-top: 1px solid var(--line); }
+.check { font-size: 1.15rem; width: 1.2rem; text-align: center; }
+.done { color: var(--done); } .active { color: var(--active); } .waiting { color: var(--waiting); } .todo { color: var(--todo); }
+.state { font-weight: 400; color: var(--muted); font-size: .9rem; }
+.body ul, .body ol { margin: 6px 0; padding-left: 20px; }
+.finding { border-left: 3px solid var(--bad); padding-left: 12px; margin: 12px 0; }
+.held { border-left: 3px solid var(--done); padding-left: 12px; margin: 10px 0; }
+.note { color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: .85rem; }
+code { font-size: .88em; background: color-mix(in srgb, var(--line) 55%, transparent); border-radius: 4px; padding: 1px 4px; }
+pre.command { background: color-mix(in srgb, var(--line) 40%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font-size: .85rem; line-height: 1.45; }
+pre.command code { background: none; padding: 0; }
+figure { margin: 14px 0; }
+figure img, figure video { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+figcaption { color: var(--muted); font-size: .9rem; }
+@media (max-width: 560px) { .progress .state { display: none; } .progress .name { font-size: .78rem; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Editable Recommended Care Rate</h1>
+
+<nav class="links">
+  <a href="https://github.com/augusthealth/august-backend/pull/8100">backend PR #8100</a>
+  <a href="https://github.com/augusthealth/august-frontend/pull/9661">frontend PR #9661</a>
+  <a href="https://linear.app/august-health/issue/BILL-2798">BILL-2798</a>
+  <a href="proof/index.html">proof page</a>
+</nav>
+
+<ol class="progress"></ol>
+
+<details open id="what">
+  <summary>What the PR does</summary>
+  <div class="body">
+    <p><strong>Before.</strong> A prospect, Ruth, is assessed before moving in at Level 2 care, which costs $1,200 a month. That $1,200 is her <em>recommended care rate</em>. Her move-in agreement can only print $1,200, and when she signs, billing tells staff "add a $1,200 care charge for Ruth." But Ruth is on Medicaid (Elderly Waiver): the community charges her nothing for care, and staff had no way to say so.</p>
+    <p><strong>After.</strong> A new field on the agreement, <strong>Editable Recommended Care Rate</strong>, starts out at $1,200. Staff change it:</p>
+    <ul>
+      <li>to <strong>$0</strong> for Ruth: the agreement prints $0.00, the "rent + care" total leaves care out, and no care charge is recommended;</li>
+      <li>to <strong>$900</strong> for a negotiated price: the agreement and total use $900, and billing recommends a $900 care charge;</li>
+      <li>or leave it alone: everything behaves as today.</li>
+    </ul>
+    <p>A reassessment after move-in goes back to the care level's own rate.</p>
+
+    <figure>
+      <video src="proof/media/editable-care-rate-annotated.mp4" poster="proof/media/02-field-set-to-1500.png" controls preload="metadata"></video>
+      <figcaption>The field in the app: the recommended rate, then $1,500, then $0, then each resident's billing page (52 s).</figcaption>
+    </figure>
+
+    <h3>The pieces</h3>
+    <table>
+      <tr><th>Piece</th><th>In plain words</th><th>Where</th></tr>
+      <tr><td>Storage</td><td>One new number on the resident's admissions information, in cents, next to the negotiated rent. $0 and "never set" are kept apart.</td><td><code>admissions.proto</code></td></tr>
+      <tr><td>Two form fields</td><td>For the resident and for a linked resident. Each shows the saved number, or the assessed rate.</td><td><code>AugustFields</code>, <code>PDFProjectionHelpers</code></td></tr>
+      <tr><td>Rent + Care total</td><td>Adds the edited number instead of the assessed one, when saved.</td><td><code>PdfTemplateProjection</code></td></tr>
+      <tr><td>Billing</td><td>The move-in agreement's care recommendation uses the edited number; $0 means none. Reassessments ignore it.</td><td><code>BillingEventService</code></td></tr>
+    </table>
+
+    <h3>Naomi's questions to the reviewer</h3>
+    <ul>
+      <li>Is admissions information the right home for the number?</li>
+      <li>Is passing it only from "agreement completed" the right way to keep reassessments on the care level's own rate?</li>
+    </ul>
+    <p class="note">Her tests didn't run locally, so CI is the evidence; her manual testing predates the "adjusted" to "editable" rename. #7928 touches the same billing call; whichever merges second carries the new argument across.</p>
+  </div>
+</details>
+
+<details class="step" id="step-app" data-name="Run the app" data-status="done" data-state="backend and frontend up">
+  <div class="body">
+    <ul>
+      <li>Backend for this branch: <code>localhost:11280</code>.</li>
+      <li>Frontend for #9661, built with the branch's protos: <a href="http://127.0.0.1:3680/">127.0.0.1:3680</a>, signed in as camen@ (super user).</li>
+      <li>difits for both PRs, shut down after posting.</li>
+    </ul>
+  </div>
+</details>
+
+<details class="step" id="step-code" data-name="Code review" data-status="done" data-state="backend 3, frontend 1">
+  <div class="body">
+    <p>Each was reproduced against this branch's backend at Oak River Villas, where the assisted-living care level costs $2,500.00 a month.</p>
+
+    <div class="finding">
+      <p><strong>Setting care to $0 leaves the old care charge running.</strong> A resident moved in at $1,200.00 for care and was charged that. Staff later set the editable care rate to $0 and completed a new agreement. Nothing was recommended, so the $1,200.00 care charge kept running. Any other new amount ($900.00, or clearing it back to the standard $2,500.00) does recommend changing the charge.</p>
+      <p class="note">Suggested: let $0 go through the existing-charge comparison and recommend ending the care charge. <code>BillingEventService.scala</code> line 1975.</p>
+    </div>
+
+    <div class="finding">
+      <p><strong>A later agreement undoes a reassessment.</strong> A resident moved in at $1,200.00 for care. A reassessment later moved their care charge to the standard $2,500.00, and staff applied it. When staff completed another agreement for an unrelated reason, billing recommended dropping care back to $1,200.00, because the move-in amount is still saved on the resident.</p>
+      <p class="note">Nothing clears the saved amount after move-in. Line 395.</p>
+    </div>
+
+    <div class="finding">
+      <p><strong>A $0 resident is recommended full care at their next reassessment.</strong> A resident moved in at $0 for care (the Medicaid / Elderly Waiver case), and no care charge was recommended. At their next reassessment, billing recommended adding a $2,500.00 care charge. The PR does this on purpose, so it's a product question about what $0 should mean. Medicaid coverage alone didn't stop it: the Medicaid exclusion needs the coverage and a Medicaid resident program.</p>
+      <p class="note">Answers Naomi's second question. Line 497.</p>
+    </div>
+
+    <h3>Naomi's first question: is admissions information the right home?</h3>
+    <p>It works there: $0 and "not set" save and read back separately, and the amount shows correctly in reports and on the linked resident's fields. The trouble is that nothing clears it, the second finding.</p>
+
+    <details>
+      <summary>Backend: checked and fine</summary>
+      <div class="body">
+        <div class="held">
+          <ul>
+            <li>$0 and "not set" are kept apart, the amount can be cleared, and a negative amount is refused.</li>
+            <li>The move-in agreement recommends the editable amount ($1,200.00), nothing at $0, and the standard $2,500.00 when none is saved.</li>
+            <li>Reassessments ignore the editable amount.</li>
+            <li>Against an existing care charge, a different amount recommends changing it; the same amount recommends nothing.</li>
+            <li>The Medicaid exclusion is decided before the amount is chosen (read only; a Medicaid resident program couldn't be made through the API).</li>
+            <li>Reports and the linked resident's fields show the editable amount, falling back to the standard rate.</li>
+            <li>The frontend saves the field like the negotiated rent, so the backend needs no extra wiring.</li>
+            <li>Every list of field types that needed the new ones has them.</li>
+            <li>The Rent + Care total leaves care out at $0 (CI's tests; not rerun).</li>
+          </ul>
+        </div>
+        <p class="note">CI passed on the head commit <code>276c35d1ac</code>. Scripts and output: <code>review/</code> in the task directory.</p>
+      </div>
+    </details>
+
+    <h3>Frontend #9661</h3>
+    <div class="finding">
+      <p><strong>Typing the recommended amount by hand isn't saved.</strong> The field starts at the recommended rate, say $3,500. If staff type 3500 themselves, the form treats it as unchanged and saves nothing, so the rate keeps following the assessment: after a reassessment the agreement would show the new rate, not the one they typed. 3500.01 saves; so does 3500 typed before the recommendation loads, or over an earlier saved amount. May be intended; raised as a question.</p>
+      <p class="note"><code>EditableCareRateCard.tsx</code> line 99.</p>
+    </div>
+    <p><strong>CI failure is the models package, not the PR.</strong> The published <code>@augusthealth/models</code> 1.1225.0 doesn't have the two new field types or <code>editableCareRate</code> yet; that's all 9 typecheck errors and the 2 failing unit tests. The other three unit shards were cancelled, not failed. With the backend branch's models, the typecheck passes and the PR's tests pass (40 tests).</p>
+    <details>
+      <summary>Frontend: checked and fine</summary>
+      <div class="body">
+        <div class="held">
+          <ul>
+            <li>Leaving the field untouched, or clicking in and out, saves nothing; clearing a saved amount goes back to the recommended rate; $0 stays $0.</li>
+            <li>The Rent + Care total uses the entered amount, else the recommended rate.</li>
+            <li>The linked-resident field is built like the existing linked-resident negotiated rate, including who may edit it.</li>
+            <li>The Required checkbox has no effect; forms with the field use the older form generator, as described.</li>
+            <li>Labels: "CARE LEVEL RATE" duplicates the existing field's, and the linked one, "LINKED RESIDENT CARE LEVEL RATE", duplicates the existing linked recommended rate's.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </div>
+</details>
+
+<details class="step" id="step-behavior" data-name="Behavior review" data-status="done" data-state="8 of 8 hold; 2 oddities">
+  <div class="body">
+    <p>All 8 claims in the description hold in the running app. The video under "What the PR does" shows the main flow.</p>
+
+    <h3>Looks off</h3>
+    <div class="finding">
+      <p><strong>Two fields, one label.</strong> On the form, the new field and the existing Recommended Care Rate field are both titled "CARE LEVEL RATE". The only way to tell which one is editable is the grey "Recommended care rate is …" note under the new one. Frontend #9661, not this PR.</p>
+    </div>
+    <div class="finding">
+      <p><strong>Two pending care recommendations.</strong> An agreement at $1,500 followed by a reassessment leaves both open: one at $1,500 and one at $2,500. The newer doesn't replace the older. Naomi lists the reverse order (assessment, then agreement) as known and out of scope; this order does the same.</p>
+    </div>
+
+    <details>
+      <summary>Not in the video: reassessment, the PDF, a linked resident</summary>
+      <div class="body">
+        <ul>
+          <li>A reassessment after move-in recommends the care level's $2,500, whatever was saved.</li>
+          <li>The agreement PDF prints the saved amount, or $2,500.00 when none is saved.</li>
+          <li>A linked resident's own amount prints on the other resident's agreement.</li>
+          <li>$0 and "not set" are stored apart.</li>
+        </ul>
+        <figure><img src="proof/media/13-reassessment-billing-recommendation.png" alt=""><figcaption>The $0 resident after a reassessment: a care recommendation appears…</figcaption></figure>
+        <figure><img src="proof/media/14-reassessment-charge-2500.png" alt=""><figcaption>…at 2,500.00 a month.</figcaption></figure>
+        <figure><img src="proof/media/09-pdf-fields-at-1500.png" alt=""><figcaption>PDF at $1,500: Recommended 2,500.00, Editable 1,500.00, Rent + Care 5,500.00.</figcaption></figure>
+        <figure><img src="proof/media/10-pdf-fields-at-0.png" alt=""><figcaption>PDF at $0: Editable 0.00, Rent + Care 4,000.00.</figcaption></figure>
+        <figure><img src="proof/media/11-pdf-fields-unset.png" alt=""><figcaption>PDF with nothing saved: Editable 2,500.00.</figcaption></figure>
+        <figure><img src="proof/media/12-pdf-linked-resident-1500.png" alt=""><figcaption>Linked pair: Linked Resident Editable 1,500.00.</figcaption></figure>
+      </div>
+    </details>
+
+    <details>
+      <summary>How it was run</summary>
+      <div class="body">
+        <p>Frontend #9661 on this branch's backend, at Oak River Villas (Level 1 care $2,500, rent $4,000). Signing can't finish locally ("You cannot skip all signers"), so each agreement was marked complete through the API, which runs the same billing step a signature does. The PDF shots use a blank-page copy of the agreement template.</p>
+        <p class="note">Full proof page: <a href="proof/index.html">proof/index.html</a>. Local data created is listed in <code>proof/checked.md</code>.</p>
+      </div>
+    </details>
+  </div>
+</details>
+
+<details class="step" id="step-user" data-name="Your review" data-status="done" data-state="comment, no changes">
+  <div class="body">
+    <p><strong>Verdict:</strong> comment. The code matches the description and you asked for no changes.</p>
+    <p><strong>The thread through everything you raised:</strong> the PR folds two ideas into one number. The assessment gives the price of care. The agreement says what the resident is billed. One field holding both shows up as:</p>
+    <ul>
+      <li>a name ("editable") that doesn't say which of the two it is, so a reader can't tell when to use it;</li>
+      <li>an agreement and a reassessment that keep recommending different amounts, because the move-in amount stays saved;</li>
+      <li>$0 not ending a care charge the resident already has;</li>
+      <li>on the frontend: a typed amount equal to the recommended one isn't saved, and the new field shares its label with the existing one.</li>
+    </ul>
+    <p>You framed each one as a product question for Naomi, not a required change.</p>
+  </div>
+</details>
+
+<details class="step" id="step-posted" data-name="Comments posted" data-status="done" data-state="#8100 comment, #9661 approve">
+  <div class="body">
+    <h3><a href="https://github.com/augusthealth/august-backend/pull/8100#pullrequestreview-5960177452">#8100: Comment</a></h3>
+    <p class="note">Overall: the code matches the description, no changes requested. Asks whether one field is merging two ideas: the price of care from the assessment, and what the resident is billed.</p>
+    <ul>
+      <li><code>AugustFields.scala</code> line 23: is "editable" the right name, or should it say what it is (e.g. the resident's billed portion)?</li>
+      <li><code>BillingEventService.scala</code> line 395: the saved amount makes the agreement and reassessments keep recommending different amounts. What does product want?</li>
+      <li><code>BillingEventService.scala</code> line 1975: $0 gives no recommendation for an existing care charge. Should it update the charge to $0 or end it?</li>
+    </ul>
+    <h3><a href="https://github.com/augusthealth/august-frontend/pull/9661#pullrequestreview-5960200616">#9661: Approve</a></h3>
+    <p class="note">Overall: good from a code perspective, with the same modelling question (links the backend review), and the duplicate label.</p>
+    <ul>
+      <li><code>assessment.ts</code> line 23: will a form have both fields? If so, the shared "CARE LEVEL RATE" label is odd.</li>
+      <li><code>linkedResident.ts</code> line 66: same for the linked resident's label.</li>
+      <li><code>EditableCareRateCard.tsx</code> line 99: should a typed amount equal to the recommended care rate be saved anyway?</li>
+    </ul>
+    <p class="note">Not posted: the finding that a $0 resident is recommended full care at the next reassessment (<code>BillingEventService.scala</code> line 497).</p>
+  </div>
+</details>
+
+</main>
+<script>
+const marks = { done: "☑", active: "◐", waiting: "☐", todo: "☐" };
+const progress = document.querySelector(".progress");
+document.querySelectorAll("details.step").forEach(function (step, index) {
+  const status = step.dataset.status;
+  const summary = document.createElement("summary");
+  summary.innerHTML = '<span class="check ' + status + '">' + marks[status] + "</span> " + step.dataset.name + ' <span class="state">' + step.dataset.state + "</span>";
+  step.prepend(summary);
+  const item = document.createElement("li");
+  if (status === "done") item.className = "is-done";
+  item.innerHTML = '<a href="#' + step.id + '"><span class="dot ' + status + '">' + (status === "done" ? "✓" : index + 1) + '</span><span class="name">' + step.dataset.name + '</span><span class="state">' + step.dataset.state + "</span></a>";
+  progress.append(item);
+});
+function openStep(hash) {
+  const target = hash && document.querySelector(hash);
+  if (!target || target.tagName !== "DETAILS") return;
+  target.open = true;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+document.querySelectorAll(".progress a").forEach(function (link) {
+  link.addEventListener("click", function (event) {
+    event.preventDefault();
+    history.replaceState(null, "", link.getAttribute("href"));
+    openStep(link.getAttribute("href"));
+  });
+});
+openStep(location.hash);
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITLE Review</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1f2328; --muted: #656d76; --card: #ffffff; --line: #e4e1da;
+  --accent: #2f6f5e; --done: #1a7f37; --active: #9a6700; --waiting: #8250df; --todo: #8c959f; --bad: #cf222e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --fg: #e6e6e3; --muted: #9aa1a9; --card: #1d2024; --line: #30343a;
+    --accent: #6fc2a8; --done: #4ac26b; --active: #d4a72c; --waiting: #b392f0; --todo: #6e7681; --bad: #ff7b72;
+  }
+}
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+h1 { font-size: 1.6rem; margin: 0 0 12px; }
+h3 { font-size: 1.02rem; margin: 20px 0 6px; }
+a { color: var(--accent); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.links a { border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 3px 10px; text-decoration: none; font-size: .9rem; }
+.progress { display: flex; list-style: none; padding: 0; margin: 0 0 26px; }
+.progress li { flex: 1; position: relative; min-width: 0; }
+.progress li + li::before { content: ""; position: absolute; top: 19px; right: 50%; width: 100%; height: 2px; background: var(--line); z-index: 0; }
+.progress li.is-done + li::before { background: var(--done); }
+.progress a { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; color: var(--fg); padding: 0 4px; }
+.progress .dot { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 1.05rem; font-weight: 700; background: var(--card); border: 2px solid currentColor; }
+.progress .is-done .dot { background: var(--done); border-color: var(--done); color: var(--card); }
+.progress .name { font-weight: 600; font-size: .9rem; margin-top: 6px; }
+.progress .state { font-size: .78rem; line-height: 1.3; margin-top: 2px; }
+.progress a:hover .name { color: var(--accent); }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; }
+details > summary { cursor: pointer; padding: 11px 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: "▸"; margin-left: auto; color: var(--muted); }
+details[open] > summary::after { content: "▾"; }
+details > .body { padding: 0 18px 14px; border-top: 1px solid var(--line); }
+.check { font-size: 1.15rem; width: 1.2rem; text-align: center; }
+.done { color: var(--done); } .active { color: var(--active); } .waiting { color: var(--waiting); } .todo { color: var(--todo); }
+.state { font-weight: 400; color: var(--muted); font-size: .9rem; }
+.body ul, .body ol { margin: 6px 0; padding-left: 20px; }
+.finding { border-left: 3px solid var(--bad); padding-left: 12px; margin: 12px 0; }
+.held { border-left: 3px solid var(--done); padding-left: 12px; margin: 10px 0; }
+.note { color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: .85rem; }
+code { font-size: .88em; background: color-mix(in srgb, var(--line) 55%, transparent); border-radius: 4px; padding: 1px 4px; }
+pre.command { background: color-mix(in srgb, var(--line) 40%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font-size: .85rem; line-height: 1.45; }
+pre.command code { background: none; padding: 0; }
+figure { margin: 14px 0; }
+figure img, figure video { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+figcaption { color: var(--muted); font-size: .9rem; }
+@media (max-width: 560px) { .progress .state { display: none; } .progress .name { font-size: .78rem; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>TITLE</h1>
+
+<nav class="links">
+  <a href="URL">LABEL</a>
+</nav>
+
+<ol class="progress"></ol>
+
+<details open id="what">
+  <summary>What the PR does</summary>
+  <div class="body">
+    <p>WHAT</p>
+  </div>
+</details>
+
+<details class="step" id="step-app" data-name="Run the app" data-status="active" data-state="starting">
+  <div class="body">
+    <p>STARTING</p>
+  </div>
+</details>
+
+<details class="step" id="step-code" data-name="Code review" data-status="todo" data-state="not started">
+  <div class="body">
+    <p>NOT STARTED</p>
+  </div>
+</details>
+
+<details class="step" id="step-behavior" data-name="Behavior review" data-status="todo" data-state="not started">
+  <div class="body">
+    <p>NOT STARTED</p>
+  </div>
+</details>
+
+<details class="step" id="step-user" data-name="Your review" data-status="todo" data-state="not started">
+  <div class="body">
+    <p>Written once you've finished reviewing.</p>
+  </div>
+</details>
+
+<details class="step" id="step-posted" data-name="Comments posted" data-status="todo" data-state="none yet">
+  <div class="body">
+    <p>Nothing posted.</p>
+  </div>
+</details>
+
+</main>
+<script>
+const marks = { done: "☑", active: "◐", waiting: "☐", todo: "☐" };
+const progress = document.querySelector(".progress");
+document.querySelectorAll("details.step").forEach(function (step, index) {
+  const status = step.dataset.status;
+  const summary = document.createElement("summary");
+  summary.innerHTML = '<span class="check ' + status + '">' + marks[status] + "</span> " + step.dataset.name + ' <span class="state">' + step.dataset.state + "</span>";
+  step.prepend(summary);
+  const item = document.createElement("li");
+  if (status === "done") item.className = "is-done";
+  item.innerHTML = '<a href="#' + step.id + '"><span class="dot ' + status + '">' + (status === "done" ? "✓" : index + 1) + '</span><span class="name">' + step.dataset.name + '</span><span class="state">' + step.dataset.state + "</span></a>";
+  progress.append(item);
+});
+function openStep(hash) {
+  const target = hash && document.querySelector(hash);
+  if (!target || target.tagName !== "DETAILS") return;
+  target.open = true;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+document.querySelectorAll(".progress a").forEach(function (link) {
+  link.addEventListener("click", function (event) {
+    event.preventDefault();
+    history.replaceState(null, "", link.getAttribute("href"));
+    openStep(link.getAttribute("href"));
+  });
+});
+openStep(location.hash);
+</script>
+</body>
+</html>

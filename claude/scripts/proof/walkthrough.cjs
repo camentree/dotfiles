@@ -101,6 +101,32 @@ function convertToMp4({ webmPath, mp4Path, durationSeconds }) {
   }
 }
 
+function writeContactSheet({ name, directory, steps }) {
+  const labelledScreenshots = steps
+    .filter((step) => step.screenshot && fs.existsSync(path.join(directory, step.screenshot)))
+    .flatMap((step, index) => ['-label', `${index + 1}. ${step.caption}`.replace(/%/g, '%%'), path.join(directory, step.screenshot)])
+  if (labelledScreenshots.length === 0) return null
+  const sheet = `${name}-sheet.png`
+  try {
+    execFileSync('magick', [
+      'montage',
+      ...labelledScreenshots,
+      '-tile',
+      '2x',
+      '-geometry',
+      '640x400+6+6',
+      '-font',
+      '/System/Library/Fonts/Supplemental/Arial.ttf',
+      '-pointsize',
+      '16',
+      path.join(directory, sheet),
+    ], { stdio: 'pipe' })
+    return sheet
+  } catch (error) {
+    return null
+  }
+}
+
 async function walkthrough({ name, directory, baseUrl, viewport = { width: 1280, height: 800 } }, script) {
   const { chromium } = loadPlaywright()
   fs.mkdirSync(directory, { recursive: true })
@@ -193,6 +219,8 @@ async function walkthrough({ name, directory, baseUrl, viewport = { width: 1280,
   const recording = page.video()
   await context.close()
   await browser.close()
+  const sheet = writeContactSheet({ name, directory, steps })
+  if (sheet) console.log(`contact sheet: ${path.join(directory, sheet)}`)
 
   if (rehearsing) {
     console.log(`${name} rehearsal: ${steps.length} steps, ${durationSeconds}s, ${failure ? `FAILED: ${failure}` : 'passed'}`)

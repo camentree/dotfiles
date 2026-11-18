@@ -17,17 +17,17 @@ Only a line that is one pull request. A parent line that groups several pull req
 |---|---|
 | 📋 | not started |
 | 👨🏾‍💻 | being worked, by an agent or by him |
-| 💬 | needs his review: he hasn't reviewed, he is mid-review, or he reviewed without accepting and the comments have since been addressed |
-| ❓ | needs review or work from a teammate |
-| ⁉️ | blocked, on anything: another pull request merging, a production step, a quiet log, an agent that needs him. Say what in a sub-bullet. |
-| ✅ | merged to master, or finished because it won't be done |
+| 💬 | the pull request is in review. Alone, on a teammate's pull request: in his queue, review not started |
+| ❓ | needs a teammate |
+| ⁉️ | needs him. Say what in a sub-bullet unless the line already does. |
+| ✅ | accepted, merged to master, or finished because it won't be done |
 
-Marks compose, 💬 first when he has been in review on it:
+Marks compose, 💬 first on any pull request that is open for review, then who it waits on:
 
-- 💬 👨🏾‍💻 his review comments are being addressed by an agent
-- 💬 ❓ he reviewed but didn't accept; the teammate needs to address comments
-- 💬 ✅ accepted, not merged
-- 💬 ⁉️ an agent has the review ready in difit and it waits on him; the sub-bullet holds the difit url
+- 💬 ❓ waits on a teammate: his pull request awaits their review, or he reviewed theirs without accepting and they need to address the comments
+- 💬 ⁉️ waits on him: his pull request has review comments to address, or an agent has a teammate's review ready in difit, with the difit url in the sub-bullet
+- 💬 ✅ review accepted, not merged
+- 💬 👨🏾‍💻 review comments are being addressed by an agent
 
 Not every combination happens. When the state isn't known, leave the mark off and ask him. Markers he writes by hand that aren't in this table (📚 ‼️ on old lines) stay as he wrote them.
 
@@ -39,7 +39,7 @@ His own work, under a project heading:
 - [ ] <status> <what it does> ([in draft](<url>)) `<branch>`
 ```
 
-The link text says the pull request's state: `in draft`, `awaiting review`, `approved`. A line with no pull request yet has no link.
+The link text says the pull request's state: `in draft`, `awaiting review`, `changes requested`, `comments to address`, `approved`. A line with no pull request yet has no link.
 
 A teammate's pull request, under `## Reviews` or `### Backlog` (the find-reviews skill owns those two sections):
 
