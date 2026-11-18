@@ -22,6 +22,7 @@ let
   oneOffsRoot = "${projectsDirectory}/one-offs";
   parallaxRoot = "${projectsDirectory}/parallax";
   homeAssistantRoot = "${projectsDirectory}/home-assistant";
+  tuvuRoot = "${projectsDirectory}/tuvu";
 
   # environments
   systemPath = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
@@ -169,7 +170,7 @@ $(tail -c 8000 "$output")"
     };
   };
 
-  # One nginx for both sites; cloudflared routes each hostname to its port.
+  # One nginx for every site; cloudflared routes each hostname to its port.
   nginxConf = pkgs.writeText "nginx.conf" ''
     daemon off;
     worker_processes 1;
@@ -196,6 +197,7 @@ $(tail -c 8000 "$output")"
         location /api/ {
           proxy_pass http://127.0.0.1:8787;
           proxy_read_timeout 100s;
+          client_max_body_size 96m;
         }
         location /webhook/ { proxy_pass http://127.0.0.1:8787; }
         location /mcp {
@@ -246,6 +248,28 @@ $(tail -c 8000 "$output")"
       server {
         listen 127.0.0.1:8791;
         return 301 https://parallax.smallworkshop.dev$request_uri;
+      }
+
+      server {
+        listen 127.0.0.1:8792;
+        absolute_redirect off;
+        root ${tuvuRoot}/wodu/dist/client;
+
+        location / { try_files $uri /index.html; }
+
+        # The frontend's own pages live at /tuvu/..., the same paths the API
+        # uses, so the API is mounted under /api/ and the trailing slash on
+        # proxy_pass strips that prefix again. The API has no authentication
+        # and its write endpoints edit the quiz schedule and birds.json, so
+        # only reads get through from outside; manage quizzes against
+        # 127.0.0.1:5001 on the server itself.
+        location /api/ {
+          limit_except GET { deny all; }
+          proxy_pass http://127.0.0.1:5001/;
+        }
+        # The one write the game itself makes: fetch today's quiz, creating it
+        # on the day's first visit.
+        location = /api/tuvu/today { proxy_pass http://127.0.0.1:5001/tuvu/today; }
       }
     }
   '';
@@ -363,10 +387,26 @@ in
       launchd.user.agents.parallax-http = parallaxService "http";
       launchd.user.agents.parallax-ntfy = parallaxService "ntfy";
 
+      # One worker: quizzes live in a JSON file that every write reads, changes,
+      # and rewrites whole, so two workers could drop each other's writes.
+      launchd.user.agents.tuvu-api = {
+        serviceConfig = {
+          ProgramArguments = namedProgram "tuvu-api"
+            "${uv} run --no-dev gunicorn --bind 127.0.0.1:5001 --workers 1 --timeout 120 vira.app:app";
+          RunAtLoad = true;
+          KeepAlive = true;
+          WorkingDirectory = "${tuvuRoot}/vira";
+          StandardOutPath = "/tmp/tuvu-api.stdout.log";
+          StandardErrorPath = "/tmp/tuvu-api.stderr.log";
+          EnvironmentVariables = baseEnvironment;
+        };
+      };
+
       # ===== deploys =====
 
       launchd.user.agents.deploy-one-offs = deployAgent "one-offs" baseEnvironment;
       launchd.user.agents.deploy-parallax = deployAgent "parallax" parallaxEnvironment;
+      launchd.user.agents.deploy-tuvu = deployAgent "tuvu" baseEnvironment;
 
       # ===== scheduled jobs =====
 
