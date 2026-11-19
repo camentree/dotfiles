@@ -38,6 +38,7 @@ const walkthroughNames = [
 
 function renderWalkthrough(name) {
   const recorded = JSON.parse(fs.readFileSync(path.join(directory, `${name}.walkthrough.json`), 'utf8'))
+  if (fs.existsSync(path.join(directory, `${name}.annotated.mp4`))) recorded.video = `${name}.annotated.mp4`
   const videoId = `video-${videoCount++}`
   const shows = criteriaCiting(name)
   const steps = recorded.steps
@@ -128,7 +129,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(proof.title)}</title>
+<title>(proof) ${escapeHtml(proof.title)}</title>
 <style>
   :root { --background: #1E1E24; --surface: #26262E; --border: #3A3A45; --text: #E6E6EA; --muted: #8A8A8A; --accent: #86C9C0; --shown: #8FCB9B; --failed: #E07A7A; --not-shown: #F2C14E; }
   * { box-sizing: border-box; }

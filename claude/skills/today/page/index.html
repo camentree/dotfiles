@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today</title>
+<script>
+  try {
+    const savedTheme = localStorage.getItem("today-theme");
+    if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme;
+  } catch (error) {}
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --background: #ffffff;
+    --text: #1d1d20;
+    --muted: #85878f;
+    --faint: #c8cacf;
+    --line: #ececef;
+    --field: #f3f3f5;
+    --field-focus: #eeeef1;
+    --their-bubble: #eef0f6;
+    --hover: rgba(24, 24, 32, 0.045);
+    --pressed: rgba(24, 24, 32, 0.08);
+    --check: #a9abb2;
+    --label: #6e72b8;
+    --accent: #5b5bd6;
+    --track: #e6e6f4;
+    --amber: #b0600c;
+    --failure: #c4372a;
+    --tooltip: #2a2a30;
+    --tooltip-text: #ffffff;
+    --size-body: 15px;
+    --size-small: 13px;
+    --time-width: 58px;
+    --gutter: 24px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --background: #121214;
+      --text: #e9e9ec;
+      --muted: #80828b;
+      --faint: #4a4c53;
+      --line: #232327;
+      --field: #1d1d21;
+      --field-focus: #222227;
+      --their-bubble: #1b1e28;
+      --hover: rgba(255, 255, 255, 0.05);
+      --pressed: rgba(255, 255, 255, 0.09);
+      --check: #6a6c74;
+      --label: #9ea2dc;
+      --accent: #8f94f2;
+      --track: #262838;
+      --amber: #e2a252;
+      --failure: #ef8a7b;
+      --tooltip: #e9e9ec;
+      --tooltip-text: #121214;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --background: #121214;
+    --text: #e9e9ec;
+    --muted: #80828b;
+    --faint: #4a4c53;
+    --line: #232327;
+    --field: #1d1d21;
+    --field-focus: #222227;
+    --their-bubble: #1b1e28;
+    --hover: rgba(255, 255, 255, 0.05);
+    --pressed: rgba(255, 255, 255, 0.09);
+    --check: #6a6c74;
+    --label: #9ea2dc;
+    --accent: #8f94f2;
+    --track: #262838;
+    --amber: #e2a252;
+    --failure: #ef8a7b;
+    --tooltip: #e9e9ec;
+    --tooltip-text: #121214;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { background: var(--background); overflow-y: scroll; }
+  @supports (scrollbar-gutter: stable) {
+    html { overflow-y: auto; scrollbar-gutter: stable; }
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font: var(--size-body)/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--muted); outline-offset: 2px; box-shadow: none; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  p { margin: 0; }
+  button {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 100ms, color 100ms;
+  }
+  textarea { font: inherit; color: var(--text); }
+  a { color: inherit; }
+  main { max-width: 720px; margin: 0 auto; padding: 0 var(--gutter) 96px; }
+  main.log-active { display: flex; flex-direction: column; height: 100vh; height: 100dvh; padding-bottom: 16px; }
+
+  .page-head { padding: 32px 0 8px; }
+  .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+  .meta { display: block; margin-top: 2px; color: var(--muted); font-size: var(--size-small); }
+  #save-status { color: var(--failure); }
+  .head-buttons { display: flex; gap: 2px; }
+  .icon-button { position: relative; display: grid; place-items: center; width: 28px; height: 28px; color: var(--muted); }
+  .icon-button svg { width: 15px; height: 15px; }
+  .floating-label { position: absolute; top: calc(100% + 4px); right: 0; z-index: 2; padding: 2px 8px; border-radius: 6px; background: var(--tooltip); color: var(--tooltip-text); font-size: var(--size-small); white-space: nowrap; pointer-events: none; }
+
+  .trackers { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .tracker { display: grid; grid-template-columns: 298px 20px; align-items: center; column-gap: 6px; }
+  .tracker-add {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    align-items: center;
+    column-gap: 10px;
+    padding: 2px 0;
+    text-align: left;
+    border-radius: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+  .tracker-name { font-size: var(--size-small); }
+  .tracker-bar { display: block; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; cursor: pointer; }
+  .tracker-bar > span { display: block; height: 100%; border-radius: 3px; background: var(--accent); transition: width 160ms; }
+  .tracker-name, .tracker-bar { cursor: pointer; }
+  .tracker:hover .tracker-name { color: var(--text); }
+  .tracker-since { grid-column: 1; padding-left: 58px; color: var(--muted); font-size: 12px; line-height: 1.3; }
+  .tracker.overdue .tracker-name, .tracker.overdue .tracker-since { color: var(--failure); }
+  .tracker.overdue .tracker-bar > span { background: var(--failure); }
+  .tracker-undo { grid-column: 2; grid-row: 1; width: 20px; height: 20px; color: var(--muted); line-height: 1; visibility: hidden; }
+  .tracker:hover .tracker-undo, .tracker-undo:focus-visible { visibility: visible; }
+  .tracker-undo:hover { background: var(--hover); color: var(--text); }
+
+  .day-bar { display: flex; gap: 2px; margin-top: 14px; }
+  .day-segment { display: flex; flex: 0 0 0; align-items: center; min-width: 3px; height: 18px; border-radius: 0; }
+  .day-track { display: block; flex: 1; height: 8px; border-radius: 2px; background: var(--track); overflow: hidden; }
+  .day-fill { display: block; height: 100%; background: var(--accent); opacity: 0.55; }
+  .day-segment.now .day-fill { opacity: 1; }
+  .day-gap .day-track { height: 4px; }
+  button.day-segment:hover .day-track { height: 12px; }
+
+  .bar { display: inline-block; flex: none; width: 56px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .bar-fill { display: block; height: 100%; border-radius: 2px; background: var(--check); }
+
+  .tabs { display: flex; gap: 22px; margin: 14px 0 16px; border-bottom: 1px solid var(--line); }
+  .tabs button { margin-bottom: -1px; padding: 8px 0 9px; border-bottom: 2px solid transparent; border-radius: 0; color: var(--muted); font-weight: 500; }
+  .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); }
+  .tabs button:focus-visible { outline-offset: -2px; }
+  .tab-count { margin-left: 5px; color: var(--muted); font-size: var(--size-small); font-weight: 400; }
+
+  .chevron { display: inline-block; width: 14px; height: 14px; flex: none; color: var(--muted); transition: transform 120ms; }
+  [aria-expanded="true"] > .chevron { transform: rotate(90deg); }
+  .earlier-head { display: flex; align-items: center; gap: 12px; margin: 0 -12px 2px; padding: 6px 12px; color: var(--muted); font-size: var(--size-small); }
+  .earlier-body { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+
+  .row-head { display: flex; align-items: flex-start; margin: 0 -12px; border-radius: 8px; }
+  .row-toggle { display: grid; flex: 1; align-items: baseline; gap: 0 12px; min-width: 0; padding: 8px 0 8px 12px; text-align: left; border-radius: 8px; }
+  .row-toggle:focus-visible { outline-offset: -2px; }
+  .row-toggle > .chevron { align-self: center; }
+  .row-head > .note-button { margin: 8px 8px 0 4px; }
+
+  .timeline { display: flex; flex-direction: column; }
+  .block { position: relative; }
+  .block-toggle { grid-template-columns: 14px var(--time-width) minmax(0, 1fr); align-items: center; }
+  .block-count { font-weight: 400; }
+  .block-heading { margin: 0 0 6px; color: var(--muted); font-size: var(--size-small); }
+  .project-numbers.short { color: var(--amber); }
+  .project-numbers.short .bar-fill { background: var(--amber); }
+  .block.dim .bar { opacity: 0.6; }
+  .time-column { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .time { font-weight: 500; }
+  .end-time { color: var(--muted); font-size: var(--size-small); }
+  .block-main { min-width: 0; overflow-wrap: anywhere; }
+  .block-label { margin-right: 10px; color: var(--label); font-size: var(--size-small); white-space: nowrap; }
+  .block-label.stream-link { cursor: pointer; }
+  .block-label.stream-link:hover { text-decoration: underline; }
+  .block-title { font-weight: 500; }
+  .block-count { margin-left: 6px; color: var(--muted); font-size: var(--size-small); white-space: nowrap; }
+  .block.now::before { content: ""; position: absolute; top: 9px; bottom: 9px; left: -12px; width: 2px; border-radius: 2px; background: var(--accent); }
+  .block.now .time { color: var(--accent); }
+  .block.plain .row-toggle { cursor: default; color: var(--muted); }
+  .block.plain .time, .block.plain .block-title { font-weight: 400; }
+  .block.plain .block-label { color: var(--muted); }
+  .block.plain.now .time { font-weight: 500; }
+  .block .row-toggle { gap: 0 8px; padding-top: 5px; padding-bottom: 5px; font-size: var(--size-small); }
+  .block .time, .block .block-title { font-weight: 400; }
+  .block .row-head > .note-button { margin-top: 4px; }
+  .block.dim .row-toggle { color: var(--muted); }
+  .block.now .time, .block.now .block-title { color: var(--accent); font-weight: 500; }
+  .block.now .block-count { color: var(--accent); }
+  .block .tasks { font-size: var(--size-small); }
+  .block .task-links { font-size: 12px; }
+  .block-body { padding: 2px 0 12px 22px; }
+  .block > .note-panel { margin: 0 0 10px 22px; }
+  .day-tracker, .day-tracker .tracker-name, .day-tracker .tracker-bar { cursor: default; }
+
+  .tasks { display: flex; flex-direction: column; gap: 2px; }
+  ul.children { margin-top: 2px; padding-left: 28px; }
+  .task-row { display: grid; grid-template-columns: 18px 1fr auto; align-items: start; gap: 0 10px; margin: 0 -8px; padding: 4px 8px; border-radius: 6px; }
+  .check { display: flex; justify-content: center; padding-top: 3px; cursor: pointer; }
+  .check input {
+    display: grid;
+    place-content: center;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    border: 1.5px solid var(--faint);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .check input:hover { border-color: var(--muted); }
+  .check input:checked { background: var(--check); border-color: var(--check); }
+  .check input:checked::after { content: ""; width: 8px; height: 4px; margin-top: -2px; border-left: 1.75px solid var(--background); border-bottom: 1.75px solid var(--background); transform: rotate(-45deg); }
+  .check input:disabled { cursor: default; }
+  .task-main { min-width: 0; line-height: 1.45; overflow-wrap: anywhere; }
+  .task-title { border-radius: 3px; }
+  .task-title.opens { cursor: pointer; }
+  .person { color: var(--muted); }
+  .task.checked > .task-row .task-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .task-summary { color: var(--muted); font-size: var(--size-small); line-height: 1.5; }
+  .task.waiting > .task-row .task-title { color: var(--muted); }
+  .task-links { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: var(--size-small); line-height: 1.6; }
+  a.link { color: var(--muted); text-decoration: none; }
+  a.link:hover { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+  .task-actions { display: flex; align-items: center; gap: 2px; margin-top: 1px; }
+  .task-extra { margin-left: 28px; }
+
+  .copy-button { display: inline-grid; padding: 1px 6px; border-radius: 5px; color: var(--muted); font-size: var(--size-small); line-height: 1.5; white-space: nowrap; }
+  .copy-button > span { display: inline-flex; grid-area: 1 / 1; align-items: center; justify-content: center; gap: 4px; }
+  .copy-button:hover { background: var(--hover); color: var(--text); }
+  .copy-button:active { background: var(--pressed); }
+  .copy-button svg { width: 12px; height: 12px; flex: none; }
+  .copy-done { visibility: hidden; }
+  .copy-button.copied .copy-face { visibility: hidden; }
+  .copy-button.copied .copy-done { visibility: visible; }
+  .text-button { padding: 1px 6px; border-radius: 5px; color: var(--muted); font-size: var(--size-small); }
+  .text-button:hover { background: var(--hover); color: var(--text); }
+
+  .note-button { display: inline-flex; flex: none; align-items: center; gap: 3px; height: 22px; padding: 0 4px; border-radius: 5px; color: var(--faint); font-size: var(--size-small); white-space: nowrap; }
+  .note-button svg { width: 14px; height: 14px; flex: none; }
+  .note-button.has-notes, .note-button[aria-expanded="true"] { color: var(--muted); }
+  .note-button:hover { background: var(--hover); color: var(--text); }
+
+  .details { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 6px; color: var(--muted); font-size: var(--size-small); line-height: 1.5; overflow-wrap: anywhere; }
+  .copy-lines { display: flex; flex-direction: column; gap: 2px; }
+  .copy-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-left: -6px; }
+  .copy-line .copy-button { white-space: normal; text-align: left; }
+  pre.preview {
+    margin: 2px 0 4px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--field);
+    color: var(--text);
+    font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .note-panel { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 8px; }
+  .entries { display: flex; flex-direction: column; gap: 3px; }
+  .entries li { display: grid; grid-template-columns: auto 1fr; gap: 10px; font-size: var(--size-small); line-height: 1.5; }
+  .entry-time { color: var(--muted); white-space: nowrap; }
+  .entry-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .note-field, .composer-field {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: 1px solid transparent;
+    background: var(--field);
+    line-height: 1.45;
+    resize: none;
+    overflow-y: auto;
+  }
+  .note-field { max-height: 14em; padding: 5px 10px; border-radius: 8px; font-size: var(--size-small); }
+  .note-field::placeholder, .composer-field::placeholder { color: var(--muted); opacity: 1; }
+  .note-field:focus, .note-field:focus-visible, .composer-field:focus, .composer-field:focus-visible { outline: none; background: var(--field-focus); border-color: var(--faint); }
+
+  .project-toggle { grid-template-columns: 14px minmax(0, 1fr) auto 52px; align-items: center; }
+  .project-name { font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .project-numbers { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: var(--size-small); white-space: nowrap; }
+  .project-numbers > span:last-child { min-width: 38px; }
+  .project-target { color: var(--muted); font-size: var(--size-small); text-align: right; white-space: nowrap; }
+  .project-body { padding: 2px 0 14px 26px; }
+  .project > .note-panel { margin: 0 0 10px 26px; }
+
+  #log-view { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+  .thread { display: flex; flex: 1; flex-direction: column; gap: 14px; min-height: 0; padding: 4px 0 18px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .thread::-webkit-scrollbar { display: none; }
+  .day-divider { align-self: center; padding-top: 6px; color: var(--muted); font-size: var(--size-small); }
+  .message { display: flex; flex-direction: column; gap: 3px; max-width: min(66%, 48ch); }
+  .message.mine { align-self: flex-end; align-items: flex-end; }
+  .message.theirs { align-self: flex-start; align-items: flex-start; }
+  .message-meta { padding: 0 6px; color: var(--muted); font-size: 12px; }
+  .message-body { max-width: 100%; min-width: 0; padding: 7px 12px; line-height: 1.5; overflow-wrap: anywhere; }
+  .message.mine .message-body { border-radius: 14px 14px 4px 14px; background: var(--field); }
+  .message.theirs .message-body { border-radius: 14px 14px 14px 4px; background: var(--their-bubble); }
+  .message-prefix { display: block; overflow: hidden; color: var(--muted); font-size: var(--size-small); white-space: nowrap; text-overflow: ellipsis; }
+  .message-text { display: block; white-space: pre-wrap; }
+  .empty { color: var(--muted); font-size: var(--size-small); }
+  .composer-field { flex: none; max-height: 40vh; padding: 10px 14px; border-radius: 12px; }
+
+  @media (hover: hover) {
+    .earlier-head:hover, .icon-button:hover, .tabs button:hover { color: var(--text); }
+    .earlier-head:hover, .row-head:hover, .task-row:hover { background: var(--hover); }
+    .block.plain .row-head:hover { background: transparent; }
+    .task-title.opens:hover { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+    .note-button { color: transparent; }
+    .note-button.has-notes, .note-button[aria-expanded="true"] { color: var(--muted); }
+    .row-head:hover .note-button, .task-row:hover .note-button, .note-button:focus-visible { color: var(--muted); }
+    .note-button:hover { color: var(--text); }
+  }
+  @media (hover: none) {
+    .tracker-undo { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button, .chevron, .tracker-bar > span { transition: none; }
+  }
+  @media (max-width: 560px) {
+    :root { --time-width: 62px; --gutter: 16px; }
+    .page-head { padding-top: 20px; }
+    .tracker { grid-template-columns: 1fr; }
+    .time-column { flex-direction: column; gap: 0; line-height: 1.35; }
+    .block-body { padding-left: calc(14px + 12px); }
+    .block > .note-panel { margin-left: calc(14px + 12px); }
+    .check { width: 40px; height: 40px; margin: -9px -11px -9px -11px; padding-top: 12px; }
+    .note-button { height: 28px; padding: 0 6px; }
+    .note-field, .composer-field { font-size: 16px; }
+    .message { max-width: 90%; }
+  }
+</style>
+</head>
+<body>
+<main id="page">
+  <header class="page-head">
+    <div class="title-row">
+      <div>
+        <h1 id="heading">Today</h1>
+        <span class="meta"><span id="meta"></span><span id="save-status"></span></span>
+      </div>
+      <div class="head-buttons">
+        <button type="button" class="icon-button" id="replan" title="Re-plan the day" aria-label="Re-plan the day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 8.6A5.3 5.3 0 1 1 11.7 4"/><path d="M12.2 1.8v2.6H9.6"/></svg><span class="floating-label" hidden></span></button>
+        <button type="button" class="icon-button" id="theme-toggle"></button>
+      </div>
+    </div>
+    <div class="trackers" id="trackers"></div>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" id="show-today">Plan</button>
+    <button type="button" role="tab" id="show-backlog">Backlog</button>
+    <button type="button" role="tab" id="show-log">Log</button>
+  </nav>
+  <div id="today-view"></div>
+  <div id="backlog-view" hidden></div>
+  <div id="log-view" hidden></div>
+</main>
+<script>
+  const isServed = location.protocol === "http:" || location.protocol === "https:";
+  const openPreviews = new Set();
+  const openTasks = new Set();
+  const openNotes = new Set();
+  const noteDrafts = new Map();
+  const blockChoices = new Map();
+  const streamChoices = new Map();
+  const viewNames = ["today", "backlog", "log"];
+  const replanCommand = "cd ~/Documents/notes && claude \"Re-plan the rest of my day with the today skill: carry over what is unfinished and decide what still fits.\"";
+  const trackerTarget = 8;
+  const trackerSettings = { water: { label: "Water", limit: 60 }, stood: { label: "Stand", limit: 60 } };
+  const personPattern = /^([a-z0-9][a-z0-9-]*): (.+)$/s;
+  const copyIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h.5"/></svg>';
+  const chevronMarkup = '<svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>';
+  const noteIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3.5a1 1 0 0 1-1-1z"/></svg>';
+  const sunIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>';
+  const moonIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>';
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  let view = viewFromHash();
+  let earlierOpen = false;
+  let noteToFocus = null;
+  let latestServerState = null;
+  let serverHistory = null;
+  let logWasShown = false;
+  let threadScrollTarget = null;
+  let composerDraft = "";
+  let scrollThreadToBottom = false;
+  let lastMessageCount = 0;
+  let saveTimer = null;
+  let changeCount = 0;
+  let savedCount = 0;
+  let saveFailed = false;
+  let currentMessages = [];
+  let lastLongPress = 0;
+  let replanLabelTimer = null;
+  let tickedUrls = new Set();
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function viewFromHash() {
+    const name = location.hash.slice(1);
+    return viewNames.includes(name) ? name : "today";
+  }
+
+  function setView(name) {
+    view = name;
+    try { history.replaceState(null, "", "#" + name); } catch (error) {}
+    render();
+  }
+
+  function shownTheme() {
+    return document.documentElement.dataset.theme || (systemDark.matches ? "dark" : "light");
+  }
+
+  function showThemeToggle() {
+    const button = document.getElementById("theme-toggle");
+    const nextTheme = shownTheme() === "dark" ? "light" : "dark";
+    button.innerHTML = nextTheme === "dark" ? moonIconMarkup : sunIconMarkup;
+    button.setAttribute("aria-label", "Switch to " + nextTheme + " mode");
+    button.title = "Switch to " + nextTheme + " mode";
+  }
+
+  function toggleTheme() {
+    const nextTheme = shownTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    try { localStorage.setItem("today-theme", nextTheme); } catch (error) {}
+    showThemeToggle();
+  }
+
+  function showReplanLabel(text) {
+    const label = document.querySelector("#replan .floating-label");
+    label.textContent = text;
+    label.hidden = false;
+    clearTimeout(replanLabelTimer);
+    replanLabelTimer = setTimeout(() => { label.hidden = true; }, 2500);
+  }
+
+  function replan() {
+    if (!isServed) {
+      const finish = () => showReplanLabel("Copied");
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(replanCommand).then(finish, () => fallbackCopy(replanCommand, finish));
+      else fallbackCopy(replanCommand, finish);
+      return;
+    }
+    fetch("replan", { method: "POST" })
+      .then((response) => showReplanLabel(response.status === 202 ? "Started" : response.status === 409 ? "Already running" : "Failed"))
+      .catch(() => showReplanLabel("Failed"));
+  }
+
+  function readChecked(date) {
+    try { return JSON.parse(localStorage.getItem("today-checked-" + date)) || {}; } catch (error) { return {}; }
+  }
+
+  function hasLegacyNotes(stored) {
+    return Boolean(stored) && ("general" in stored || "entries" in stored || "entryTimes" in stored);
+  }
+
+  function normalizeNotes(stored, date) {
+    const { general, entries, entryTimes, ...rest } = stored || {};
+    const messages = [...(rest.messages || [])];
+    const isPlanDate = Boolean(window.TODAY) && window.TODAY.date === date;
+    if (general && general.trim()) {
+      messages.push({ at: new Date(date + "T00:00:00").toISOString(), text: general });
+    }
+    for (const [noteKey, text] of Object.entries(entries || {})) {
+      if (!noteKey.startsWith("block:") || !text.trim()) continue;
+      const start = noteKey.slice("block:".length);
+      const block = isPlanDate ? window.TODAY.blocks.find((candidate) => candidate.start === start) : null;
+      const savedAt = (entryTimes || {})[noteKey] || (isPlanDate ? new Date().toISOString() : new Date(date + "T23:59:59").toISOString());
+      messages.push({ at: savedAt, text: text, about: { kind: "block", id: noteKey, label: block ? block.title : formatClock(start) + " block" } });
+    }
+    return { ...rest, messages: messages };
+  }
+
+  function readNotes(date) {
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem("today-notes-" + date)); } catch (error) {}
+    const notes = normalizeNotes(stored, date);
+    if (hasLegacyNotes(stored)) {
+      try { localStorage.setItem("today-notes-" + date, JSON.stringify(notes)); } catch (error) {}
+      scheduleSave(date);
+    }
+    return notes;
+  }
+
+  function pad(number) {
+    return String(number).padStart(2, "0");
+  }
+
+  function localDateOf(moment) {
+    return moment.getFullYear() + "-" + pad(moment.getMonth() + 1) + "-" + pad(moment.getDate());
+  }
+
+  function clockOf(moment) {
+    return formatClock(pad(moment.getHours()) + ":" + pad(moment.getMinutes()));
+  }
+
+  function storeLocally(date, checked, notes) {
+    try {
+      localStorage.setItem("today-checked-" + date, JSON.stringify(checked));
+      localStorage.setItem("today-notes-" + date, JSON.stringify(notes));
+    } catch (error) {}
+  }
+
+  function showSaveStatus() {
+    document.getElementById("save-status").textContent = saveFailed ? " · not saved" : "";
+  }
+
+  function sendState(date, canRetry) {
+    const sentCount = changeCount;
+    fetch("state", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ date: date, checked: readChecked(date), notes: readNotes(date) })
+    }).then((response) => {
+      if (!response.ok) throw new Error("save failed");
+      savedCount = sentCount;
+      saveFailed = false;
+      showSaveStatus();
+    }).catch(() => {
+      if (canRetry) {
+        sendState(date, false);
+      } else {
+        saveFailed = true;
+        showSaveStatus();
+      }
+    });
+  }
+
+  function writeChecked(date, checked) {
+    storeLocally(date, checked, readNotes(date));
+    scheduleSave(date);
+  }
+
+  function writeNotes(date, notes) {
+    storeLocally(date, readChecked(date), notes);
+    scheduleSave(date);
+  }
+
+  function scheduleSave(date) {
+    if (!isServed) return;
+    changeCount += 1;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => sendState(date, true), 500);
+  }
+
+  function loadServerState() {
+    if (!isServed) return;
+    fetch("state.json?" + Date.now(), { cache: "no-store" })
+      .then((response) => response.json())
+      .then((state) => { latestServerState = state; serverHistory = state; render(); })
+      .catch(() => {});
+  }
+
+  function adoptServerState(date) {
+    const entry = latestServerState && latestServerState[date];
+    latestServerState = null;
+    if (!entry || changeCount !== savedCount || saveFailed) return;
+    storeLocally(date, entry.checked || {}, normalizeNotes(entry.notes, date));
+    if (hasLegacyNotes(entry.notes)) scheduleSave(date);
+  }
+
+  function copyText(text, button) {
+    const finish = () => {
+      button.classList.add("copied");
+      setTimeout(() => { button.classList.remove("copied"); }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(finish, () => fallbackCopy(text, finish));
+    } else {
+      fallbackCopy(text, finish);
+    }
+  }
+
+  function fallbackCopy(text, finish) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+    finish();
+  }
+
+  function minutes(clock) {
+    const parts = clock.split(":");
+    return Number(parts[0]) * 60 + Number(parts[1]);
+  }
+
+  function formatClock(clock) {
+    const parts = clock.split(":");
+    const hour = Number(parts[0]);
+    const suffix = hour >= 12 ? "pm" : "am";
+    return (hour % 12 || 12) + ":" + parts[1] + " " + suffix;
+  }
+
+  function formatElapsed(elapsedMinutes) {
+    if (elapsedMinutes < 1) return "just now";
+    if (elapsedMinutes < 60) return elapsedMinutes + "m ago";
+    const hours = Math.floor(elapsedMinutes / 60);
+    const remainder = elapsedMinutes % 60;
+    return hours + "h" + (remainder ? " " + remainder + "m" : "") + " ago";
+  }
+
+  function formatEntryTime(moment, planDate) {
+    if (localDateOf(moment) === planDate) return clockOf(moment);
+    return moment.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + clockOf(moment);
+  }
+
+  function isItemCheckedItself(item, checked) {
+    return item.id in checked ? Boolean(checked[item.id]) : Boolean(item.done);
+  }
+
+  function isItemChecked(item, checked) {
+    return isItemCheckedItself(item, checked) || pullUrls(item).some((url) => tickedUrls.has(url));
+  }
+
+  function collectTickedUrls(today, checked, otherDays) {
+    const urls = new Set();
+    for (const item of today.blocks.flatMap((block) => withDescendants(block.items))) {
+      if (isItemCheckedItself(item, checked)) pullUrls(item).forEach((url) => urls.add(url));
+    }
+    for (const stream of (window.BACKLOG && window.BACKLOG.streams) || []) {
+      for (const group of stream.groups) {
+        for (const item of group.items) {
+          if (isBacklogTicked("backlog:" + backlogItemId(item), checked, otherDays)) pullUrls(item).forEach((url) => urls.add(url));
+        }
+      }
+    }
+    return urls;
+  }
+
+  function workItems(items) {
+    return (items || []).filter((item) => item.kind !== "break");
+  }
+
+  function isTicked(item, checked) {
+    const children = workItems(item.items);
+    if (children.length && children.every((child) => isTicked(child, checked))) return true;
+    return isItemChecked(item, checked);
+  }
+
+  function leafStates(items, checked, ancestorTicked) {
+    const states = [];
+    for (const item of workItems(items)) {
+      const ticked = ancestorTicked || isItemChecked(item, checked);
+      const children = workItems(item.items);
+      if (children.length) states.push(...leafStates(children, checked, ticked));
+      else states.push(ticked);
+    }
+    return states;
+  }
+
+  function checkedOnOtherDays(planDate) {
+    const days = [];
+    if (isServed) {
+      for (const date of Object.keys(serverHistory || {})) {
+        if (date !== planDate) days.push(serverHistory[date].checked || {});
+      }
+    } else {
+      try {
+        for (let index = 0; index < localStorage.length; index++) {
+          const key = localStorage.key(index);
+          if (!key || !key.startsWith("today-checked-") || key === "today-checked-" + planDate) continue;
+          days.push(JSON.parse(localStorage.getItem(key)) || {});
+        }
+      } catch (error) {}
+    }
+    return days;
+  }
+
+  function isBacklogTicked(key, checked, otherDays) {
+    if (key in checked) return Boolean(checked[key]);
+    return otherDays.some((day) => day[key] === true);
+  }
+
+  function pullUrls(item) {
+    return (item.links || []).map((link) => link.url).filter((url) => url.includes("/pull/"));
+  }
+
+  function withDescendants(items) {
+    return workItems(items).flatMap((item) => [item, ...withDescendants(item.items)]);
+  }
+
+  function backlogKeysFor(item) {
+    const urls = new Set(withDescendants([item]).flatMap(pullUrls));
+    if (!urls.size || !window.BACKLOG) return [];
+    const keys = [];
+    for (const stream of window.BACKLOG.streams) {
+      for (const group of stream.groups) {
+        for (const candidate of group.items) {
+          if (pullUrls(candidate).some((url) => urls.has(url))) keys.push("backlog:" + backlogItemId(candidate));
+        }
+      }
+    }
+    return keys;
+  }
+
+  function todayIdsFor(today, backlogItem) {
+    const urls = new Set(pullUrls(backlogItem));
+    if (!urls.size) return [];
+    return today.blocks
+      .flatMap((block) => withDescendants(block.items))
+      .filter((candidate) => pullUrls(candidate).some((url) => urls.has(url)))
+      .map((candidate) => candidate.id);
+  }
+
+  function showBlock(start) {
+    blockChoices.set("block:" + start, true);
+    setView("today");
+    const section = [...document.querySelectorAll(".block")].find((candidate) => candidate.dataset.block === start);
+    if (section) section.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+  function buildDayTracker(today, now) {
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const start = Math.min(...today.blocks.map((block) => minutes(block.start)));
+    const end = Math.max(...today.blocks.map((block) => minutes(block.end)));
+    const wrapper = element("div", "tracker");
+    const row = element("div", "tracker-add day-tracker");
+    row.title = formatClock(today.blocks[0].start) + " to " + formatClock(today.blocks[today.blocks.length - 1].end);
+    row.appendChild(element("span", "tracker-name", "Day"));
+    const bar = element("span", "tracker-bar");
+    const fill = element("span");
+    fill.style.width = Math.max(0, Math.min(100, ((nowMinutes - start) / (end - start)) * 100)) + "%";
+    bar.appendChild(fill);
+    row.appendChild(bar);
+    wrapper.appendChild(row);
+    wrapper.appendChild(element("span", "tracker-since", clockOf(now)));
+    return wrapper;
+  }
+
+  function findStream(streamName) {
+    return window.BACKLOG && window.BACKLOG.streams.find((candidate) => candidate.name === streamName);
+  }
+
+  function buildBar(done, total) {
+    const bar = element("span", "bar");
+    const fill = element("span", "bar-fill");
+    fill.style.width = (total ? Math.min(100, Math.round((done / total) * 100)) : 0) + "%";
+    bar.appendChild(fill);
+    return bar;
+  }
+
+  function openBacklogStream(streamName) {
+    streamChoices.set(streamName, true);
+    setView("backlog");
+    const section = [...document.querySelectorAll(".project")].find((candidate) => candidate.dataset.stream === streamName);
+    if (section) section.scrollIntoView({ block: "start" });
+  }
+
+  function streamLabel(streamName) {
+    const label = element("span", "block-label", streamName);
+    if (!findStream(streamName)) return label;
+    label.classList.add("stream-link");
+    label.setAttribute("role", "link");
+    label.tabIndex = 0;
+    label.title = "Show " + streamName + " in the backlog";
+    label.addEventListener("click", (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      openBacklogStream(streamName);
+    });
+    label.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.stopPropagation();
+      event.preventDefault();
+      openBacklogStream(streamName);
+    });
+    return label;
+  }
+
+  function buildCopyButton(text, label, title) {
+    const button = element("button", "copy-button");
+    button.type = "button";
+    if (title) button.title = title;
+    const face = element("span", "copy-face");
+    face.innerHTML = copyIconMarkup;
+    face.appendChild(element("span", "", label));
+    button.appendChild(face);
+    button.appendChild(element("span", "copy-done", "Copied"));
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      copyText(text, button);
+    });
+    return button;
+  }
+
+  function buildCopyLines(copies, keyPrefix) {
+    const lines = element("div", "copy-lines");
+    for (const copy of copies) {
+      const line = element("div", "copy-line");
+      line.appendChild(buildCopyButton(copy.text, copy.label));
+      const previewKey = keyPrefix + "/" + copy.label;
+      const preview = element("pre", "preview", copy.text);
+      preview.hidden = !openPreviews.has(previewKey);
+      const toggle = element("button", "text-button", preview.hidden ? "Read" : "Hide");
+      toggle.type = "button";
+      toggle.setAttribute("aria-label", "Read the text of " + copy.label);
+      toggle.addEventListener("click", () => {
+        preview.hidden = !preview.hidden;
+        toggle.textContent = preview.hidden ? "Read" : "Hide";
+        if (preview.hidden) openPreviews.delete(previewKey);
+        else openPreviews.add(previewKey);
+      });
+      line.appendChild(toggle);
+      lines.appendChild(line);
+      lines.appendChild(preview);
+    }
+    return lines;
+  }
+
+  function growTextarea(area) {
+    area.style.height = "auto";
+    area.style.height = area.scrollHeight + (area.offsetHeight - area.clientHeight) + "px";
+  }
+
+  function entriesAbout(matches) {
+    return currentMessages.filter((message) => message.who === "you" && message.about && matches(message.about));
+  }
+
+  function backlogItemId(item) {
+    return item.id || (item.links && item.links.length ? item.links[0].url : item.text);
+  }
+
+  function buildLink(link) {
+    const anchor = element("a", "link", link.label);
+    anchor.href = link.url;
+    anchor.target = "_blank";
+    anchor.rel = "noopener";
+    return anchor;
+  }
+
+  function buildTitle(text, isOpen, focusKey, onToggle) {
+    const title = element("span", "task-title");
+    const personMatch = text.match(personPattern);
+    if (personMatch) {
+      title.appendChild(element("span", "person", personMatch[1] + ": "));
+      title.appendChild(document.createTextNode(personMatch[2]));
+    } else {
+      title.textContent = text;
+    }
+    if (!onToggle) return title;
+    title.classList.add("opens");
+    title.setAttribute("role", "button");
+    title.tabIndex = 0;
+    title.dataset.focusKey = focusKey;
+    title.setAttribute("aria-expanded", String(isOpen));
+    title.addEventListener("click", onToggle);
+    title.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      onToggle();
+    });
+    return title;
+  }
+
+  function buildNoteButton(noteKey, count, label) {
+    const button = element("button", count ? "note-button has-notes" : "note-button");
+    button.type = "button";
+    button.dataset.focusKey = "note-button:" + noteKey;
+    button.innerHTML = noteIconMarkup;
+    if (count) button.appendChild(element("span", "", String(count)));
+    button.setAttribute("aria-expanded", String(openNotes.has(noteKey)));
+    button.setAttribute("aria-label", (count ? count + (count === 1 ? " note" : " notes") + " about " : "Add a note about ") + label);
+    button.title = count ? (count === 1 ? "1 note" : count + " notes") : "Add a note";
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (openNotes.has(noteKey)) {
+        openNotes.delete(noteKey);
+      } else {
+        openNotes.add(noteKey);
+        noteToFocus = noteKey;
+      }
+      render();
+    });
+    return button;
+  }
+
+  function buildNotePanel(today, noteKey, about, entries) {
+    const panel = element("div", "note-panel");
+    if (entries.length) {
+      const list = element("ul", "entries");
+      for (const entry of entries) {
+        const line = element("li");
+        line.appendChild(element("span", "entry-time", formatEntryTime(entry.at, today.date)));
+        line.appendChild(element("span", "entry-text", entry.text));
+        list.appendChild(line);
+      }
+      panel.appendChild(list);
+    }
+    const area = element("textarea", "note-field");
+    area.rows = 1;
+    area.placeholder = "Note";
+    area.value = noteDrafts.get(noteKey) || "";
+    area.dataset.noteKey = noteKey;
+    area.setAttribute("aria-label", "Note about " + about.label);
+    area.setAttribute("enterkeyhint", "done");
+    area.addEventListener("input", () => {
+      if (area.value) noteDrafts.set(noteKey, area.value);
+      else noteDrafts.delete(noteKey);
+      growTextarea(area);
+    });
+    area.addEventListener("keydown", (event) => {
+      if (event.isComposing) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        openNotes.delete(noteKey);
+        render();
+      } else if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        const text = area.value.trim();
+        if (!text) return;
+        const current = readNotes(today.date);
+        current.messages.push({ at: new Date().toISOString(), text: text, about: about });
+        writeNotes(today.date, current);
+        noteDrafts.delete(noteKey);
+        noteToFocus = noteKey;
+        render();
+      }
+    });
+    panel.appendChild(area);
+    return panel;
+  }
+
+  function buildCheckbox(id, label, ticked, disabled, onChange) {
+    const check = element("label", "check");
+    const box = element("input");
+    box.type = "checkbox";
+    box.id = "box-" + id;
+    box.dataset.focusKey = "box:" + id;
+    box.checked = ticked;
+    box.disabled = disabled;
+    box.setAttribute("aria-label", label);
+    box.addEventListener("change", () => onChange(box.checked));
+    check.appendChild(box);
+    return check;
+  }
+
+  function buildTaskRow(options) {
+    const row = element("div", "task-row");
+    row.appendChild(options.checkbox);
+    const main = element("div", "task-main");
+    main.appendChild(buildTitle(options.text, options.isOpen, options.focusKey, options.onToggle));
+    if (options.summary) main.appendChild(element("div", "task-summary", options.summary));
+    if (options.links.length) {
+      const links = element("div", "task-links");
+      for (const link of options.links) links.appendChild(buildLink(link));
+      main.appendChild(links);
+    }
+    row.appendChild(main);
+    const actions = element("div", "task-actions");
+    if (options.copy) actions.appendChild(buildCopyButton(options.copy.text, "Copy", options.copy.label));
+    actions.appendChild(options.noteButton);
+    row.appendChild(actions);
+    return row;
+  }
+
+  function buildTask(today, item, checked) {
+    const task = element("li", "task");
+    const ticked = isTicked(item, checked);
+    if (ticked) task.classList.add("checked");
+    const isOpen = openTasks.has(item.id);
+    const noteKey = "task:" + item.id;
+    const about = { kind: "task", id: item.id, label: item.text };
+    const entries = entriesAbout((candidate) => candidate.kind === "task" && candidate.id === item.id);
+    const hasDetails = Boolean(item.note || item.status || (item.copy && item.copy.length));
+
+    task.appendChild(buildTaskRow({
+      checkbox: buildCheckbox(item.id, item.text, ticked, ticked && !isItemChecked(item, checked), (value) => {
+        const current = readChecked(today.date);
+        current[item.id] = value;
+        for (const backlogKey of backlogKeysFor(item)) current[backlogKey] = value;
+        writeChecked(today.date, current);
+        render();
+      }),
+      text: item.text,
+      isOpen: isOpen,
+      focusKey: noteKey,
+      onToggle: hasDetails ? () => {
+        if (openTasks.has(item.id)) openTasks.delete(item.id);
+        else openTasks.add(item.id);
+        render();
+      } : null,
+      links: ticked ? (item.links || []).filter((link) => link.url.includes("/pull/")) : (item.links || []),
+      copy: !ticked && item.copy && item.copy.length ? item.copy[0] : null,
+      noteButton: buildNoteButton(noteKey, entries.length, item.text)
+    }));
+
+    if (openNotes.has(noteKey) || (isOpen && hasDetails)) {
+      const extra = element("div", "task-extra");
+      if (openNotes.has(noteKey)) extra.appendChild(buildNotePanel(today, noteKey, about, entries));
+      if (isOpen && hasDetails) {
+        const details = element("div", "details");
+        if (item.note) details.appendChild(element("p", "", item.note));
+        if (item.status) details.appendChild(element("p", "", item.status));
+        if (item.copy && item.copy.length) details.appendChild(buildCopyLines(item.copy, item.id));
+        extra.appendChild(details);
+      }
+      task.appendChild(extra);
+    }
+
+    const children = workItems(item.items);
+    if (children.length && !ticked) {
+      const list = element("ul", "tasks children");
+      for (const child of children) list.appendChild(buildTask(today, child, checked));
+      task.appendChild(list);
+    }
+    return task;
+  }
+
+  function buildTimeColumn(block) {
+    const column = element("span", "time-column");
+    column.appendChild(element("span", "time", formatClock(block.start)));
+    column.title = formatClock(block.start) + " to " + formatClock(block.end);
+    return column;
+  }
+
+  function buildPlainBlock(block, state) {
+    const section = element("section", "block plain");
+    section.dataset.block = block.start;
+    if (state.isNow) section.classList.add("now");
+    if (state.isPast) section.classList.add("dim");
+    const head = element("div", "row-head");
+    const row = element("div", "row-toggle block-toggle");
+    row.appendChild(element("span"));
+    row.appendChild(buildTimeColumn(block));
+    row.appendChild(element("span", "block-title", block.title));
+    head.appendChild(row);
+    section.appendChild(head);
+    return section;
+  }
+
+  function buildBlock(today, block, tasks, checked, state) {
+    if (!tasks.length) return buildPlainBlock(block, state);
+    const blockKey = "block:" + block.start;
+    const isUnfinished = state.isPast && state.doneCount < state.total;
+    const section = element("section", "block");
+    if (state.isNow) section.classList.add("now");
+    const isOpen = blockChoices.has(blockKey) ? blockChoices.get(blockKey) : state.isNow;
+    section.dataset.block = block.start;
+    if (state.isPast && !isOpen) section.classList.add("dim");
+    const about = { kind: "block", id: blockKey, label: block.title };
+    const entries = entriesAbout((candidate) => candidate.kind === "block" && candidate.id === blockKey);
+
+    const head = element("div", "row-head");
+    const toggle = element("button", "row-toggle block-toggle");
+    toggle.type = "button";
+    toggle.dataset.focusKey = blockKey;
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.innerHTML = chevronMarkup;
+    toggle.appendChild(buildTimeColumn(block));
+    const title = element("span", "block-title", block.stream);
+    title.appendChild(element("span", isUnfinished ? "block-count short" : "block-count", "(" + state.doneCount + "/" + state.total + ")"));
+    toggle.appendChild(title);
+    head.appendChild(toggle);
+    head.appendChild(buildNoteButton(blockKey, entries.length, block.title));
+    section.appendChild(head);
+    if (openNotes.has(blockKey)) section.appendChild(buildNotePanel(today, blockKey, about, entries));
+
+    const body = element("div", "block-body");
+    body.hidden = !isOpen;
+    toggle.addEventListener("click", () => {
+      const opening = body.hidden;
+      blockChoices.set(blockKey, opening);
+      body.hidden = !opening;
+      toggle.setAttribute("aria-expanded", String(opening));
+      section.classList.toggle("dim", state.isPast && !opening);
+    });
+    if (block.copy && block.copy.length) body.appendChild(buildCopyLines(block.copy, blockKey));
+    const list = element("ul", "tasks");
+    for (const item of tasks) list.appendChild(buildTask(today, item, checked));
+    body.appendChild(list);
+    section.appendChild(body);
+    return section;
+  }
+
+  function renderToday(today, checked, nowMinutes) {
+    const container = document.getElementById("today-view");
+    container.replaceChildren();
+    const earlierNodes = [];
+    const timeline = element("div", "timeline");
+    for (const block of today.blocks) {
+      const tasks = workItems(block.items);
+      const states = tasks.map((item) => isTicked(item, checked));
+      const state = {
+        isNow: nowMinutes >= minutes(block.start) && nowMinutes < minutes(block.end),
+        isPast: nowMinutes >= minutes(block.end),
+        doneCount: states.filter(Boolean).length,
+        total: states.length
+      };
+      timeline.appendChild(buildBlock(today, block, tasks, checked, state));
+    }
+
+    if (earlierNodes.length) {
+      const head = element("button", "earlier-head");
+      head.type = "button";
+      head.dataset.focusKey = "earlier";
+      head.innerHTML = chevronMarkup;
+      head.appendChild(element("span", "", "Earlier today · " + earlierNodes.length));
+      head.setAttribute("aria-expanded", String(earlierOpen));
+      const earlierBody = element("div", "timeline earlier-body");
+      for (const node of earlierNodes) earlierBody.appendChild(node);
+      earlierBody.hidden = !earlierOpen;
+      head.addEventListener("click", () => {
+        earlierOpen = earlierBody.hidden;
+        earlierBody.hidden = !earlierOpen;
+        head.setAttribute("aria-expanded", String(earlierOpen));
+      });
+      container.appendChild(head);
+      container.appendChild(earlierBody);
+    }
+    container.appendChild(timeline);
+  }
+
+  function changeTracker(today, name, direction) {
+    const current = readNotes(today.date);
+    const trackers = current.trackers || {};
+    const times = [...(trackers[name] || [])];
+    if (direction > 0) times.push(new Date().toISOString());
+    else if (times.length) times.pop();
+    else return;
+    current.trackers = { ...trackers, [name]: times };
+    writeNotes(today.date, current);
+    render();
+  }
+
+  function buildTracker(today, name, times, now) {
+    const settings = trackerSettings[name];
+    const wrapper = element("div", "tracker");
+    const button = element("button", "tracker-add");
+    button.type = "button";
+    button.dataset.focusKey = "tracker:" + name;
+    button.dataset.count = String(times.length);
+    button.appendChild(element("span", "tracker-name", settings.label));
+    const bar = element("span", "tracker-bar");
+    const fill = element("span");
+    fill.style.width = Math.min(100, Math.round((times.length / trackerTarget) * 100)) + "%";
+    bar.appendChild(fill);
+    button.appendChild(bar);
+    const countText = times.length + " of " + trackerTarget;
+    button.title = countText + ". Click to add one; Option-click, or press and hold, to undo the last.";
+    button.setAttribute("aria-label", settings.label + " " + countText + ". Add one");
+    let pressTimer = null;
+    const cancelPress = () => {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    };
+    button.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        lastLongPress = Date.now();
+        changeTracker(today, name, -1);
+      }, 600);
+    });
+    button.addEventListener("pointerup", cancelPress);
+    button.addEventListener("pointercancel", cancelPress);
+    button.addEventListener("pointerleave", cancelPress);
+    button.addEventListener("contextmenu", (event) => event.preventDefault());
+    button.addEventListener("click", (event) => {
+      if (Date.now() - lastLongPress < 1000) return;
+      changeTracker(today, name, event.altKey ? -1 : 1);
+    });
+    wrapper.appendChild(button);
+    const undo = element("button", "tracker-undo", "−");
+    undo.type = "button";
+    undo.setAttribute("aria-label", "Undo the last " + settings.label.toLowerCase());
+    undo.title = "Undo the last one";
+    undo.disabled = !times.length;
+    undo.addEventListener("click", () => changeTracker(today, name, -1));
+    wrapper.appendChild(undo);
+    const dayStart = new Date(today.date + "T" + (today.blocks.length ? today.blocks[0].start : "09:00") + ":00");
+    const reference = times.length ? new Date(times[times.length - 1]) : dayStart;
+    const elapsed = Math.floor((now - reference) / 60000);
+    const since = element("span", "tracker-since", times.length ? formatElapsed(Math.max(0, elapsed)) : "none yet");
+    if (elapsed > settings.limit) wrapper.classList.add("overdue");
+    wrapper.appendChild(since);
+    return wrapper;
+  }
+
+  function renderTrackers(today, now) {
+    const container = document.getElementById("trackers");
+    container.replaceChildren();
+    const trackers = readNotes(today.date).trackers || {};
+    if (today.blocks.length) container.appendChild(buildDayTracker(today, now));
+    for (const name of Object.keys(trackerSettings)) container.appendChild(buildTracker(today, name, trackers[name] || [], now));
+  }
+
+  function renderLog(today, messages) {
+    if (view !== "log") {
+      logWasShown = false;
+      return;
+    }
+    const section = document.getElementById("log-view");
+    const oldThread = document.getElementById("thread");
+    const wasVisible = logWasShown && Boolean(oldThread);
+    const wasAtBottom = wasVisible && oldThread.scrollHeight - oldThread.scrollTop - oldThread.clientHeight < 24;
+    const oldScrollTop = wasVisible ? oldThread.scrollTop : 0;
+    section.replaceChildren();
+
+    const thread = element("div", "thread");
+    thread.id = "thread";
+    thread.tabIndex = 0;
+    thread.setAttribute("aria-label", "Log");
+    let previousDate = null;
+    for (const message of messages) {
+      const messageDate = localDateOf(message.at);
+      if (messageDate !== previousDate) {
+        const dayLabel = messageDate === today.date ? "Today" : message.at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        thread.appendChild(element("div", "day-divider", dayLabel));
+      }
+      previousDate = messageDate;
+      const isMine = message.who === "you";
+      const item = element("div", isMine ? "message mine" : "message theirs");
+      const body = element("div", "message-body");
+      if (message.prefix) body.appendChild(element("span", "message-prefix", message.prefix));
+      body.appendChild(element("span", "message-text", message.text));
+      item.appendChild(body);
+      item.appendChild(element("span", "message-meta", clockOf(message.at)));
+      thread.appendChild(item);
+    }
+    section.appendChild(thread);
+
+    const area = element("textarea", "composer-field");
+    area.rows = 1;
+    area.value = composerDraft;
+    area.dataset.noteKey = "composer";
+    area.placeholder = "Log entry";
+    area.setAttribute("aria-label", "Log entry");
+    area.setAttribute("enterkeyhint", "send");
+    area.addEventListener("input", () => {
+      composerDraft = area.value;
+      growTextarea(area);
+    });
+    area.addEventListener("keydown", (event) => {
+      if (event.isComposing || event.key !== "Enter" || event.shiftKey) return;
+      event.preventDefault();
+      const text = area.value.trim();
+      if (!text) return;
+      const current = readNotes(today.date);
+      current.messages.push({ at: new Date().toISOString(), text: text });
+      writeNotes(today.date, current);
+      composerDraft = "";
+      scrollThreadToBottom = true;
+      noteToFocus = "composer";
+      render();
+    });
+    section.appendChild(area);
+
+    const hasNewMessage = messages.length > lastMessageCount;
+    lastMessageCount = messages.length;
+    threadScrollTarget = scrollThreadToBottom || !wasVisible || (hasNewMessage && wasAtBottom) ? "bottom" : oldScrollTop;
+    scrollThreadToBottom = false;
+    logWasShown = true;
+  }
+
+  function collectMessages(today) {
+    const histories = {};
+    if (isServed) {
+      for (const date of Object.keys(serverHistory || {})) histories[date] = normalizeNotes(serverHistory[date].notes, date);
+    } else {
+      try {
+        for (let index = 0; index < localStorage.length; index++) {
+          const key = localStorage.key(index);
+          if (!key || !key.startsWith("today-notes-")) continue;
+          const date = key.slice("today-notes-".length);
+          histories[date] = normalizeNotes(JSON.parse(localStorage.getItem(key)), date);
+        }
+      } catch (error) {}
+    }
+    histories[today.date] = readNotes(today.date);
+    const messages = [];
+    for (const notes of Object.values(histories)) {
+      for (const message of notes.messages) {
+        messages.push({ who: "you", at: new Date(message.at), text: message.text, about: message.about, prefix: message.about ? "Re: " + message.about.label : "" });
+      }
+    }
+    for (const message of (window.THREAD && window.THREAD.messages) || []) {
+      messages.push({ who: "claude", at: new Date(message.at), text: message.text, prefix: message.about || "" });
+    }
+    return messages.sort((first, second) => first.at - second.at);
+  }
+
+  function buildBacklogItem(today, stream, item, ticked) {
+    const task = element("li", ticked ? "task checked" : "task");
+    if (item.waiting) task.classList.add("waiting");
+    const itemId = backlogItemId(item);
+    const itemKey = "backlog:" + stream.name + "/" + itemId;
+    const isOpen = openTasks.has(itemKey);
+    const about = { kind: "backlog", id: itemId, label: item.text, stream: stream.name };
+    const entries = entriesAbout((candidate) => candidate.kind === "backlog" && candidate.id === itemId && candidate.stream === stream.name);
+    const hasDetails = Boolean(item.state || item.next);
+    task.appendChild(buildTaskRow({
+      checkbox: buildCheckbox(itemKey, item.text, ticked, false, (value) => {
+        const current = readChecked(today.date);
+        current["backlog:" + itemId] = value;
+        for (const todayId of todayIdsFor(today, item)) current[todayId] = value;
+        writeChecked(today.date, current);
+        render();
+      }),
+      text: item.text,
+      isOpen: isOpen,
+      focusKey: itemKey,
+      onToggle: hasDetails ? () => {
+        if (openTasks.has(itemKey)) openTasks.delete(itemKey);
+        else openTasks.add(itemKey);
+        render();
+      } : null,
+      links: item.links || [],
+      summary: item.summary,
+      copy: null,
+      noteButton: buildNoteButton(itemKey, entries.length, item.text)
+    }));
+    if (openNotes.has(itemKey) || (isOpen && hasDetails)) {
+      const extra = element("div", "task-extra");
+      if (openNotes.has(itemKey)) extra.appendChild(buildNotePanel(today, itemKey, about, entries));
+      if (isOpen && hasDetails) {
+        const details = element("div", "details");
+        if (item.state) details.appendChild(element("p", "", item.state));
+        if (item.next) details.appendChild(element("p", "", "Next: " + item.next));
+        extra.appendChild(details);
+      }
+      task.appendChild(extra);
+    }
+    return task;
+  }
+
+  function renderBacklog(today) {
+    const backlogView = document.getElementById("backlog-view");
+    backlogView.replaceChildren();
+    const backlog = window.BACKLOG;
+    if (!backlog) {
+      backlogView.appendChild(element("p", "empty", "No backlog.js found beside today.js."));
+      return;
+    }
+    const checked = readChecked(today.date);
+    const otherDays = checkedOnOtherDays(today.date);
+    for (const stream of backlog.streams) {
+      const items = stream.groups.flatMap((group) => group.items);
+      const tickedItems = new Set(items.filter((item) => isBacklogTicked("backlog:" + backlogItemId(item), checked, otherDays) || pullUrls(item).some((url) => tickedUrls.has(url))));
+      const hasTotals = stream.project && typeof stream.done === "number" && typeof stream.total === "number";
+      const total = hasTotals ? stream.total : items.length;
+      const done = Math.min(total, (hasTotals ? stream.done : 0) + tickedItems.size);
+      const isOpen = streamChoices.get(stream.name) === true;
+      const streamKey = "stream:" + stream.name;
+      const about = { kind: "stream", id: stream.name, label: stream.name };
+      const entries = entriesAbout((candidate) => candidate.kind === "stream" && candidate.id === stream.name);
+      const section = element("section", "project");
+      section.dataset.stream = stream.name;
+
+      const head = element("div", "row-head");
+      const toggle = element("button", "row-toggle project-toggle");
+      toggle.type = "button";
+      toggle.dataset.focusKey = streamKey;
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.innerHTML = chevronMarkup;
+      toggle.appendChild(element("span", "project-name", stream.name));
+      const numbers = element("span", "project-numbers");
+      numbers.appendChild(buildBar(done, total));
+      numbers.appendChild(element("span", "", done + "/" + total));
+      toggle.appendChild(numbers);
+      toggle.appendChild(element("span", "project-target", stream.target ? new Date(stream.target + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""));
+      head.appendChild(toggle);
+      head.appendChild(buildNoteButton(streamKey, entries.length, stream.name));
+      section.appendChild(head);
+      if (openNotes.has(streamKey)) section.appendChild(buildNotePanel(today, streamKey, about, entries));
+
+      const body = element("div", "project-body");
+      body.hidden = !isOpen;
+      toggle.addEventListener("click", () => {
+        const opening = body.hidden;
+        streamChoices.set(stream.name, opening);
+        body.hidden = !opening;
+        toggle.setAttribute("aria-expanded", String(opening));
+      });
+      const list = element("ul", "tasks");
+      for (const item of items) list.appendChild(buildBacklogItem(today, stream, item, tickedItems.has(item)));
+      body.appendChild(list);
+      section.appendChild(body);
+      backlogView.appendChild(section);
+    }
+  }
+
+  function setTabCount(name, count) {
+    const tab = document.getElementById("show-" + name);
+    tab.replaceChildren(document.createTextNode(name[0].toUpperCase() + name.slice(1)));
+    if (count) tab.appendChild(element("span", "tab-count", String(count)));
+  }
+
+  function render() {
+    const today = window.TODAY;
+    if (!today) return;
+    adoptServerState(today.date);
+    const scrollPosition = window.scrollY;
+    const active = document.activeElement;
+    const typingKey = active && active.dataset ? active.dataset.noteKey : null;
+    const focusKey = active && active.dataset ? active.dataset.focusKey : null;
+    const typingStart = typingKey ? active.selectionStart : 0;
+    const typingEnd = typingKey ? active.selectionEnd : 0;
+    const typingScroll = typingKey ? active.scrollTop : 0;
+    const checked = readChecked(today.date);
+    tickedUrls = collectTickedUrls(today, checked, checkedOnOtherDays(today.date));
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    document.getElementById("heading").textContent = new Date(today.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    document.getElementById("meta").textContent = "Plan updated " + formatClock(today.updated);
+    currentMessages = collectMessages(today);
+    setTabCount("log", currentMessages.filter((message) => message.who === "you" && localDateOf(message.at) === today.date).length);
+    setTabCount("backlog", window.BACKLOG ? window.BACKLOG.streams.reduce((total, stream) => total + stream.groups.reduce((sum, group) => sum + group.items.length, 0), 0) : 0);
+    for (const name of viewNames) {
+      document.getElementById("show-" + name).setAttribute("aria-selected", String(view === name));
+      document.getElementById(name + "-view").hidden = view !== name;
+    }
+    document.getElementById("page").classList.toggle("log-active", view === "log");
+
+    const current = today.blocks.find((block) => nowMinutes >= minutes(block.start) && nowMinutes < minutes(block.end));
+    const next = today.blocks.find((block) => minutes(block.start) > nowMinutes);
+    document.title = (current ? current.title || current.stream : next ? "Next: " + (next.title || next.stream) : "Done") + " - Today";
+
+    renderTrackers(today, now);
+    renderToday(today, checked, nowMinutes);
+    renderLog(today, currentMessages);
+    renderBacklog(today);
+
+    for (const area of document.querySelectorAll("textarea")) {
+      if (area.offsetParent) growTextarea(area);
+    }
+    const loggedThread = document.getElementById("thread");
+    if (threadScrollTarget !== null && loggedThread) loggedThread.scrollTop = threadScrollTarget === "bottom" ? loggedThread.scrollHeight : threadScrollTarget;
+    threadScrollTarget = null;
+    const keyToFocus = noteToFocus || typingKey;
+    if (keyToFocus) {
+      for (const area of document.querySelectorAll("textarea")) {
+        if (area.dataset.noteKey !== keyToFocus || !area.offsetParent) continue;
+        area.focus({ preventScroll: true });
+        if (!noteToFocus) {
+          area.setSelectionRange(typingStart, typingEnd);
+          area.scrollTop = typingScroll;
+        }
+      }
+      noteToFocus = null;
+    } else if (focusKey) {
+      for (const node of document.querySelectorAll("[data-focus-key]")) {
+        if (node.dataset.focusKey === focusKey && node.offsetParent) node.focus({ preventScroll: true });
+      }
+    }
+    window.scrollTo(0, scrollPosition);
+  }
+
+  function loadScript(name) {
+    const script = document.createElement("script");
+    script.src = name + "?" + Date.now();
+    script.onload = () => { render(); script.remove(); };
+    script.onerror = () => {
+      script.remove();
+      if (name === "today.js") document.getElementById("meta").textContent = "could not read today.js";
+    };
+    document.body.appendChild(script);
+  }
+
+  function loadPlan() {
+    loadScript("today.js");
+    loadScript("backlog.js");
+    loadScript("thread.js");
+    loadServerState();
+  }
+
+  for (const name of viewNames) document.getElementById("show-" + name).addEventListener("click", () => setView(name));
+  document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+  document.getElementById("replan").addEventListener("click", replan);
+  systemDark.addEventListener("change", showThemeToggle);
+  window.addEventListener("hashchange", () => { view = viewFromHash(); render(); });
+  showThemeToggle();
+
+  loadPlan();
+  setInterval(loadPlan, 60000);
+</script>
+</body>
+</html>

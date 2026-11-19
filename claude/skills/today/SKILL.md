@@ -1,6 +1,6 @@
 ---
 name: today
-description: Camen's day plan - the hour-by-hour page and the backlog at ~/Documents/notes/today/. Use it in the morning when he dictates what he is thinking about ("here's what I'm thinking about today", "plan my day") to rebuild the backlog and the day's plan, and use it from any session during the day to record that a planned item finished, moved, ran long, or changed state, or to add something to the backlog.
+description: Camen's day plan - the hour-by-hour page and the backlog at ~/Documents/notes/today/. Use it in the morning when he dictates what he is thinking about ("here's what I'm thinking about today", "plan my day") to rebuild the backlog and the day's plan, when he says "/today", "refresh my day" or "re-plan" with nothing else to re-run it from the backlog, calendar and GitHub, and use it from any session during the day to record that a planned item finished, moved, ran long, or changed state, or to add something to the backlog.
 ---
 
 # Today
@@ -11,10 +11,10 @@ Everything is in `~/Documents/notes/today/`. Agents write the two data files; Ca
 |---|---|
 | `today.js` | Today's schedule: time blocks, the items in each, links, and things to copy. Rewritten every morning. |
 | `backlog.js` | Everything he could be working on, by work stream, with the state and next step of each. Lasts across days. |
-| `index.html` | The page. A Today view and a Backlog view; re-reads both data files every minute. Does not change from day to day; change it only when he asks for a change to the page itself. |
-| `state.json` | His ticks and notes, by date, written by the page. Read it; never write it. |
-| `thread.js` | The agent's side of the notes thread at the bottom of the page: what was done with each of his notes. Agents append to it. |
-| `server.cjs` | Serves the folder at `http://localhost:4980` and writes `state.json`. A launchd agent (`today-page`, in the dotfiles' `user.nix`) keeps it running. |
+| `index.html` | The page: Plan, Backlog and Log tabs; re-reads the data files every minute. It is a link to `page/index.html` beside this skill, so its history is in the dotfiles repo. He settled its look over a day of recordings on 2026-11-18: planning never touches it, and it changes only when he asks for a change to the page itself. |
+| `state.json` | His ticks and Log entries, by date, written by the page. Read it; never write it. |
+| `thread.js` | The agents' side of the page's Log tab. Agents append to it. |
+| `server.cjs` | Serves the folder at `http://localhost:4980` and writes `state.json`. A launchd agent (`today-page`, in the dotfiles' `user.nix`) keeps it running. The page's "Re-plan the day" button posts to `/replan`, which starts a background session in `~/Documents/notes` that runs this skill. |
 | `archive/` | Earlier days' `today.js`, named by date. |
 
 `~/Documents/notes/organize.md` (the organize skill) stays his own hand-kept list of projects and pull requests; read it, don't replace it.
@@ -33,10 +33,11 @@ He dictates loosely what is on his mind. Some of it is work to do today, some is
 2. Refresh the facts, in parallel:
    - Linear: issues assigned to him in started, unstarted and backlog states, and projects he is a member of.
    - GitHub, his open pull requests with review decision, mergeable state, CI state, unresolved thread count and base branch (one GraphQL search, `is:pr is:open author:@me org:augusthealth`).
-   - GitHub, pull requests requesting his review (`gh search prs --review-requested=@me --state=open --owner=augusthealth`).
+   - The `Reviews` stream, rebuilt from `node ~/.claude/scripts/review-queue.cjs` (JSON, one entry per pull request). The script applies his rules of 2026-11-18: a pull request is listed only when it asked for him by name or for the move-ins team; one that asked for move-ins and already has a review from Jesse or Josh is left out; one he has reviewed stays until it merges, marked as not needing him unless the author pushed since. Write each entry as an item with `summary` (who was asked, who reviewed and how, or "Doesn't need you: ...") and `waiting: true` when `needsMe` is false; only `needsMe` entries go into a day's plan.
+   - His meetings, from Apple Calendar (he left them out of the first plan and had to ask): `swift ~/.claude/scripts/calendar-day.swift` prints `start | end | attending or declined | calendar | title` for today, or for a `YYYY-MM-DD` argument. Meetings he has not declined go in `stream: "Meetings"` blocks with an empty `title`: back-to-back meetings share one block spanning them, and each meeting is an item he ticks (`{ id: "meeting-1400", text: "2:00 pm Engineering Weekly" }`). Work is placed around them; all-day entries are other people's time off and are left out.
 3. Update `backlog.js`: new items from the dictation and the refresh, changed states, finished items removed, `today: true` on exactly the items in today's plan. Set `updated`. Keep `priorities` in his words from the latest dictation.
 4. Copy yesterday's `today.js` to `archive/<its date>.js`, then write the new `today.js`.
-5. Check both files load: `cd ~/Documents/notes/today && node -e 'global.window={};require("./today.js");require("./backlog.js")'`.
+5. Run `node ~/.claude/scripts/today-check.cjs` and fix everything it prints. It checks that the files fit the page as he settled it (block and item shape, meetings, no break tasks, command and label rules, links that let ticks sync). A plan is not finished until it prints that the files fit.
 6. Reply with the schedule as a table, what was left out and why, and the page path. Give him `http://localhost:4980` and put it on the clipboard. Don't open it. If the server does not answer (`curl -X GET localhost:4980/state.json`), say so and give `open ~/Documents/notes/today/index.html`, where the page works but saves only in his browser.
 
 Choosing what goes in the day:
@@ -45,6 +46,9 @@ Choosing what goes in the day:
 - The rules in "Planning my day" in his `CLAUDE.local.md` apply: easy, known-shape work and reviews in the morning, design and thinking in the afternoon, time split evenly between move-ins and integrations judged over the last few days (the archive is the record), his own pull requests never in the review list.
 - Work that unblocks something already open (review threads, failing CI, conflicts, an approved pull request waiting to merge) goes ahead of starting new work.
 - A work stream with many open review rounds gets a short slot morning and afternoon rather than one block, so a pull request that needs several rounds turns around twice a day.
+- The page shows a block as its start time and `stream` only ("4:30 pm SELF contacts (0/2)"); the `title` appears once he opens it. Ticks sync between the Plan and Backlog tabs for items that share a pull request link, so give both the same PR `url`.
+- A block's `title` says the work in plain words ("Answer review comments on the backend PRs"), never a planner's label like "Slot 1": he could not tell what a slot was.
+- Posting a review that is already drafted takes him 40 to 60 minutes when the pull request is large, not 20: on 2026-11-18 three drafted reviews took two hours and pushed out the block after them. Plan one large or two small per hour.
 - Reviews he already started go before reviews not started. A review is finished when its comments are posted.
 - Work on his own tooling gets at most the last half hour, unless he says otherwise.
 - Leave room: an hour for lunch at 12:00, and no more items in a block than its sizes add up to (sizes are defined in `CLAUDE.local.md`).
@@ -56,17 +60,41 @@ The plan tells him how to work, not only what to work on (he asked for this on 2
 - **Started together**, when one session or one command can carry several things (stacked pull requests worked down in order, several reviews started in the background): one parent item whose `copy` is the single command, with the things it covers as its nested `items`, each with its links and its own box to tick as it finishes. The parent's `text` is a short task title ("Address review comments on the three stacked backend PRs", "Review the room picker stack"), never an instruction about sessions ("Start one session that…"): the nesting already says it.
 - **A head start**: when the next thing needs slow setup, its parent item's `note` says when to start it ("Start the command when you begin reading the room picker stack").
 
-Breaks are tasks too: an item with `kind: "break"` and a `text` that says what to do in a few words ("Stand up, drink water", "Stretch, a short walk"; vary them, and say "drink", not "refill"), placed after the work it follows: last in a block, or between two long items. About one an hour. Lunch is the only break that is a block of its own (`stream: "Break"`, no items).
+No break tasks: the page's header counts water and standing through the day (he asked for that in place of "stand up, drink water" items on 2026-11-18), so never write `kind: "break"` items. Lunch is the only break in the plan, a block of its own (`stream: "Break"`, no items, its `title` shown as the row).
+
+Unfinished work from an earlier block stays on the page in its block, and the page's refresh button asks for a re-plan. On a re-plan, or the next morning: unfinished items that unblock something (an approved pull request waiting to merge, review threads on a stack others wait on) go first in the next free block; the rest compete with the remaining plan by his priorities, and what no longer fits goes back to the backlog with a line in `log` saying so. Don't stack carried-over work on top of a full block: move something out.
+
+## Refresh: no dictation
+
+The page's refresh button (and "refresh my day", "re-plan") runs this with nothing from him to go on. Look at `date` in `today.js`:
+
+- **An earlier day**: build today's plan as in the morning steps, with the priorities already in `backlog.js` standing in for a dictation, yesterday's unfinished items carried over by the rule above, and his Log entries since the last plan read first.
+- **Today**: keep what is done and what is past, and rewrite the blocks from now on: refresh GitHub, Linear and the calendar, read his ticks and Log entries in `state.json`, carry over what is unfinished, and drop to the backlog what no longer fits. Add a `log` line saying what moved.
+
+Either way, finish by answering in `thread.js` with what changed, in two or three lines. Nobody is watching the session, so don't ask anything; decide.
+
+## The Log
+
+The page's third tab is the Log (he calls it the log or log book; it is not the `log` list in `today.js`), shown as a conversation between him and the agents. He writes updates into it: where a ticket stands, what he is thinking, how long something took, what to change in the plan. It is context as much as feedback, so read it whenever this skill runs, and any session that wants to know where a piece of his work stands can read it too.
+
+- His entries are in `state.json` under the date he wrote them: `notes.messages` as `[{ at, text, about }]`. `at` is UTC (ends in `Z`). `about` is absent for a general entry, otherwise `{ kind: "task" | "block" | "stream" | "backlog", id, label }`: a task's `id` is the item `id` in that day's `today.js`, a block's is `block:<HH:MM start>`, a stream's is its name in `backlog.js`, and a backlog item's is its first link's url (or its text when it has no link), with `stream` beside it. `label` is the text he saw.
+- The agents' side is `thread.js`: `messages` as `[{ at: "<YYYY-MM-DDTHH:MM, local>", about: "<the label of the entry answered, or a few words>", text }]`.
+- An entry is new when it is later than the last message in `thread.js`.
+
+Each time this skill runs, and whenever he says he wrote something:
+
+1. Read the new entries, and the last few days' entries about any stream being planned.
+2. Carry what an entry says into the data: a status update on a task goes into that item's `status` in `today.js` and its `state`/`next` in `backlog.js`; "drop this" or "this moved" changes the plan. An entry that would apply to other days (how long a kind of task takes, how he wants commands written, what he never wants scheduled, when breaks help) changes this skill, right then, in the section it belongs to: the rule and its why in a clause.
+3. Answer in the thread, one message per entry that led to something: what changed because of it, in a sentence or two, or the answer when he asked something. Say what was done, not that it was received. An entry that is only him thinking aloud needs no reply. Check the file still loads (`node -e 'global.window={};require("./thread.js")'`).
+4. Tell him in one line what changed.
 
 ## Learning from the day
 
-He leaves notes on the page, one per block and messages in the thread at the bottom ("this took me an hour", "drop this", "wrong directory in this command"), and ticks what he finishes. Both are in `state.json`, under the date: `checked` by item `id`, `notes.entries` by `block:<HH:MM start>` (with `notes.entryTimes`), `notes.messages` as `[{ at, text }]`. In the morning, before planning, and during the day whenever he says he left a note:
+In the morning, before planning:
 
-1. Read yesterday's (or today's) entry in `state.json` beside that day's `today.js`. A note is new when it is later than the last message in `thread.js`; his times are UTC (they end in `Z`), the ones in `thread.js` are local.
-2. Work out each block's done count from `checked` (leaf items, breaks left out).
-3. Act on each new note, then answer it in the thread: append to `messages` in `thread.js` one entry per note, `{ at: "<YYYY-MM-DDTHH:MM, now>", about: "<the note's first words, or its block>", text: "<what changed because of it, in a sentence or two: the plan, the backlog, or this skill>" }`. Say what was done, not that it was received; when nothing was changed, say why. Check the file still loads (`node -e 'global.window={};require("./thread.js")'`). One about a single item changes the backlog. One that would apply to other days (how long a kind of task takes, how he wants commands written, what he never wants scheduled, when breaks help) changes this skill, right then, in the section it belongs to: the rule and its why in a clause. Tell him in one line what changed.
-   A note about a single item changes the plan or the backlog. One that would apply to other days (how long a kind of task takes, how he wants commands written, what he never wants scheduled, when breaks help) changes this skill, right then, in the section it belongs to: the rule and its why in a clause.
-4. Use the done counts: a block that finished 1 of 3 was too full or the wrong work for that hour; size and place today's blocks from that.
+1. Read yesterday's `checked` in `state.json` (by item `id`) beside yesterday's plan in `archive/`. A key `backlog:<first link url, or the item's text>` is a backlog item he ticked off himself on the Backlog tab: confirm it against GitHub or Linear, then remove the item from `backlog.js` and add one to its stream's `done`.
+2. Work out each block's done count (leaf items). `notes.trackers` in `state.json` has the times he logged water and standing.
+3. Use the done counts: a block that finished 1 of 3 was too full or the wrong work for that hour; size and place today's blocks from that.
 
 ## `today.js`
 
@@ -79,12 +107,11 @@ window.TODAY = {
       start: "11:15",
       end: "12:00",
       stream: "SELF contacts",
-      title: "Slot 1: backend review rounds",
+      title: "Answer review comments on the backend PRs",
       items: [
-        { id: "break-1115", kind: "break", text: "Stand up, refill your water" },
         {
           id: "self-backend-chain",
-          text: "Start one session that works down the three stacked backend PRs, then answer what it brings you",
+          text: "Address review comments on the three stacked backend PRs",
           copy: [{ label: "Copy claude command for all three", text: "cd ~/Projects/august-fullstack && claude \"...\"" }],
           items: [
             {
@@ -98,16 +125,27 @@ window.TODAY = {
           ]
         }
       ]
+    },
+    { start: "12:00", end: "13:00", stream: "Break", title: "Lunch, away from the desk", items: [] },
+    {
+      start: "13:45",
+      end: "15:00",
+      stream: "Meetings",
+      title: "",
+      items: [
+        { id: "meeting-1345", text: "1:45 pm Webform Triggers tb" },
+        { id: "meeting-1400", text: "2:00 pm Engineering Weekly" }
+      ]
     }
   ],
-  log: [{ time: "10:40", text: "Reviews ran 25 minutes over; SELF contacts slot 1 moved to 11:40" }],
+  log: [{ time: "10:40", text: "Reviews ran 25 minutes over; SELF contacts backend work moved to 11:40" }],
   later: ["one line per thing considered and left out"]
 };
 ```
 
 - Times are 24-hour `HH:MM` in the data; the page shows them as "9:45 am". In text he reads (`note`, `status`, `log`), write times the way the page does.
-- Blocks are in order and don't overlap. `stream` matches a stream `name` in `backlog.js` exactly: the page uses it for the tag's colour and its "(2/13)" project count.
-- An item's nested `items` have the same shape as an item, one level deep. The page counts progress on the leaves and leaves breaks out of the count.
+- Blocks are in order and don't overlap. `stream` matches a stream `name` in `backlog.js` exactly (or is `Meetings` or `Break`): it is the block's name on the page.
+- An item's nested `items` have the same shape as an item, one level deep. The block's "(1/3)" counts its top-level items; a parent ticks itself when all its children are ticked. A task row shows only its title, links and first copy button; `note`, `status` and the rest open when he clicks the title, so keep titles self-sufficient.
 - `id` is short, kebab-case, unique in the file, and stays the same all day: his ticks are stored against it.
 - `text` says what the work is in words. A pull request number or ticket id never stands alone: "Merge the snapshot index PR" with a link labelled `backend 7944`, not "Merge 7944".
 - `note` is the state when the plan was written. `status` is what has happened since. `done` ticks the box on the page unless he has ticked or unticked it himself.
@@ -154,7 +192,8 @@ window.BACKLOG = {
 };
 ```
 
-- One stream per project of his, plus `Reviews` (teammates' pull requests) and `Tooling`. `project: true` on the long-running projects, with `done` and `total` as numbers: the page shows them on the stream's tag as "(2/13)", tasks completed out of all the project's tasks. Reviews and Tooling are `project: false` and have neither.
+- An item's optional `summary` is one short line always shown under its title; `waiting: true` greys the item out.
+- One stream per project of his, plus `Reviews` (teammates' pull requests) and `Tooling`. `project: true` on the long-running projects, with `done` and `total` as numbers: the page shows them as a progress bar and "2/13", tasks completed out of all the project's tasks. Reviews and Tooling are `project: false` and have neither. The page shows items only: group titles, `priorities`, `kind`, `size` and `today` are for planning and are not displayed.
 - One item per pull request or piece of work, so the counts mean something. An item that is finished is removed, not marked, and the stream's `done` goes up by one; a new item raises `total`.
 - `kind` is `easy` (known shape, fits a morning), `thought` (design or judgment, fits an afternoon), or `wait` (nothing to do until someone else acts). `size` is the agent's guess, in the sizes from `CLAUDE.local.md`, or empty.
 
@@ -167,9 +206,10 @@ When work in your session changes the state of something in the plan, record it.
 | A planned item is finished | In `today.js`: `done: true` on the item, and a `status` saying how it ended ("merged 10:12 am"). In `backlog.js`: remove the item and add one to the stream's `done`, or rewrite the item if part remains. |
 | An item moved forward but isn't finished, or now waits on someone | `status` on the item in `today.js`, and `state` and `next` on the item in `backlog.js`. |
 | A block ran long or short, or was skipped | An entry in `log` with the time and what happened. Change later blocks' times only when he asks for the day to be re-planned. |
+| You want to know where a piece of his work stands, or what he thinks about it | Read the Log (see "The Log"): his entries about that task or stream in `state.json`. Answer in `thread.js` only when an entry asked for something you did. |
 | New work appeared (a request from a teammate, a new ticket, a follow-up found while working) | An item in the matching stream of `backlog.js`. Not in today's blocks unless he says so. |
 | He asks to re-plan the rest of the day, or to move or drop an item | Rewrite the blocks from now on, keep finished items where they are, add a `log` entry saying why, and bring `today: true` in `backlog.js` in line. |
 
-After any change, set `updated` in the file you changed and run the load check from the morning steps.
+After any change, set `updated` in the file you changed and run `node ~/.claude/scripts/today-check.cjs`.
 
 His own ticks are in `state.json` under today's date, not in `today.js`, so read both before treating an item as open. When he has the page open as a file and not through the server, ticks stay in his browser: check GitHub or ask.

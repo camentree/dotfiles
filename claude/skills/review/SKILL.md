@@ -79,7 +79,7 @@ The proof page is `proof/index.html` in the task directory: the one his branch w
 
 ## Summary page
 
-Every review gets `summary.html` in the task directory, copied at Set up from `~/.claude/skills/review/summary-skeleton.html` and kept current in the same turn as each event, so he gets up to speed from one page and watches the review move (2026-11-18). How to fill and keep it: `~/.claude/skills/review/summary-page.md`, read before touching the page.
+Every review gets `summary.html` in the task directory, copied at Set up from `~/.claude/skills/review/summary-skeleton.html` and kept current in the same turn as each event, so he gets up to speed from one page and watches the review move (2026-11-18). How to fill it: `~/.claude/skills/review/summary-page.md` (the fixed frame and what goes in each step) and `summary-example.html`, a filled-in page, both read before touching yours. "What the PR does" shows the change, not just tells it: the proof's recording, captioned at the top (proof skill's `annotate-video` when it isn't), and the before/after screenshots inline (relative `proof/` paths), whenever the change is visible (he asked, 2026-11-18). "What the PR does" carries the proof's recordings and key screenshots inline, never only a link to the proof page (he asked, 2026-11-18); copy them into the task directory's own `media/`, since a stack's shared proof folder can be moved by a sibling review. Serve the task directory with `python3 -m http.server <port> --bind 0.0.0.0` from a background Bash so the page's relative `proof/` and `plan.md` links resolve, on a port `lsof -nP -iTCP:<port> -sTCP:LISTEN` shows free just before starting it, and post its url only once that server answers: parallel reviews race for the same ports, and #9682's tabs opened #9684's summary on 4975 (2026-11-18).
 
 ## Ready for him
 
@@ -172,7 +172,7 @@ with `{"commit_id": "<headRefOid>", "event": "<his verdict>", "body": "<his summ
 His branch ends when he says it is good, in any words: 👍, good, ship it. A teammate's, when he says to close. Then:
 
 - A role changed for him to try it: set camen@ back to `GROUP_TYPE_SUPER_USER` with `bin-local/users set`.
-- Shut difit down as its skill says, `bin-local/dev stop` (or the repo's own stop) in the review's worktree, stop the summary page's server, and close the Safari tab group's tabs.
+- Shut difit down as its skill says, stop the app: august-frontend's `bin-local/dev` has no `stop` (it prints help); stop its background task, and leave a backend whose start time doesn't match yours, since a sibling review may be using it (2026-11-18), stop the summary page's server, and close the Safari tab group's tabs. Stop only this branch's frontend when its backend is the shared master one (`august-app stop` with `--backend=master` also stops master, which the stack's other reviews were using, 2026-11-18). Ask before stopping the app at all: he may still want a screenshot for the description.
 - A worktree made for the review: keep it and its database, and say how to remove them (`wk rm <branch>`, `bin-local/dev rm` first).
 - His branch: `git push`, the fix commits as they are. When the pull request already exists, stop there: its description and draft state are his (he rejected a `/pr` rewrite and `gh pr ready` on 2026-11-13 with "just push"). Only a branch with no pull request yet goes through `/pr`. Mark its organize.md line `❓`: it now waits on a teammate's review. `💬 ✅` would read as approved and ready to merge.
 

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+walkthrough="$1"
+directory="$(cd "$(dirname "$walkthrough")" && pwd)"
+video="$directory/$(jq -r '.video' "$walkthrough")"
+output="${video%.mp4}.annotated.mp4"
+captions="$(mktemp -d)"
+trap 'rm -rf "$captions"' EXIT
+
+width="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$video")"
+height="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$video")"
+band=110
+step_count="$(jq '.steps | length' "$walkthrough")"
+duration="$(jq '.durationSeconds' "$walkthrough")"
+filter="pad=$width:$((height + band)):0:$band:color=0x1f2328"
+
+for index in $(seq 0 $((step_count - 1))); do
+  jq -r ".steps[$index].caption" "$walkthrough" \
+    | sed "s|^|$((index + 1))/$step_count · |" \
+    | fold -s -w $((width / 14)) > "$captions/$index.txt"
+  start="$(jq ".steps[$index].startSeconds" "$walkthrough")"
+  end="$(jq ".steps[$((index + 1))].startSeconds // $duration" "$walkthrough")"
+  filter="$filter,drawtext=fontfile=/System/Library/Fonts/Helvetica.ttc:textfile=$captions/$index.txt:fontcolor=white:fontsize=24:line_spacing=8:x=24:y=($band-text_h)/2:enable='between(t,$start,$end)'"
+done
+
+ffmpeg -v error -y -i "$video" -vf "$filter" -c:v libx264 -pix_fmt yuv420p -an "$output"
+echo "$output"
