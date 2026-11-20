@@ -73,7 +73,8 @@ comments.json    every difit thread (never deleted)
 anything else    notes, handoffs, ops messages, old comment snapshots
 ```
 
-- `<repo>` is the GitHub repository name (`august-backend`, `dotfiles`), `<branch>` the branch name exactly, slashes kept as subdirectories, the same shape as `wk` worktrees. Both come from the worktree alone: `basename` of `git remote get-url origin` without `.git`, and `git branch --show-current`.
+- `<repo>` is the GitHub repository name (`valinor`, `dotfiles`), `<branch>` the branch name exactly, slashes kept as subdirectories, the same shape as `wk` worktrees. Both come from the worktree alone: `basename` of `git remote get-url origin` without `.git`, and `git branch --show-current`.
+- A pull request moved into valinor by its `bin/migrate-pr` gets a new branch, `codex/migrate-<backend|frontend>-<old number>`, and so a new directory. Its description starts `Migrated from <old pull request url>`: when `~/.claude/tasks/valinor/<branch>/` does not exist and the old pull request's `~/.claude/tasks/august-backend/<old branch>/` or `~/.claude/tasks/august-frontend/<old branch>/` does, move the old directory to the new path before reading or writing anything, and repoint any `plan.md` symlink that named the old path. Until a pull request is moved, its directory under the old repository name stays the one in use.
 - A teammate's pull request gets the same directory under its head branch, with no `plan.md`.
 - A task that becomes several pull requests, or spans repos, keeps its plan in the directory of the branch `/manage` runs from; every other branch it produces gets `plan.md` as a symlink to that file. Each branch has its own `proof/`.
 - `~/.claude/tasks/archive/` holds files from before this layout that no branch claims.

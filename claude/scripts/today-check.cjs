@@ -18,6 +18,7 @@ const backlog = global.window.BACKLOG
 const thread = global.window.THREAD
 const clock = /^\d{2}:\d{2}$/
 const minutes = (value) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3))
+const stages = ['todo', 'dev', 'self-review', 'review', 'comments', 'approved', 'merged']
 const pullUrls = (item) => (item.links || []).map((link) => link.url).filter((url) => url.includes('/pull/'))
 
 if (backlog) {
@@ -30,6 +31,7 @@ if (backlog) {
     for (const group of stream.groups || []) {
       for (const item of group.items || []) {
         if (!item.text) problem(where, 'an item has no text')
+        if (item.stage !== undefined && !stages.includes(item.stage)) problem(where, `"${item.text}" has stage "${item.stage}", not one of ${stages.join(', ')}`)
         for (const link of item.links || []) if (!link.label || !link.url) problem(where, `"${item.text}" has a link without label or url`)
         if (stream.name === 'Reviews' && !item.summary) problem(where, `"${item.text}" has no summary (who was asked, who reviewed)`)
       }
@@ -49,6 +51,7 @@ if (today) {
     if (ids.has(item.id)) problem(where, `item id "${item.id}" is used twice`)
     ids.add(item.id)
     if (!item.text) problem(where, `item ${item.id} has no text`)
+    if (item.stage !== undefined && !stages.includes(item.stage)) problem(where, `item ${item.id} has stage "${item.stage}", not one of ${stages.join(', ')}`)
     if (item.kind === 'break') problem(where, `item ${item.id} is a break task; water and standing are tracked in the page header`)
     if (/^Start one session/i.test(item.text || '')) problem(where, `item ${item.id} is worded as an instruction about sessions; title it as the work`)
     for (const link of item.links || []) if (!link.label || !link.url) problem(where, `item ${item.id} has a link without label or url`)

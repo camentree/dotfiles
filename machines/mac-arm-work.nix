@@ -53,7 +53,7 @@
           sbt = "1.12.5";
         };
         settings = {
-          # Honor .nvmrc / .node-version (e.g. august-frontend pins Node there, not .tool-versions)
+          # Honor .nvmrc / .node-version (e.g. valinor's frontend/ pins Node there, not .tool-versions)
           idiomatic_version_file_enable_tools = [ "node" ];
         };
       };

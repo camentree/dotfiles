@@ -29,6 +29,9 @@
     --track: #e6e6f4;
     --amber: #b0600c;
     --failure: #c4372a;
+    --stage-dev: #c69a12;
+    --stage-approved: #2e9a5c;
+    --stage-merged: #8250df;
     --tooltip: #2a2a30;
     --tooltip-text: #ffffff;
     --size-body: 15px;
@@ -55,6 +58,9 @@
       --track: #262838;
       --amber: #e2a252;
       --failure: #ef8a7b;
+      --stage-dev: #e0be4f;
+      --stage-approved: #5cc58a;
+      --stage-merged: #a98bf0;
       --tooltip: #e9e9ec;
       --tooltip-text: #121214;
     }
@@ -77,6 +83,9 @@
     --track: #262838;
     --amber: #e2a252;
     --failure: #ef8a7b;
+    --stage-dev: #e0be4f;
+    --stage-approved: #5cc58a;
+    --stage-merged: #a98bf0;
     --tooltip: #e9e9ec;
     --tooltip-text: #121214;
   }
@@ -200,6 +209,7 @@
   .block-label.stream-link:hover { text-decoration: underline; }
   .block-title { font-weight: 500; }
   .block-count { margin-left: 6px; color: var(--muted); font-size: var(--size-small); white-space: nowrap; }
+  .block.now { margin: 12px 0; padding: 6px 0; }
   .block.now::before { content: ""; position: absolute; top: 9px; bottom: 9px; left: -12px; width: 2px; border-radius: 2px; background: var(--accent); }
   .block.now .time { color: var(--accent); }
   .block.plain .row-toggle { cursor: default; color: var(--muted); }
@@ -241,6 +251,9 @@
   .check input:disabled { cursor: default; }
   .task-main { min-width: 0; line-height: 1.45; overflow-wrap: anywhere; }
   .task-title { border-radius: 3px; }
+  .stage { display: inline-block; width: 12px; height: 12px; margin-right: 7px; vertical-align: -1px; }
+  .stage svg { display: block; width: 100%; height: 100%; }
+  .task.checked > .task-row .stage { opacity: 0.6; }
   .task-title.opens { cursor: pointer; }
   .person { color: var(--muted); }
   .task.checked > .task-row .task-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
@@ -338,6 +351,8 @@
   }
   @media (hover: none) {
     .tracker-undo { display: none; }
+    /* iOS zooms into any field under 16px on focus, so only touch screens get the larger size; a narrow desktop window keeps the page's sizes */
+    .note-field, .composer-field { font-size: 16px; }
   }
   @media (prefers-reduced-motion: reduce) {
     button, .chevron, .tracker-bar > span { transition: none; }
@@ -351,7 +366,6 @@
     .block > .note-panel { margin-left: calc(14px + 12px); }
     .check { width: 40px; height: 40px; margin: -9px -11px -9px -11px; padding-top: 12px; }
     .note-button { height: 28px; padding: 0 6px; }
-    .note-field, .composer-field { font-size: 16px; }
     .message { max-width: 90%; }
   }
 </style>
@@ -395,6 +409,15 @@
   const personPattern = /^([a-z0-9][a-z0-9-]*): (.+)$/s;
   const copyIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h.5"/></svg>';
   const chevronMarkup = '<svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg>';
+  const stages = {
+    todo: { name: "Not started", color: "var(--muted)", shape: '<circle cx="7" cy="7" r="5.5" stroke-dasharray="2.2 1.9"/>' },
+    dev: { name: "In development", color: "var(--stage-dev)", shape: '<path d="M9.6 2.2l2.2 2.2-6.9 6.9H2.7V9.1z"/><path d="M8.2 3.6l2.2 2.2"/>' },
+    "self-review": { name: "In self-review", color: "var(--label)", shape: '<path d="M1.2 7S3.3 3 7 3s5.8 4 5.8 4-2.1 4-5.8 4S1.2 7 1.2 7z"/><circle cx="7" cy="7" r="1.6"/>' },
+    review: { name: "In PR review", color: "var(--accent)", shape: '<path d="M3.5 1.8h7M3.5 12.2h7M4.6 1.8c0 3.2 4.8 3.2 4.8 5.2s-4.8 2-4.8 5.2M9.4 1.8c0 3.2-4.8 3.2-4.8 5.2s4.8 2 4.8 5.2"/>' },
+    comments: { name: "Addressing PR comments", color: "var(--amber)", shape: '<path d="M7 2c3 0 5.5 2 5.5 4.5S10 11 7 11c-.8 0-1.5-.1-2.1-.3L2 12l.8-2.6C2 8.6 1.5 7.6 1.5 6.5 1.5 4 4 2 7 2z"/>' },
+    approved: { name: "PR accepted", color: "var(--stage-approved)", shape: '<path d="M2.5 7.4l3 3 6-6.4"/>' },
+    merged: { name: "PR merged", color: "var(--stage-merged)", shape: '<circle cx="4" cy="2.9" r="1.5"/><circle cx="4" cy="11.1" r="1.5"/><circle cx="10.5" cy="7" r="1.5"/><path d="M4 4.4v5.2M4 4.4c0 2.3 2.4 2.6 5 2.6"/>' }
+  };
   const noteIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H7l-3 2.5V11H3.5a1 1 0 0 1-1-1z"/></svg>';
   const sunIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>';
   const moonIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>';
@@ -965,10 +988,22 @@
     return check;
   }
 
+  function buildStage(stageKey) {
+    const stage = stages[stageKey];
+    const icon = element("span", "stage");
+    icon.title = stage.name;
+    icon.setAttribute("role", "img");
+    icon.setAttribute("aria-label", stage.name);
+    icon.style.color = stage.color;
+    icon.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + stage.shape + "</svg>";
+    return icon;
+  }
+
   function buildTaskRow(options) {
     const row = element("div", "task-row");
     row.appendChild(options.checkbox);
     const main = element("div", "task-main");
+    if (stages[options.stage]) main.appendChild(buildStage(options.stage));
     main.appendChild(buildTitle(options.text, options.isOpen, options.focusKey, options.onToggle));
     if (options.summary) main.appendChild(element("div", "task-summary", options.summary));
     if (options.links.length) {
@@ -1003,6 +1038,7 @@
         render();
       }),
       text: item.text,
+      stage: item.stage,
       isOpen: isOpen,
       focusKey: noteKey,
       onToggle: hasDetails ? () => {
@@ -1048,7 +1084,7 @@
     const section = element("section", "block plain");
     section.dataset.block = block.start;
     if (state.isNow) section.classList.add("now");
-    if (state.isPast) section.classList.add("dim");
+    if (!state.isNow) section.classList.add("dim");
     const head = element("div", "row-head");
     const row = element("div", "row-toggle block-toggle");
     row.appendChild(element("span"));
@@ -1067,7 +1103,7 @@
     if (state.isNow) section.classList.add("now");
     const isOpen = blockChoices.has(blockKey) ? blockChoices.get(blockKey) : state.isNow;
     section.dataset.block = block.start;
-    if (state.isPast && !isOpen) section.classList.add("dim");
+    if (!state.isNow && !isOpen) section.classList.add("dim");
     const about = { kind: "block", id: blockKey, label: block.title };
     const entries = entriesAbout((candidate) => candidate.kind === "block" && candidate.id === blockKey);
 
@@ -1093,7 +1129,7 @@
       blockChoices.set(blockKey, opening);
       body.hidden = !opening;
       toggle.setAttribute("aria-expanded", String(opening));
-      section.classList.toggle("dim", state.isPast && !opening);
+      section.classList.toggle("dim", !state.isNow && !opening);
     });
     if (block.copy && block.copy.length) body.appendChild(buildCopyLines(block.copy, blockKey));
     const list = element("ul", "tasks");
@@ -1328,6 +1364,7 @@
         render();
       }),
       text: item.text,
+      stage: item.stage,
       isOpen: isOpen,
       focusKey: itemKey,
       onToggle: hasDetails ? () => {

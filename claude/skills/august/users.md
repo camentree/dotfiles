@@ -13,7 +13,7 @@ Every startup runs `RootUserCreation`, which makes two superuser rows if missing
 
 ## `bin-local/users`
 
-Run from `<backend worktree>/loquat`. It reads this worktree's database and port from the `.env` block. Both repos' `bin-local/dev` run it at the end.
+`<worktree>/bin-local/users`, run from anywhere inside the worktree. It reads this worktree's database and port from the sandbox block of `backend/.env`, which each start copies from `.env.local`. `bin-local/dev` prints its table at each start.
 
 | Command | Does | Needs the server |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ Under the hood `set` is `GET /users/<id>`, swap `groups`, `PUT /users/<id>`, and
 
 ## Tokens
 
-`august-app status --backend=<worktree> --user=<email>` prints one. Or mint a token for any user row with `../demo-data/bin/python ../demo-data/test_token.py -e camen@augusthealth.com`, run from `loquat/` or `demo-data/`: it reads `../.env` relative to the working directory to find `DB_DATABASE`, which the block sets alongside `DB_NAME`, so the token targets your database. Send it as `Authorization: Bearer`.
+`august-app status --worktree=<worktree> --user=<email>` prints one. Or mint a token for any user row with `../demo-data/bin/python ../demo-data/test_token.py -e camen@augusthealth.com`, run from `loquat/` or `demo-data/`: it reads `../.env` relative to the working directory to find `DB_DATABASE`, which the block sets alongside `DB_NAME`, so the token targets your database. Send it as `Authorization: Bearer`.
 
 ## Frontend
 
@@ -39,7 +39,7 @@ Under the hood `set` is `GET /users/<id>`, swap `groups`, `PUT /users/<id>`, and
 - `'none'`, for driving the app locally. Set in the `local` block (`august-app` does it) and restart; never commit it. No login form. Every request carries a mock bearer JWT, minted in the browser by `src/shared/api/mockAuth.ts`, for the username_uuid in `sessionStorage` key `mock_auth_username`. If the key is unset the page prompts "Mock Auth Username". The key is per tab.
 - `'cookie'`, the `local` block's value on master and every deployed environment. The login form posts to `/userSessions` and the backend sets a session cookie; needs a real Cognito identity with a password.
 
-A git clean filter keeps `'none'` out of every commit: `.git/info/attributes` maps `src/shared/environment.ts` to `filter=localauth`, whose clean step rewrites `authMethod: 'none'` back to `'cookie'` inside the `local` block only. It is local config, not in the repo, so a fresh clone needs it again: `git config --local filter.localauth.clean "sed \"/^  local: {/,/^  },/ s/authMethod: 'none'/authMethod: 'cookie'/\""`, `git config --local filter.localauth.smudge cat`, then the attributes line.
+A git clean filter keeps `'none'` out of every commit: `.git/info/attributes` maps `frontend/src/shared/environment.ts` to `filter=localauth`, whose clean step rewrites `authMethod: 'none'` back to `'cookie'` inside the `local` block only. It is local config, not in the repo, so a fresh clone needs it again: `git config --local filter.localauth.clean "sed \"/^  local: {/,/^  },/ s/authMethod: 'none'/authMethod: 'cookie'/\""`, `git config --local filter.localauth.smudge cat`, then the attributes line.
 
 Under `bin-local/dev` a tab signs in by itself, and `?mock_user=<email or username_uuid>` on any route switches that tab's user and drops the parameter; that is also how to drive Chrome as another user, no prompt involved. Served any other way, a fresh tab shows the "Mock Auth Username" `window.prompt`, which blocks the extension; there, open `/robots.txt` on the same origin, run `sessionStorage.setItem("mock_auth_username", "<username_uuid>")`, then go to the app route.
 

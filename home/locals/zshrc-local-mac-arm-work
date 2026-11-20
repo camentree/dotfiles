@@ -1,8 +1,8 @@
 export NOTEBOOK_PATH="$HOME/Documents/notes/Notebook.md"
 export TODO_PATH="$HOME/Documents/notes/ToDo.md"
-export AUGUST_FULLSTACK_PATH="$HOME/Projects/august-fullstack"
-export AUGUST_BACKEND_PATH="$AUGUST_FULLSTACK_PATH/august-backend"
-export AUGUST_FRONTEND_PATH="$AUGUST_FULLSTACK_PATH/august-frontend"
+export AUGUST_VALINOR_PATH="$HOME/Projects/valinor"
+export AUGUST_BACKEND_PATH="$AUGUST_VALINOR_PATH/backend"
+export AUGUST_FRONTEND_PATH="$AUGUST_VALINOR_PATH/frontend"
 export AUGUST_TOOLS_PATH="$HOME/Projects/Experimental-Tools"
 export AUGUST_AI_COMPLETIONS_PATH="$HOME/Projects/ai-completions"
 # One sbt server per worktree, each holding up to 5G of heap forever once a compile has grown it.
@@ -11,7 +11,7 @@ export AUGUST_AI_COMPLETIONS_PATH="$HOME/Projects/ai-completions"
 export SBT_OPTS="-Xmx5G -XX:+UseG1GC -XX:G1PeriodicGCInterval=60000 -XX:MaxHeapFreeRatio=10 -XX:MinHeapFreeRatio=5"
 [[ -n "$AUGUST_DEFAULT_USER" ]] || print -u2 "AUGUST_DEFAULT_USER unset — set it in ~/.zshenv.local"
 
-alias fullstack="cd $AUGUST_FULLSTACK_PATH"
+alias valinor="cd $AUGUST_VALINOR_PATH"
 alias backend="cd $AUGUST_BACKEND_PATH/loquat"
 alias frontend="cd $AUGUST_FRONTEND_PATH"
 alias notes="cd $HOME/Documents/notes && tabname notes && nvim ToDo.md"
@@ -45,82 +45,9 @@ functions -c wk-rm wk-rm-shared
 function wk-rm () {
   local branch="${1:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null)}"
   local repo_root=$(wk-repo-root)
-  if [ "$repo_root" = "$AUGUST_BACKEND_PATH" ] && [ "$(wk-existing-path "$branch")" != "$repo_root" ]; then
-    "$AUGUST_BACKEND_PATH/loquat/bin-local/dev" rm "$branch"
+  local branch_worktree=$(wk-existing-path "$branch")
+  if [ "$repo_root" = "$AUGUST_VALINOR_PATH" ] && [ -n "$branch_worktree" ] && [ "$branch_worktree" != "$repo_root" ]; then
+    (cd "$branch_worktree" && bin-local/dev rm)
   fi
   wk-rm-shared "$branch"
 }
-
-function wkfs () {
-  case "$1" in
-    ls) shift; wkfs-ls "$@"; return ;;
-    rm) shift; wkfs-rm "$@"; return ;;
-    *)         wkfs-create "$@";    return ;;
-  esac
-}
-
-function wkfs-create () {
-  local flags=("${@[1,-2]}")
-  local branch="${@[-1]}"
-
-  if [ -z "$flags" ] && [ "$branch" = master ]; then
-    cd "$AUGUST_FULLSTACK_PATH"
-    return
-  fi
-
-  local backend_source="$AUGUST_BACKEND_PATH" frontend_source="$AUGUST_FRONTEND_PATH"
-  [ "$flags" = -h ] && { backend_source="$PWD/backend"; frontend_source="$PWD/frontend" }
-
-  local backend_worktree frontend_worktree
-  backend_worktree=$(cd "$backend_source" && wk $flags "$branch")   || return 1
-  frontend_worktree=$(cd "$frontend_source" && wk $flags "$branch") || return 1
-
-  local worktree_directory="$AUGUST_FULLSTACK_PATH/.august-fullstack-worktrees/$branch"
-  mkdir -p "$worktree_directory"
-  ln -sfn "$backend_worktree"  "$worktree_directory/backend"
-  ln -sfn "$frontend_worktree" "$worktree_directory/frontend"
-  cd "$worktree_directory"
-}
-
-function wkfs-ls () {
-  local root="$AUGUST_FULLSTACK_PATH/.august-fullstack-worktrees"
-  for backend_link in "$root"/**/backend(N@); do
-    local branch_dir="${backend_link%/backend}"
-    echo "${branch_dir#$root/}"
-  done
-}
-
-function wkfs-rm () {
-  local branch="$1"
-  local worktree_directory="$AUGUST_FULLSTACK_PATH/.august-fullstack-worktrees/$branch"
-  [[ "$PWD" == "$worktree_directory"* ]] && cd "$AUGUST_FULLSTACK_PATH"
-
-  (cd "$AUGUST_BACKEND_PATH"  && wk rm "$branch")
-  (cd "$AUGUST_FRONTEND_PATH" && wk rm "$branch")
-
-  rm -rf "$worktree_directory"
-}
-
-# Completions
-function _wkfs_completions () {
-  local subcommands=(
-    'ls:branches with a fullstack worktree'
-    'rm:remove both worktrees and delete the branch'
-    '-b:new branch off the default branch'
-    '-h:new branch off HEAD'
-  )
-  case "$CURRENT" in
-    2)
-      local refs=(${(f)"$(git -C "$AUGUST_BACKEND_PATH" for-each-ref --format='%(refname)' refs/heads refs/remotes/origin 2>/dev/null)"})
-      local branches=(${(u)${${refs#refs/heads/}#refs/remotes/origin/}:#HEAD})
-      _describe 'command' subcommands
-      _describe 'branch' branches
-      ;;
-    3)
-      [ "$words[2]" = rm ] || return
-      local worktrees=(${(f)"$(wkfs-ls)"})
-      _describe 'worktree' worktrees
-      ;;
-  esac
-}
-compdef _wkfs_completions wkfs

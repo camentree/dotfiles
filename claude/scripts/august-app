@@ -5,42 +5,39 @@ set -eo pipefail
 usage() {
   cat <<EOF
 Usage:
-  august-app start|wait|status|stop [--backend=<worktree>] [--frontend=<worktree>] [--frontend-port=<port>] [--user=<email>]
+  august-app start|wait|status|stop [--worktree=<path>] [--user=<email>] [--api] [--dev] [--tunnel] [--lan]
 
-start   Starts what is not answering yet, the backend before the frontend, and
-        stays in the foreground holding what it started: run it as a background
-        shell. Puts authMethod 'none' in the frontend's local environment
-        (uncommitted), sets AWS_PROFILE=us-developer when the backend's .env has
-        none, puts the .npmrc package tokens and the system yarn on the
-        frontend's PATH, and starts no backend while the shared Postgres holds
-        185 connections or more.
-wait    Waits up to nine minutes for everything named to answer, then prints
-        what status prints. Exits 1 when start failed, 2 when still starting.
+start   Runs the valinor worktree's bin-local/dev, which starts its backend and
+        its frontend, and stays in the foreground holding them: run it as a
+        background shell. Sets AWS_PROFILE=us-developer when backend/.env has
+        none, puts the system yarn first on PATH, and starts nothing while the
+        shared Postgres holds 185 connections or more.
+wait    Waits up to nine minutes for both to answer, then prints what status
+        prints. Exits 1 when start failed, 2 when still starting.
 status  Prints the URLs, the user, a bearer token for the backend, and the stop
         command.
-stop    Stops this branch's backend servers and the frontend dev server on its
-        port, nothing else.
+stop    Stops this worktree's backend and frontend, nothing else.
 
-With only --frontend, the backend is the backend worktree of the same branch,
-made from origin/master by start when there is none. Without --user, the user
-is the one a fresh frontend tab signs in as.
+The worktree is the valinor checkout that holds --worktree, or the one you are
+in. Ports and the database name are read from its .env.local, which
+bin-local/dev writes on the first start: edit that file to change one. --api,
+--dev, --tunnel and --lan go to bin-local/dev as they are; with --api, wait
+and status cover the external API too. Without --user, the user is
+AUGUST_DEFAULT_USER, the one a fresh frontend tab signs in as.
 EOF
 }
 
-fullstack="$HOME/Projects/august-fullstack"
-backend_main="$fullstack/august-backend"
-
 verb="${1:-}"
 [ $# -gt 0 ] && shift
-backend=""
-frontend=""
-frontend_port=""
+worktree="$PWD"
 user_given=""
+api=false
+dev_options=()
 for argument in "$@"; do
   case "$argument" in
-    --backend=*) backend="$(cd "${argument#--backend=}" && pwd -P)" ;;
-    --frontend=*) frontend="$(cd "${argument#--frontend=}" && pwd -P)" ;;
-    --frontend-port=*) frontend_port="${argument#--frontend-port=}" ;;
+    --worktree=*) worktree="${argument#--worktree=}" ;;
+    --api) api=true; dev_options+=("$argument") ;;
+    --dev|--tunnel|--lan) dev_options+=("$argument") ;;
     --user=*) user_given="${argument#--user=}" ;;
     *) usage >&2; exit 1 ;;
   esac
@@ -50,52 +47,38 @@ case "$verb" in
   -h|--help) usage; exit 0 ;;
   *) usage >&2; exit 1 ;;
 esac
-[ -n "$backend$frontend" ] || { usage >&2; exit 1; }
 
-user="$user_given"
-[ -z "$user" ] && user="$(sed -n 's/^user_email="\(.*\)"$/\1/p' "$fullstack/august-frontend/bin-local/dev" | head -1)"
+worktree="$(cd "$(git -C "$worktree" rev-parse --show-toplevel)" && pwd -P)"
+backend="$worktree/backend"
+frontend="$worktree/frontend"
+[ -x "$worktree/bin-local/dev" ] || { echo "No bin-local/dev in $worktree: not a valinor worktree, or wk has not linked bin-local into it" >&2; exit 1; }
 
-worktree_of() {
-  git -C "$1" worktree list --porcelain | awk -v branch="refs/heads/$2" '$1 == "worktree" { path = $2 } $1 == "branch" && $2 == branch { print path }'
-}
+user="${user_given:-${AUGUST_DEFAULT_USER:-}}"
+branch="$(git -C "$worktree" rev-parse --abbrev-ref HEAD)"
 
-if [ -n "$frontend" ]; then
-  frontend_branch="$(git -C "$frontend" rev-parse --abbrev-ref HEAD)"
-  [ -z "$frontend_port" ] && frontend_port=$(( 3000 + ($(printf '%s' "$frontend_branch" | cksum | cut -d' ' -f1) % 900) ))
-fi
-
-if [ -z "$backend" ]; then
-  backend="$(worktree_of "$backend_main" "$frontend_branch")"
-  if [ -z "$backend" ] && [ "$verb" = start ]; then
-    "$backend_main/loquat/bin-local/dev" --no-start "$frontend_branch"
-    backend="$(worktree_of "$backend_main" "$frontend_branch")"
-  fi
-  [ -n "$backend" ] || { echo "No backend worktree for $frontend_branch" >&2; exit 1; }
-  backend="$(cd "$backend" && pwd -P)"
-fi
-
-backend_branch="$(git -C "$backend" rev-parse --abbrev-ref HEAD)"
 temporary_directory="${TMPDIR:-/tmp}"
-state_directory="${temporary_directory%/}/august-app/$(printf '%s' "$backend_branch" | tr '/' '-')"
+state_directory="${temporary_directory%/}/august-app/$(printf '%s' "$branch" | tr '/' '-')"
 mkdir -p "$state_directory"
 
-env_value() { sed -n "/^# sandbox begin/,/^# sandbox end/s/^$1=//p" "$backend/.env" 2>/dev/null; }
+env_value() { sed -n "s/^$1=//p" "$worktree/.env.local" 2>/dev/null | tail -1 || true; }
 
-backend_answers() {
+pings() {
   local port
-  port="$(env_value PLAY_HTTP_PORT)"
+  port="$(env_value "$1")"
   [ -n "$port" ] && curl -sf -o /dev/null -m 5 -X GET "http://localhost:$port/ping"
 }
 
-frontend_answers() { curl -s -o /dev/null -m 5 -X GET "http://127.0.0.1:$frontend_port/"; }
+backend_answers() { pings PLAY_HTTP_PORT; }
 
-everything_answers() { backend_answers && { [ -z "$frontend" ] || frontend_answers; }; }
+api_answers() { pings INTEGRATIONS_API_PLAY_HTTP_PORT; }
 
-listener_in() {
-  local pid
-  pid="$(lsof -nP -tiTCP:"$1" -sTCP:LISTEN | head -1)" || return 1
-  [ -n "$pid" ] && [ "$(lsof -a -p "$pid" -d cwd -Fn | sed -n 's/^n//p')" = "$2" ] && echo "$pid"
+frontend_answers() {
+  local port
+  port="$(env_value FRONTEND_PORT)"
+  [ -n "$port" ] && curl -s -o /dev/null -m 5 -X GET "http://127.0.0.1:$port/"
 }
+
+everything_answers() { backend_answers && frontend_answers && { [ "$api" = false ] || api_answers; }; }
 
 base64url() { base64 | tr '+/' '-_' | tr -d '=\n'; }
 
@@ -108,35 +91,25 @@ mint_token() {
   echo "$header.$payload.$signature"
 }
 
-stop_command() {
-  local command="bash ~/Projects/dotfiles/claude/scripts/august-app stop --backend=$backend"
-  [ -n "$frontend" ] && command="$command --frontend=$frontend --frontend-port=$frontend_port"
-  echo "$command"
-}
-
 print_status() {
-  local backend_port api_port database username_uuid="" query_string=""
+  local backend_port frontend_port database username_uuid="" query_string=""
   backend_port="$(env_value PLAY_HTTP_PORT)"
-  api_port="$(env_value INTEGRATIONS_API_PLAY_HTTP_PORT)"
+  frontend_port="$(env_value FRONTEND_PORT)"
   database="$(env_value DB_NAME)"
   [ -n "$database" ] && [ -n "$user" ] && username_uuid="$(docker exec db psql -U postgres -d "$database" -Atc "select username from user_account where email = '$user' and is_active" 2>/dev/null | head -1)"
   [ -n "$user_given" ] && [ -n "$username_uuid" ] && query_string="?mock_user=$username_uuid"
   if backend_answers; then
-    echo "backend   http://localhost:$backend_port  answers  ($backend_branch, database $database)"
+    echo "backend   http://localhost:$backend_port  answers  ($branch, database $database)"
   else
     echo "backend   http://localhost:${backend_port:-?}  down  ($backend)"
   fi
-  if [ -n "$api_port" ] && curl -sf -o /dev/null -m 5 -X GET "http://localhost:$api_port/ping"; then
-    echo "api       http://localhost:$api_port  answers"
+  if api_answers; then
+    echo "api       http://localhost:$(env_value INTEGRATIONS_API_PLAY_HTTP_PORT)  answers"
   fi
-  if [ -n "$frontend" ]; then
-    if frontend_answers; then
-      echo "frontend  http://127.0.0.1:$frontend_port/$query_string  answers  ($frontend_branch)"
-    else
-      echo "frontend  http://127.0.0.1:$frontend_port  down  ($frontend)"
-    fi
-    tr '\n' ' ' < "$frontend/src/shared/environment.ts" | grep -q "name: 'local',[^}]*authMethod: 'none'" ||
-      echo "          authMethod in the local block of src/shared/environment.ts is not 'none': mock sign-in will not work"
+  if frontend_answers; then
+    echo "frontend  http://127.0.0.1:$frontend_port/$query_string  answers  ($branch)"
+  else
+    echo "frontend  http://127.0.0.1:${frontend_port:-?}  down  ($frontend)"
   fi
   if [ -n "$username_uuid" ]; then
     echo "user      $user ($username_uuid)"
@@ -145,8 +118,8 @@ print_status() {
     echo "user      no active $user in ${database:-the backend database}"
   fi
   echo "community Oak River Villas, org 30 facility 135"
-  echo "logs      $state_directory"
-  echo "stop      $(stop_command)"
+  echo "logs      $state_directory/dev.log, $backend/loquat/logs/dev-backend.log"
+  echo "stop      bash ~/Projects/dotfiles/claude/scripts/august-app stop --worktree=$worktree"
 }
 
 fail() {
@@ -155,50 +128,6 @@ fail() {
     [ -n "$2" ] && [ -f "$2" ] && tail -30 "$2"
   } | tee "$state_directory/failed"
   exit 1
-}
-
-started=()
-
-wait_until() {
-  local check="$1" pid="$2" log="$3" limit="$4" waited=0
-  until "$check"; do
-    kill -0 "$pid" 2>/dev/null || fail "the server exited before it answered" "$log"
-    [ "$waited" -ge "$limit" ] && fail "no answer after $limit seconds" "$log"
-    sleep 5
-    waited=$((waited + 5))
-  done
-}
-
-start_backend() {
-  local connections log="$state_directory/backend.log"
-  connections="$(docker exec db psql -U postgres -Atc "select count(*) from pg_stat_activity")"
-  [ "$connections" -lt 185 ] || fail "the shared Postgres holds $connections of 200 connections; stop none of anyone else's servers to make room"
-  (
-    cd "$backend"
-    grep -q '^AWS_PROFILE=' .env 2>/dev/null || export AWS_PROFILE=us-developer
-    exec loquat/bin-local/dev
-  ) > "$log" 2>&1 < /dev/null &
-  started+=("$!")
-  echo "starting the backend, log $log"
-  wait_until backend_answers "$!" "$log" 900
-}
-
-start_frontend() {
-  local log="$state_directory/frontend.log"
-  perl -0pi -e "s/(name: 'local',[^}]*?authMethod: )'cookie'/\${1}'none'/s" "$frontend/src/shared/environment.ts"
-  (
-    cd "$frontend"
-    export PATH="/run/current-system/sw/bin:$PATH"
-    if [ -f .npmrc ]; then
-      GITHUB_PACKAGE_TOKEN="$(grep 'npm.pkg.github.com/:_authToken' .npmrc | cut -d= -f2)"
-      FONTAWESOME_PACKAGE_TOKEN="$(grep 'npm.fontawesome.com/:_authToken' .npmrc | cut -d= -f2)"
-      export GITHUB_PACKAGE_TOKEN FONTAWESOME_PACKAGE_TOKEN
-    fi
-    exec bin-local/dev --backend="$backend_branch" --port="$frontend_port"
-  ) > "$log" 2>&1 < /dev/null &
-  started+=("$!")
-  echo "starting the frontend, log $log"
-  wait_until frontend_answers "$!" "$log" 900
 }
 
 case "$verb" in
@@ -216,18 +145,38 @@ case "$verb" in
     print_status
     ;;
   stop)
-    if [ -n "$frontend" ] && pid="$(listener_in "$frontend_port" "$frontend")"; then
-      kill "$pid" && while kill -0 "$pid" 2>/dev/null; do sleep 1; done
-      echo "Stopped the frontend on $frontend_port"
-    fi
-    (cd "$backend" && loquat/bin-local/dev stop)
+    (cd "$worktree" && bin-local/dev stop)
     ;;
   start)
     rm -f "$state_directory/failed"
-    backend_answers || start_backend
-    [ -z "$frontend" ] || frontend_answers || start_frontend
+    if everything_answers; then
+      echo "ready"
+      print_status
+      exit 0
+    fi
+    log="$state_directory/dev.log"
+    if ! backend_answers; then
+      connections="$(docker exec db psql -U postgres -Atc "select count(*) from pg_stat_activity")"
+      [ "$connections" -lt 185 ] || fail "the shared Postgres holds $connections of 200 connections; stop none of anyone else's servers to make room"
+    fi
+    (
+      cd "$worktree"
+      grep -q '^AWS_PROFILE=' backend/.env 2>/dev/null || export AWS_PROFILE=us-developer
+      export PATH="/run/current-system/sw/bin:$PATH"
+      [ -n "$user" ] && dev_options+=(--user="$user")
+      exec bin-local/dev "${dev_options[@]}"
+    ) > "$log" 2>&1 < /dev/null &
+    dev_pid=$!
+    echo "starting the backend and the frontend, log $log"
+    waited=0
+    until everything_answers; do
+      kill -0 "$dev_pid" 2>/dev/null || fail "bin-local/dev exited before both answered" "$log"
+      [ "$waited" -ge 1800 ] && fail "no answer after $waited seconds" "$log"
+      sleep 5
+      waited=$((waited + 5))
+    done
     echo "ready"
     print_status
-    [ ${#started[@]} -eq 0 ] || wait "${started[@]}"
+    wait "$dev_pid"
     ;;
 esac

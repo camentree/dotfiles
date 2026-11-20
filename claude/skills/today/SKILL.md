@@ -11,34 +11,36 @@ Everything is in `~/Documents/notes/today/`. Agents write the two data files; Ca
 |---|---|
 | `today.js` | Today's schedule: time blocks, the items in each, links, and things to copy. Rewritten every morning. |
 | `backlog.js` | Everything he could be working on, by work stream, with the state and next step of each. Lasts across days. |
-| `index.html` | The page: Plan, Backlog and Log tabs; re-reads the data files every minute. It is a link to `page/index.html` beside this skill, so its history is in the dotfiles repo. He settled its look over a day of recordings on 2026-11-18: planning never touches it, and it changes only when he asks for a change to the page itself. |
+| `index.html` | The page: Plan, Backlog and Log tabs; re-reads the data files every minute. It is a link to `page/index.html` beside this skill, so its history is in the dotfiles repo. He settled its look over a day of recordings on 2026-11-18: planning never touches it, and it changes only when he asks for a change to the page itself. Every block's row is grey except the one happening now and any he has opened, and the current block has extra space above and below, so it stands out (2026-11-19). Text fields match the text around them; only touch screens get 16px, where iOS zooms into anything smaller. |
 | `state.json` | His ticks and Log entries, by date, written by the page. Read it; never write it. |
 | `thread.js` | The agents' side of the page's Log tab. Agents append to it. |
 | `server.cjs` | Serves the folder at `http://localhost:4980` and writes `state.json`. A launchd agent (`today-page`, in the dotfiles' `user.nix`) keeps it running. The page's "Re-plan the day" button posts to `/replan`, which starts a background session in `~/Documents/notes` that runs this skill. |
 | `archive/` | Earlier days' `today.js`, named by date. |
 
-`~/Documents/notes/organize.md` (the organize skill) stays his own hand-kept list of projects and pull requests; read it, don't replace it.
+These files replaced `~/Documents/notes/organize.md` on 2026-11-20: the organize skill is gone, the review, manage and find-reviews skills and his work instructions (`~/CLAUDE.local.md`) record progress here, and nothing reads or writes organize.md any more.
 
 ## What agents do and don't do here
 
-Planning only curates. Don't start agents, app servers, difit, or code reviews ahead of a time slot, and don't open browser tabs. He starts each piece of work himself when its slot arrives, from the copy buttons on the page. Decide the order, the grouping and what to leave out yourself; don't ask him to pick. He said on 2026-11-18 that this holds until the workflow has been tried for a while. Moving or dropping an item is something he tells an agent to do; the page has no editing.
+Planning only curates. Don't start agents, app servers, difit, or code reviews ahead of a time slot, and don't open browser tabs other than the day page in step 6. He starts each piece of work himself when its slot arrives, from the copy buttons on the page. Decide the order, the grouping and what to leave out yourself; don't ask him to pick. He said on 2026-11-18 that this holds until the workflow has been tried for a while. Moving or dropping an item is something he tells an agent to do; the page has no editing.
 
 Describe items neutrally. No "urgent", "must", "should".
+
+Keep this skill current: whenever a session learns something that would change how a later plan or the page is made (a preference he states, a correction, a rule for the page's look, a fact about his tools), write it into the section it belongs to right then, the rule and its why in a clause, and tell him in one line. The skill is the only memory the next morning's session has.
 
 ## Morning: build the day from his dictation
 
 He dictates loosely what is on his mind. Some of it is work to do today, some is not worth today's time, and sorting that out is the job.
 
-1. Read `backlog.js`, yesterday's `today.js`, and `organize.md`.
+1. Read `backlog.js` and yesterday's `today.js`.
 2. Refresh the facts, in parallel:
    - Linear: issues assigned to him in started, unstarted and backlog states, and projects he is a member of.
    - GitHub, his open pull requests with review decision, mergeable state, CI state, unresolved thread count and base branch (one GraphQL search, `is:pr is:open author:@me org:augusthealth`).
-   - The `Reviews` stream, rebuilt from `node ~/.claude/scripts/review-queue.cjs` (JSON, one entry per pull request). The script applies his rules of 2026-11-18: a pull request is listed only when it asked for him by name or for the move-ins team; one that asked for move-ins and already has a review from Jesse or Josh is left out; one he has reviewed stays until it merges, marked as not needing him unless the author pushed since. Write each entry as an item with `summary` (who was asked, who reviewed and how, or "Doesn't need you: ...") and `waiting: true` when `needsMe` is false; only `needsMe` entries go into a day's plan.
+   - The `Reviews` stream, rebuilt from `node ~/.claude/scripts/review-queue.cjs` (JSON, one entry per pull request, across valinor, Experimental-Tools, and august-backend and august-frontend while those still have open ones; a valinor entry with `migratedFrom` is that old pull request moved by `bin/migrate-pr`, and replaces it). The script applies his rules of 2026-11-18: a pull request is listed only when it asked for him by name or for the move-ins team; one that asked for move-ins and already has a review from Jesse or Josh is left out; one he has reviewed stays until it merges, marked as not needing him unless the author pushed since. Write each entry as an item with `summary` (who was asked, who reviewed and how, or "Doesn't need you: ...") and `waiting: true` when `needsMe` is false; only `needsMe` entries go into a day's plan.
    - His meetings, from Apple Calendar (he left them out of the first plan and had to ask): `swift ~/.claude/scripts/calendar-day.swift` prints `start | end | attending or declined | calendar | title` for today, or for a `YYYY-MM-DD` argument. Meetings he has not declined go in `stream: "Meetings"` blocks with an empty `title`: back-to-back meetings share one block spanning them, and each meeting is an item he ticks (`{ id: "meeting-1400", text: "2:00 pm Engineering Weekly" }`). Work is placed around them; all-day entries are other people's time off and are left out.
 3. Update `backlog.js`: new items from the dictation and the refresh, changed states, finished items removed, `today: true` on exactly the items in today's plan. Set `updated`. Keep `priorities` in his words from the latest dictation.
 4. Copy yesterday's `today.js` to `archive/<its date>.js`, then write the new `today.js`.
 5. Run `node ~/.claude/scripts/today-check.cjs` and fix everything it prints. It checks that the files fit the page as he settled it (block and item shape, meetings, no break tasks, command and label rules, links that let ticks sync). A plan is not finished until it prints that the files fit.
-6. Reply with the schedule as a table, what was left out and why, and the page path. Give him `http://localhost:4980` and put it on the clipboard. Don't open it. If the server does not answer (`curl -X GET localhost:4980/state.json`), say so and give `open ~/Documents/notes/today/index.html`, where the page works but saves only in his browser.
+6. Reply with the schedule as a table, what was left out and why, and the page path. Give him `http://localhost:4980` and put it on the clipboard. Then open it in Safari (he asked on 2026-11-20, to have the day beside his work): with `osascript`, a new window holding `http://localhost:4980` and a second tab on `https://parallax.smallworkshop.dev/fitness`, the day page the tab showing, bounds `{0, 0, 100, <screen height>}` so Safari clamps it to its narrowest at the left edge. If the server does not answer (`curl -X GET localhost:4980/state.json`), say so and give `open ~/Documents/notes/today/index.html`, where the page works but saves only in his browser.
 
 Choosing what goes in the day:
 
@@ -51,7 +53,7 @@ Choosing what goes in the day:
 - Posting a review that is already drafted takes him 40 to 60 minutes when the pull request is large, not 20: on 2026-11-18 three drafted reviews took two hours and pushed out the block after them. Plan one large or two small per hour.
 - Reviews he already started go before reviews not started. A review is finished when its comments are posted.
 - Work on his own tooling gets at most the last half hour, unless he says otherwise.
-- Leave room: an hour for lunch at 12:00, and no more items in a block than its sizes add up to (sizes are defined in `CLAUDE.local.md`).
+- Leave room: an hour for lunch at 12:00, and no more items in a block than its sizes add up to (sizes are defined in `CLAUDE.local.md`). Work a session does still costs his time, to start it and to check each result: size a batch by the count of things he checks, and start long-running sessions before lunch or a meeting so they overlap it (on 2026-11-20 a plan gave moving 21 pull requests between repositories three hours and he said it missed the time that takes).
 - Everything considered and not scheduled goes in `later`, one line each. The page does not show `later` or `log`; they are the record for the next morning's planning.
 
 The plan tells him how to work, not only what to work on (he asked for this on 2026-11-18), and it does so through the shape of the checkboxes, not through prose: the page shows no block-level notes.
@@ -60,7 +62,7 @@ The plan tells him how to work, not only what to work on (he asked for this on 2
 - **Started together**, when one session or one command can carry several things (stacked pull requests worked down in order, several reviews started in the background): one parent item whose `copy` is the single command, with the things it covers as its nested `items`, each with its links and its own box to tick as it finishes. The parent's `text` is a short task title ("Address review comments on the three stacked backend PRs", "Review the room picker stack"), never an instruction about sessions ("Start one session that…"): the nesting already says it.
 - **A head start**: when the next thing needs slow setup, its parent item's `note` says when to start it ("Start the command when you begin reading the room picker stack").
 
-No break tasks: the page's header counts water and standing through the day (he asked for that in place of "stand up, drink water" items on 2026-11-18), so never write `kind: "break"` items. Lunch is the only break in the plan, a block of its own (`stream: "Break"`, no items, its `title` shown as the row).
+No break tasks: the page's header counts water and standing through the day (he asked for that in place of "stand up, drink water" items on 2026-11-18), so never write `kind: "break"` items. Lunch is the only break in the plan, a block of its own (`stream: "Break"`, no items, its `title` shown as the row), except on a day he says he is on edge or finds multitasking hard: then work blocks of 30 to 40 minutes, one piece of work each, with a 10-minute `Break` block between titled for standing, moving and checking in with his body (he asked for this on 2026-11-19).
 
 Unfinished work from an earlier block stays on the page in its block, and the page's refresh button asks for a re-plan. On a re-plan, or the next morning: unfinished items that unblock something (an approved pull request waiting to merge, review threads on a stack others wait on) go first in the next free block; the rest compete with the remaining plan by his priorities, and what no longer fits goes back to the backlog with a line in `log` saying so. Don't stack carried-over work on top of a full block: move something out.
 
@@ -112,7 +114,7 @@ window.TODAY = {
         {
           id: "self-backend-chain",
           text: "Address review comments on the three stacked backend PRs",
-          copy: [{ label: "Copy claude command for all three", text: "cd ~/Projects/august-fullstack && claude \"...\"" }],
+          copy: [{ label: "Copy claude command for all three", text: "cd ~/Projects/valinor && claude \"...\"" }],
           items: [
             {
               id: "self-log-merge",
@@ -120,7 +122,7 @@ window.TODAY = {
               note: "Approved by jessebutterfield, CI green.",
               status: "merged 11:32 am",
               done: true,
-              links: [{ label: "backend 8032", url: "https://github.com/..." }]
+              links: [{ label: "valinor 8032", url: "https://github.com/..." }]
             }
           ]
         }
@@ -146,16 +148,18 @@ window.TODAY = {
 - Times are 24-hour `HH:MM` in the data; the page shows them as "9:45 am". In text he reads (`note`, `status`, `log`), write times the way the page does.
 - Blocks are in order and don't overlap. `stream` matches a stream `name` in `backlog.js` exactly (or is `Meetings` or `Break`): it is the block's name on the page.
 - An item's nested `items` have the same shape as an item, one level deep. The block's "(1/3)" counts its top-level items; a parent ticks itself when all its children are ticked. A task row shows only its title, links and first copy button; `note`, `status` and the rest open when he clicks the title, so keep titles self-sufficient.
+- `stage`, on any item in `today.js` or `backlog.js` that is one of his own tickets or pull requests (not reviews of others' work, meetings or setup steps), draws a small symbol before the title so he can read where it stands at a glance (asked for 2026-11-19; symbols, not colour-coded circles, because colours were hard to remember): dashed circle, pencil, eye, hourglass, speech bubble, check, merge arrow, in order of `todo` (not started), `dev`, `self-review` (a draft not yet self-reviewed or being self-reviewed), `review` (ready, waiting on reviewers), `comments` (review threads open for him), `approved`, `merged`. Set it from GitHub on every refresh, and to `merged` with `done: true` when a pull request merges; on a parent with nested items, put it on the children.
 - `id` is short, kebab-case, unique in the file, and stays the same all day: his ticks are stored against it.
-- `text` says what the work is in words. A pull request number or ticket id never stands alone: "Merge the snapshot index PR" with a link labelled `backend 7944`, not "Merge 7944".
+- `text` says what the work is in words. A pull request number or ticket id never stands alone: "Merge the snapshot index PR" with a link labelled by repository and number, `valinor 7944`, not "Merge 7944".
 - `note` is the state when the plan was written. `status` is what has happened since. `done` ticks the box on the page unless he has ticked or unticked it himself.
 - `links`: every pull request, ticket, difit and document the item touches.
 - `copy`, on an item, is what he pastes to start the work. Give him the thing itself whenever it can be worked out now, and a prompt only when the work needs a session:
   - Something he only has to do (merge an approved pull request, read a page): no `copy`, just the link and a `text` that says to do it.
   - A query or a shell command: the query or command itself, looked up now. Not a prompt asking a session to write it.
   - Work for a session: a prompt, or better a whole command that starts it. Where one of his skills fits, that is the skill call (`/address-comments <url>`, `/review <n>`, `/manage <url>`).
-  - `label` says what is being copied: "Copy SQL", "Copy claude attach command", "Copy /address-comments prompt", "Copy review command: backend (8133)". Never a bare "Copy prompt".
-  - Every shell command starts with `cd` to the directory it runs in, from home (`cd ~/Projects/august-fullstack/.august-backend-worktrees/<owner>/<branch> && claude attach <id>`); check the directory exists.
+  - A command that starts one session is a plain `claude -n "<name>" "<prompt>"`; `--bg` only when one command starts several sessions (he said on 2026-11-20 that a single session doesn't need backgrounding).
+  - `label` says what is being copied: "Copy SQL", "Copy claude attach command", "Copy /address-comments prompt", "Copy review command: valinor (8133)". Never a bare "Copy prompt".
+  - Every shell command starts with `cd` to the directory it runs in, from home (`cd ~/Projects/.valinor-worktrees/<owner>/<branch> && claude attach <id>`); check the directory exists.
   - A prompt is read by a session that knows nothing: name the repository, the pull request with what it does, the branch, the plan file if there is one, what to produce, and what not to do.
   - For a pull request he will review or self-review, the command is `/review`, which builds the page that says what the change is and lists things to try.
 
@@ -182,7 +186,7 @@ window.BACKLOG = {
               kind: "easy",
               size: "x-small",
               today: true,
-              links: [{ label: "backend 7944", url: "https://github.com/..." }]
+              links: [{ label: "valinor 7944", url: "https://github.com/..." }]
             }
           ]
         }
@@ -200,6 +204,14 @@ window.BACKLOG = {
 ## During the day: any session, any repository
 
 When work in your session changes the state of something in the plan, record it. Read the file first, change only the lines that are yours, use the Edit tool.
+
+For the common case, one of his tickets or pull requests changing stage, one command sets it in both files and runs the check (he asked on 2026-11-20 for a way to update the status symbol):
+
+```bash
+node ~/.claude/scripts/today-set.cjs <pull request url, ticket url, or today.js item id> [--stage todo|dev|self-review|review|comments|approved|merged] [--status "<what happened>"] [--next "<next step>"] [--done]
+```
+
+It finds every item with that link (or that id in `today.js`) and sets `stage` in both files, `status` and `done` in `today.js`, and `state` (from `--status`) and `next` in `backlog.js`. It rewrites both files in JSON layout, so Read a file again before an Edit that follows it. Removing a finished backlog item and raising its stream's `done` is still an Edit.
 
 | What happened | What to write |
 |---|---|

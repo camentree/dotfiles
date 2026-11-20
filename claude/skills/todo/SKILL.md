@@ -91,10 +91,10 @@ The date at the top is older than today. Run these in order.
 
 ## Reviewable PRs
 
-The pool is open, non-draft backend PRs labelled `move-ins` or `integrations` that nobody has approved:
+The pool is open, non-draft PRs labelled `move-ins` or `integrations` that nobody has approved, in `augusthealth/valinor`, and in `augusthealth/august-backend` (the same command with that `--repo`) while it still has open ones:
 
 ```
-gh pr list --repo augusthealth/august-backend \
+gh pr list --repo augusthealth/valinor \
   --search "is:pr is:open draft:false label:move-ins,integrations -review:approved -author:@me" \
   --limit 50 --json number,title,author,url,labels
 ```
@@ -108,8 +108,8 @@ Drop entries he has checked off (`- [x]`); keep unchecked ones that still match 
 ```
 ### Reviewable PRs
 
-- [ ] [(move-ins) (migration) display form migration](https://github.com/augusthealth/august-backend/pull/6926) jbutterfield
-- [ ] [support the rest of vital fields under august_field_type_latest_vital_](https://github.com/augusthealth/august-backend/pull/6909) wsu
+- [ ] [(move-ins) (migration) display form migration](https://github.com/augusthealth/valinor/pull/6926) jbutterfield
+- [ ] [support the rest of vital fields under august_field_type_latest_vital_](https://github.com/augusthealth/valinor/pull/6909) wsu
 ```
 
 Title, link, author — nothing else. No age, no review state.

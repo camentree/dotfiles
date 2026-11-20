@@ -53,7 +53,7 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 
 ## Tab title
 
-Once the session's work is clear, name the terminal tab with `tabname '<group> - <feature> (X/Y)'`. Group is the stack's shared heading, the same on every PR in the stack. Feature is this PR's piece. X/Y is its position in the stack. Drop ` (X/Y)` outside a stack. All lowercase. Keep each part to a word or two, distinct from the user's other tabs: `billing - proration (2/4)`. When reviewing someone else's PR, the group is the author's name, abbreviated the way the user abbreviates them: `ktakata - proration`. For work that isn't a PR, the group is the repo and the feature is the topic, e.g. `dotfiles - tab status` or `august-backend - flaky specs`. Rename when the work moves to another PR or topic; otherwise leave the title alone, since the user may have set it.
+Once the session's work is clear, name the terminal tab with `tabname '<group> - <feature> (X/Y)'`. Group is the stack's shared heading, the same on every PR in the stack. Feature is this PR's piece. X/Y is its position in the stack. Drop ` (X/Y)` outside a stack. All lowercase. Keep each part to a word or two, distinct from the user's other tabs: `billing - proration (2/4)`. When reviewing someone else's PR, the group is the author's name, abbreviated the way the user abbreviates them: `ktakata - proration`. For work that isn't a PR, the group is the repo and the feature is the topic, e.g. `dotfiles - tab status` or `valinor - flaky specs`. Rename when the work moves to another PR or topic; otherwise leave the title alone, since the user may have set it.
 
 ## Machine
 

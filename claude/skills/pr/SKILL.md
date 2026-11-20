@@ -8,7 +8,7 @@ description: Push the current branch and open or update its pull request, with t
 Input: the current branch and, if there is one, its plan file, `~/.claude/tasks/<repo>/<branch>/plan.md`, where `<repo>` is the `basename` of `git remote get-url origin` without `.git` and `<branch>` is `git branch --show-current`.
 
 1. `/verify <plan> --pre-push` has passed on HEAD. `/task-review` has just run it; by hand, run it first and fix what it finds before coming back here.
-2. Read the project's CLAUDE.md or CLAUDE.local.md for the PR template, title convention, labels, and assignee. august-backend's description rules are below. 
+2. Read the project's CLAUDE.md or CLAUDE.local.md for the PR template, title convention, labels, and assignee. valinor's description rules are below. 
 3. Rewrite the branch into a history a reviewer can read commit by commit. Only before the first push: once the branch is on the remote, commits stay as they are. Skip it too when the branch merged in other branches (the reset would fold their changes into this branch's commits) or the caller named the commit shas the description cites. Never `rebase -i` or `--amend`; the reset below leaves the working tree untouched, so the tree cannot change.
    - The base branch is `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch. Using the default branch for a stacked branch would re-commit the parent's changes as this branch's own.
    - `old_head=$(git rev-parse HEAD)`; `base=$(git merge-base origin/<base branch> HEAD)`.
@@ -22,9 +22,9 @@ Input: the current branch and, if there is one, its plan file, `~/.claude/tasks/
 5. Push. Create with `gh pr create --base <base branch> --label <label>`, or update the existing PR's body with `gh pr edit`.
 6. Print the PR URL, title, and the description.
 
-## august-backend descriptions
+## valinor descriptions
 
-The template is `.github/pull_request_template.md`.
+The template is `.github/pull_request_template.md` at the repo root.
 
 - No rationale, no implementation detail, no file or class names, unless extremely useful.
 - "How'd you test it?"

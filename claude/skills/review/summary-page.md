@@ -8,7 +8,7 @@ At Set up, copy `~/.claude/skills/review/summary-skeleton.html` to `summary.html
 
 - the `<title>` and `<h1>`;
 - the links in `<nav class="links">`: each pull request, the ticket, each difit while it runs, the proof page once it lands;
-- each step's `data-status` (`todo`, `active`, `waiting` when it is on him, `done`) and `data-state`, a few words of where it stands. The script builds the step's summary line and the progress bar from those two, so never write either by hand;
+- each step's `data-status` (`todo`, `active`, `waiting` when it is on him, `done`) and `data-state`, a few words of where it stands. Code review and Behavior review are `done` once they have run, findings or not: their findings wait on him in difit, not on the page (he asked, 2026-11-19). The script builds the step's summary line and the progress bar from those two, so never write either by hand;
 - the inside of each `<div class="body">`.
 
 ## The content is free

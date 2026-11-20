@@ -36,7 +36,7 @@ api.create_billing_source(org_id, facility_id, person_id, demo_data.fake_billing
 
 `api.py` has a method per endpoint the seed uses; `demo_data.py` has a `fake_*` builder per resource. `push_demo_data.py --add-facility -f` adds one more populated community to the first org. Prefer the API over SQL: it runs the same validation as the frontend, and IDs stay consistent. Direct SQL is fine for state the API cannot reach, through `docker exec -it db psql -U postgres <name>`.
 
-Data the UI can't create, from the frontend: Oak River Villas offers no immunization upload type, so make one from the signed-in page with `evaluate_script`, importing the app's own API module by its served path, e.g. `await import('/@fs/<worktree>/src/app/api/immunizations.ts')` then `createImmunization` and `attachImmunization`; the module shares the app's authed client. The served root is `src/`, so `/src/...` paths 404.
+Data the UI can't create, from the frontend: Oak River Villas offers no immunization upload type, so make one from the signed-in page with `evaluate_script`, importing the app's own API module by its served path, e.g. `await import('/@fs/<worktree>/frontend/src/app/api/immunizations.ts')` then `createImmunization` and `attachImmunization`; the module shares the app's authed client. The served root is `src/`, so `/src/...` paths 404.
 
 ## Rebuilding the seed
 
