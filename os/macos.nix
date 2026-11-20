@@ -215,6 +215,12 @@
     $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Show Folders" "@b" || true
     $asPrimaryUser defaults write com.apple.Notes NSUserKeyEquivalents -dict-add "Hide Folders" "@b" || true
 
+    # Safari: Cmd+N opened a tab instead of a window, because the system-wide
+    # "Prefer tabs when opening documents: Always" turns every new window into a
+    # tab. Override it for Safari only. Sandboxed like Mail, so write the
+    # container plist by path (needs Full Disk Access).
+    $asPrimaryUser defaults write "${config.users.users.${config.system.primaryUser}.home}/Library/Containers/com.apple.Safari/Data/Library/Preferences/com.apple.Safari" AppleWindowTabbingMode -string manual || true
+
     # System Settings only lists App Shortcuts for apps named here; the shortcuts
     # work without it. universalaccess needs Full Disk Access to write, so a
     # terminal without it shouldn't fail the rebuild.
