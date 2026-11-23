@@ -215,6 +215,25 @@ in
   };
 
   # ============================================================
+  # Work page — serves ~/.claude/skills/assistant/page on port 4990, joins
+  # GitHub state with each task's task.json, and passes button presses and
+  # answers to agent sessions.
+  # ============================================================
+  launchd.agents.work-page = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "${pkgs.nodejs}/bin/node"
+        "${dotfilesRepo}/claude/scripts/work-server.cjs"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/work-page.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/work-page.log";
+    };
+  };
+
+  # ============================================================
   # Activation scripts — for files that need to be writable
   # ============================================================
   home.activation.claudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

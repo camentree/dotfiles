@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Today</title>
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cstyle%3E.accent{fill:%235b5bd6;stroke:%235b5bd6}@media (prefers-color-scheme:dark){.accent{fill:%238f94f2;stroke:%238f94f2}}%3C/style%3E%3Crect class='accent' x='1' y='2.5' width='14' height='12.5' rx='2.5' stroke-width='0'/%3E%3Crect x='2.75' y='6.25' width='10.5' height='7' rx='1.25' fill='%23fff'/%3E%3Ccircle class='accent' cx='8' cy='9.75' r='2.1' stroke-width='0'/%3E%3Cpath class='accent' d='M5 1v3M11 1v3' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <script>
   try {
     const savedTheme = localStorage.getItem("today-theme");
@@ -132,6 +134,7 @@
   h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
   .meta { display: block; margin-top: 2px; color: var(--muted); font-size: var(--size-small); }
   #save-status { color: var(--failure); }
+  #back-to-today { margin-left: 4px; color: var(--accent); }
   .head-buttons { display: flex; gap: 2px; }
   .icon-button { position: relative; display: grid; place-items: center; width: 28px; height: 28px; color: var(--muted); }
   .icon-button svg { width: 15px; height: 15px; }
@@ -183,8 +186,6 @@
 
   .chevron { display: inline-block; width: 14px; height: 14px; flex: none; color: var(--muted); transition: transform 120ms; }
   [aria-expanded="true"] > .chevron { transform: rotate(90deg); }
-  .earlier-head { display: flex; align-items: center; gap: 12px; margin: 0 -12px 2px; padding: 6px 12px; color: var(--muted); font-size: var(--size-small); }
-  .earlier-body { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
 
   .row-head { display: flex; align-items: flex-start; margin: 0 -12px; border-radius: 8px; }
   .row-toggle { display: grid; flex: 1; align-items: baseline; gap: 0 12px; min-width: 0; padding: 8px 0 8px 12px; text-align: left; border-radius: 8px; }
@@ -227,12 +228,13 @@
   .block-body { padding: 2px 0 12px 22px; }
   .block > .note-panel { margin: 0 0 10px 22px; }
   .day-tracker, .day-tracker .tracker-name, .day-tracker .tracker-bar { cursor: default; }
+  .tracker-add:disabled, .tracker-add:disabled .tracker-name, .tracker-add:disabled .tracker-bar { cursor: default; }
 
   .tasks { display: flex; flex-direction: column; gap: 2px; }
   ul.children { margin-top: 2px; padding-left: 28px; }
   .task-row { display: grid; grid-template-columns: 18px 1fr auto; align-items: start; gap: 0 10px; margin: 0 -8px; padding: 4px 8px; border-radius: 6px; }
   .check { display: flex; justify-content: center; padding-top: 3px; cursor: pointer; }
-  .check input {
+  .check input, .pull-tick input {
     display: grid;
     place-content: center;
     width: 16px;
@@ -245,16 +247,40 @@
     -webkit-appearance: none;
     appearance: none;
   }
-  .check input:hover { border-color: var(--muted); }
-  .check input:checked { background: var(--check); border-color: var(--check); }
-  .check input:checked::after { content: ""; width: 8px; height: 4px; margin-top: -2px; border-left: 1.75px solid var(--background); border-bottom: 1.75px solid var(--background); transform: rotate(-45deg); }
-  .check input:disabled { cursor: default; }
+  .check input:hover, .pull-tick input:hover { border-color: var(--muted); }
+  .check input:checked, .pull-tick input:checked { background: var(--check); border-color: var(--check); }
+  .check input:checked::after, .pull-tick input:checked::after { content: ""; width: 8px; height: 4px; margin-top: -2px; border-left: 1.75px solid var(--background); border-bottom: 1.75px solid var(--background); transform: rotate(-45deg); }
+  .check input:disabled, .pull-tick input:disabled { cursor: default; }
   .task-main { min-width: 0; line-height: 1.45; overflow-wrap: anywhere; }
   .task-title { border-radius: 3px; }
   .stage { display: inline-block; width: 12px; height: 12px; margin-right: 7px; vertical-align: -1px; }
   .stage svg { display: block; width: 100%; height: 100%; }
   .task.checked > .task-row .stage { opacity: 0.6; }
   .task-title.opens { cursor: pointer; }
+  .board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin: 6px 0 24px; }
+  .board-title { margin: 0; font-weight: 600; }
+  .board-section { margin-top: 24px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; margin: 0 0 6px; color: var(--text); font-size: var(--size-small); font-weight: 500; }
+  .section-count { margin-left: 5px; color: var(--muted); font-weight: 400; }
+  .section-head.empty { color: var(--muted); font-weight: 400; }
+  .section-copies { display: flex; gap: 2px; margin-right: -6px; font-weight: 400; }
+  .pull-rows { display: grid; grid-template-columns: 3.2ch minmax(0, 1fr) auto; column-gap: 10px; font-size: var(--size-small); line-height: 28px; white-space: nowrap; }
+  .pull-rows.has-stack { grid-template-columns: 3.2ch minmax(0, 1fr) auto auto; }
+  .reviewers .pull-rows { grid-template-columns: 14px 3.2ch minmax(0, 1fr) auto; }
+  .reviewers .pull-rows.has-stack { grid-template-columns: 14px 3.2ch minmax(0, 1fr) auto auto; }
+  .pull-row { display: contents; }
+  .pull-number, .pull-note, .pull-position { color: var(--muted); text-align: right; }
+  .pull-title { overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+  .pull-title:hover { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+  .pull-tick { display: grid; place-items: center; }
+  .pull-tick input { width: 14px; height: 14px; }
+  .in-run { position: relative; }
+  .in-run::before { content: ""; position: absolute; top: 0; bottom: 0; left: -12px; width: 2px; background: var(--line); }
+  .in-run.run-start::before { top: 5px; }
+  .in-run.run-end::before { bottom: 5px; }
+  @media (min-width: 900px) {
+    .board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; width: min(1180px, calc(100vw - 48px)); margin-left: calc(50% - min(590px, 50vw - 24px)); }
+  }
   .person { color: var(--muted); }
   .task.checked > .task-row .task-title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
   .task-summary { color: var(--muted); font-size: var(--size-small); line-height: 1.5; }
@@ -340,8 +366,8 @@
   .composer-field { flex: none; max-height: 40vh; padding: 10px 14px; border-radius: 12px; }
 
   @media (hover: hover) {
-    .earlier-head:hover, .icon-button:hover, .tabs button:hover { color: var(--text); }
-    .earlier-head:hover, .row-head:hover, .task-row:hover { background: var(--hover); }
+    .icon-button:hover, .tabs button:hover { color: var(--text); }
+    .row-head:hover, .task-row:hover { background: var(--hover); }
     .block.plain .row-head:hover { background: transparent; }
     .task-title.opens:hover { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
     .note-button { color: transparent; }
@@ -349,6 +375,7 @@
     .row-head:hover .note-button, .task-row:hover .note-button, .note-button:focus-visible { color: var(--muted); }
     .note-button:hover { color: var(--text); }
   }
+  .icon-button:disabled { color: var(--faint); cursor: default; }
   @media (hover: none) {
     .tracker-undo { display: none; }
     /* iOS zooms into any field under 16px on focus, so only touch screens get the larger size; a narrow desktop window keeps the page's sizes */
@@ -376,9 +403,11 @@
     <div class="title-row">
       <div>
         <h1 id="heading">Today</h1>
-        <span class="meta"><span id="meta"></span><span id="save-status"></span></span>
+        <span class="meta"><span id="meta"></span><span id="save-status"></span><button type="button" class="text-button" id="back-to-today" hidden>Back to today</button></span>
       </div>
       <div class="head-buttons">
+        <button type="button" class="icon-button" id="previous-day" title="Previous day" aria-label="Previous day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg></button>
+        <button type="button" class="icon-button" id="next-day" title="Next day" aria-label="Next day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg></button>
         <button type="button" class="icon-button" id="replan" title="Re-plan the day" aria-label="Re-plan the day"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 8.6A5.3 5.3 0 1 1 11.7 4"/><path d="M12.2 1.8v2.6H9.6"/></svg><span class="floating-label" hidden></span></button>
         <button type="button" class="icon-button" id="theme-toggle"></button>
       </div>
@@ -387,12 +416,14 @@
   </header>
   <nav class="tabs" role="tablist">
     <button type="button" role="tab" id="show-today">Plan</button>
-    <button type="button" role="tab" id="show-backlog">Backlog</button>
-    <button type="button" role="tab" id="show-log">Log</button>
+    <button type="button" role="tab" id="show-backlog" data-label="Backlog">Backlog</button>
+    <button type="button" role="tab" id="show-log" data-label="Log">Log</button>
+    <button type="button" role="tab" id="show-prs" data-label="PRs">PRs</button>
   </nav>
   <div id="today-view"></div>
   <div id="backlog-view" hidden></div>
   <div id="log-view" hidden></div>
+  <div id="prs-view" hidden></div>
 </main>
 <script>
   const isServed = location.protocol === "http:" || location.protocol === "https:";
@@ -402,7 +433,11 @@
   const noteDrafts = new Map();
   const blockChoices = new Map();
   const streamChoices = new Map();
-  const viewNames = ["today", "backlog", "log"];
+  const viewNames = ["today", "backlog", "log", "prs"];
+  const boardColumns = [
+    { name: "You", className: "", sections: [["needs-me", "Needs me"], ["accepted", "Accepted"], ["drafted", "Drafted"]] },
+    { name: "Waiting on others", className: "reviewers", sections: [["needs-review", "Needs review"], ["can-review", "Can be reviewed"], ["wait-to-review", "Wait to review"], ["blocked", "Blocked"]] }
+  ];
   const replanCommand = "cd ~/Documents/notes && claude \"Re-plan the rest of my day with the today skill: carry over what is unfinished and decide what still fits.\"";
   const trackerTarget = 8;
   const trackerSettings = { water: { label: "Water", limit: 60 }, stood: { label: "Stand", limit: 60 } };
@@ -423,7 +458,6 @@
   const moonIconMarkup = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>';
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
   let view = viewFromHash();
-  let earlierOpen = false;
   let noteToFocus = null;
   let latestServerState = null;
   let serverHistory = null;
@@ -440,6 +474,30 @@
   let lastLongPress = 0;
   let replanLabelTimer = null;
   let tickedUrls = new Set();
+  let pastDate = null;
+  let pageSource = null;
+  let shownBacklog = null;
+  let probedForDate = null;
+  let liveToday = null;
+  let liveBacklog = null;
+  const pastDays = new Map();
+
+  Object.defineProperty(window, "TODAY", {
+    get: () => liveToday,
+    set: (value) => {
+      const script = document.currentScript;
+      if (script && script.dataset.pastDate) pastDays.set(script.dataset.pastDate, { ...pastDays.get(script.dataset.pastDate), today: value });
+      else liveToday = value;
+    }
+  });
+  Object.defineProperty(window, "BACKLOG", {
+    get: () => liveBacklog,
+    set: (value) => {
+      const script = document.currentScript;
+      if (script && script.dataset.pastDate) pastDays.set(script.dataset.pastDate, { ...pastDays.get(script.dataset.pastDate), backlog: value });
+      else liveBacklog = value;
+    }
+  });
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -499,6 +557,7 @@
   }
 
   function readChecked(date) {
+    if (date === pastDate && isServed) return ((serverHistory || {})[date] || {}).checked || {};
     try { return JSON.parse(localStorage.getItem("today-checked-" + date)) || {}; } catch (error) { return {}; }
   }
 
@@ -524,6 +583,7 @@
   }
 
   function readNotes(date) {
+    if (date === pastDate && isServed) return normalizeNotes(((serverHistory || {})[date] || {}).notes, date);
     let stored = null;
     try { stored = JSON.parse(localStorage.getItem("today-notes-" + date)); } catch (error) {}
     const notes = normalizeNotes(stored, date);
@@ -579,11 +639,13 @@
   }
 
   function writeChecked(date, checked) {
+    if (pastDate) return;
     storeLocally(date, checked, readNotes(date));
     scheduleSave(date);
   }
 
   function writeNotes(date, notes) {
+    if (pastDate) return;
     storeLocally(date, readChecked(date), notes);
     scheduleSave(date);
   }
@@ -671,7 +733,7 @@
     for (const item of today.blocks.flatMap((block) => withDescendants(block.items))) {
       if (isItemCheckedItself(item, checked)) pullUrls(item).forEach((url) => urls.add(url));
     }
-    for (const stream of (window.BACKLOG && window.BACKLOG.streams) || []) {
+    for (const stream of (shownBacklog && shownBacklog.streams) || []) {
       for (const group of stream.groups) {
         for (const item of group.items) {
           if (isBacklogTicked("backlog:" + backlogItemId(item), checked, otherDays)) pullUrls(item).forEach((url) => urls.add(url));
@@ -706,13 +768,13 @@
     const days = [];
     if (isServed) {
       for (const date of Object.keys(serverHistory || {})) {
-        if (date !== planDate) days.push(serverHistory[date].checked || {});
+        if (date < planDate) days.push(serverHistory[date].checked || {});
       }
     } else {
       try {
         for (let index = 0; index < localStorage.length; index++) {
           const key = localStorage.key(index);
-          if (!key || !key.startsWith("today-checked-") || key === "today-checked-" + planDate) continue;
+          if (!key || !key.startsWith("today-checked-") || key.slice("today-checked-".length) >= planDate) continue;
           days.push(JSON.parse(localStorage.getItem(key)) || {});
         }
       } catch (error) {}
@@ -735,9 +797,9 @@
 
   function backlogKeysFor(item) {
     const urls = new Set(withDescendants([item]).flatMap(pullUrls));
-    if (!urls.size || !window.BACKLOG) return [];
+    if (!urls.size || !shownBacklog) return [];
     const keys = [];
-    for (const stream of window.BACKLOG.streams) {
+    for (const stream of shownBacklog.streams) {
       for (const group of stream.groups) {
         for (const candidate of group.items) {
           if (pullUrls(candidate).some((url) => urls.has(url))) keys.push("backlog:" + backlogItemId(candidate));
@@ -782,7 +844,7 @@
   }
 
   function findStream(streamName) {
-    return window.BACKLOG && window.BACKLOG.streams.find((candidate) => candidate.name === streamName);
+    return shownBacklog && shownBacklog.streams.find((candidate) => candidate.name === streamName);
   }
 
   function buildBar(done, total) {
@@ -915,6 +977,7 @@
     button.setAttribute("aria-expanded", String(openNotes.has(noteKey)));
     button.setAttribute("aria-label", (count ? count + (count === 1 ? " note" : " notes") + " about " : "Add a note about ") + label);
     button.title = count ? (count === 1 ? "1 note" : count + " notes") : "Add a note";
+    button.hidden = Boolean(pastDate) && !count;
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       if (openNotes.has(noteKey)) {
@@ -940,6 +1003,7 @@
       }
       panel.appendChild(list);
     }
+    if (pastDate) return panel;
     const area = element("textarea", "note-field");
     area.rows = 1;
     area.placeholder = "Note";
@@ -1030,7 +1094,7 @@
     const hasDetails = Boolean(item.note || item.status || (item.copy && item.copy.length));
 
     task.appendChild(buildTaskRow({
-      checkbox: buildCheckbox(item.id, item.text, ticked, ticked && !isItemChecked(item, checked), (value) => {
+      checkbox: buildCheckbox(item.id, item.text, ticked, Boolean(pastDate) || (ticked && !isItemChecked(item, checked)), (value) => {
         const current = readChecked(today.date);
         current[item.id] = value;
         for (const backlogKey of backlogKeysFor(item)) current[backlogKey] = value;
@@ -1142,7 +1206,6 @@
   function renderToday(today, checked, nowMinutes) {
     const container = document.getElementById("today-view");
     container.replaceChildren();
-    const earlierNodes = [];
     const timeline = element("div", "timeline");
     for (const block of today.blocks) {
       const tasks = workItems(block.items);
@@ -1154,25 +1217,6 @@
         total: states.length
       };
       timeline.appendChild(buildBlock(today, block, tasks, checked, state));
-    }
-
-    if (earlierNodes.length) {
-      const head = element("button", "earlier-head");
-      head.type = "button";
-      head.dataset.focusKey = "earlier";
-      head.innerHTML = chevronMarkup;
-      head.appendChild(element("span", "", "Earlier today · " + earlierNodes.length));
-      head.setAttribute("aria-expanded", String(earlierOpen));
-      const earlierBody = element("div", "timeline earlier-body");
-      for (const node of earlierNodes) earlierBody.appendChild(node);
-      earlierBody.hidden = !earlierOpen;
-      head.addEventListener("click", () => {
-        earlierOpen = earlierBody.hidden;
-        earlierBody.hidden = !earlierOpen;
-        head.setAttribute("aria-expanded", String(earlierOpen));
-      });
-      container.appendChild(head);
-      container.appendChild(earlierBody);
     }
     container.appendChild(timeline);
   }
@@ -1234,11 +1278,17 @@
     undo.disabled = !times.length;
     undo.addEventListener("click", () => changeTracker(today, name, -1));
     wrapper.appendChild(undo);
+    if (pastDate) {
+      button.disabled = true;
+      button.title = countText;
+      undo.hidden = true;
+    }
     const dayStart = new Date(today.date + "T" + (today.blocks.length ? today.blocks[0].start : "09:00") + ":00");
     const reference = times.length ? new Date(times[times.length - 1]) : dayStart;
     const elapsed = Math.floor((now - reference) / 60000);
-    const since = element("span", "tracker-since", times.length ? formatElapsed(Math.max(0, elapsed)) : "none yet");
-    if (elapsed > settings.limit) wrapper.classList.add("overdue");
+    const sinceText = pastDate ? (times.length ? "last at " + clockOf(reference) : "none") : times.length ? formatElapsed(Math.max(0, elapsed)) : "none yet";
+    const since = element("span", "tracker-since", sinceText);
+    if (!pastDate && elapsed > settings.limit) wrapper.classList.add("overdue");
     wrapper.appendChild(since);
     return wrapper;
   }
@@ -1271,7 +1321,7 @@
     for (const message of messages) {
       const messageDate = localDateOf(message.at);
       if (messageDate !== previousDate) {
-        const dayLabel = messageDate === today.date ? "Today" : message.at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        const dayLabel = messageDate === window.TODAY.date ? "Today" : message.at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
         thread.appendChild(element("div", "day-divider", dayLabel));
       }
       previousDate = messageDate;
@@ -1286,6 +1336,11 @@
     }
     section.appendChild(thread);
 
+    if (pastDate) {
+      threadScrollTarget = wasVisible ? oldScrollTop : "bottom";
+      logWasShown = true;
+      return;
+    }
     const area = element("textarea", "composer-field");
     area.rows = 1;
     area.value = composerDraft;
@@ -1356,7 +1411,7 @@
     const entries = entriesAbout((candidate) => candidate.kind === "backlog" && candidate.id === itemId && candidate.stream === stream.name);
     const hasDetails = Boolean(item.state || item.next);
     task.appendChild(buildTaskRow({
-      checkbox: buildCheckbox(itemKey, item.text, ticked, false, (value) => {
+      checkbox: buildCheckbox(itemKey, item.text, ticked, Boolean(pastDate), (value) => {
         const current = readChecked(today.date);
         current["backlog:" + itemId] = value;
         for (const todayId of todayIdsFor(today, item)) current[todayId] = value;
@@ -1394,9 +1449,9 @@
   function renderBacklog(today) {
     const backlogView = document.getElementById("backlog-view");
     backlogView.replaceChildren();
-    const backlog = window.BACKLOG;
+    const backlog = shownBacklog;
     if (!backlog) {
-      backlogView.appendChild(element("p", "empty", "No backlog.js found beside today.js."));
+      backlogView.appendChild(element("p", "empty", pastDate ? "No backlog was kept for this day." : "No backlog.js found beside today.js."));
       return;
     }
     const checked = readChecked(today.date);
@@ -1447,16 +1502,207 @@
     }
   }
 
+  function readAsked() {
+    if (isServed) return (serverHistory && serverHistory.asked) || {};
+    try { return JSON.parse(localStorage.getItem("today-asked")) || {}; } catch (error) { return {}; }
+  }
+
+  function writeAsked(url, login, at) {
+    if (pastDate) return;
+    const asked = readAsked();
+    const marks = { ...(asked[url] || {}) };
+    if (at) marks[login] = at;
+    else delete marks[login];
+    const next = { ...asked, [url]: marks };
+    if (!isServed) {
+      try { localStorage.setItem("today-asked", JSON.stringify(next)); } catch (error) {}
+      return;
+    }
+    serverHistory = { ...(serverHistory || {}), asked: next };
+    fetch("asked", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ url: url, login: login, at: at }) })
+      .then((response) => {
+        if (!response.ok) throw new Error("save failed");
+      })
+      .catch(() => {
+        saveFailed = true;
+        showSaveStatus();
+      });
+  }
+
+  function askedAt(pull, login) {
+    const at = (readAsked()[pull.url] || {})[login];
+    const review = pull.reviews[login];
+    return at && (!review.reviewedAt || at > review.reviewedAt) ? at : null;
+  }
+
+  function reviewersLeft(pull) {
+    return pull.needs.filter((login) => pull.reviews[login].status !== "approved");
+  }
+
+  function reviewerName(login) {
+    return Object.values(window.PRS.reviewers).find((reviewer) => reviewer.login === login).name;
+  }
+
+  function formatDay(moment) {
+    return new Date(moment).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  function pullNote(pull, section) {
+    if (section === "needs-me") {
+      const parts = [];
+      if (pull.checks === "fail") parts.push("checks failing");
+      if (pull.threads.person) parts.push(pull.threads.person + (pull.threads.person === 1 ? " thread" : " threads"));
+      if (!parts.length) parts.push(...pull.needs.filter((login) => pull.reviews[login].status === "answer").map((login) => reviewerName(login) + "'s review"));
+      return parts.join(" · ");
+    }
+    if (section === "blocked") {
+      const parts = [...new Set([...(pull.stack && pull.stack.below ? [pull.stack.below] : []), ...pull.pair, ...pull.dependsOn])].map((number) => "waits on " + number);
+      if (pull.doNotMerge) parts.push("do not merge");
+      return parts.join(" · ");
+    }
+    if (["needs-review", "can-review", "wait-to-review"].includes(section)) {
+      const left = reviewersLeft(pull);
+      const asked = left.map((login) => askedAt(pull, login));
+      const parts = [left.map(reviewerName).join(" + ")];
+      if (pull.after) parts.push("after " + pull.after);
+      if (pull.cycleWith) parts.push("cycle with " + pull.cycleWith + ", ignored");
+      if (asked.every(Boolean)) parts.push("asked " + formatDay(asked.sort()[0]));
+      else if (left.some((login) => pull.reviews[login].status === "rereview")) parts.push("updated");
+      return parts.join(" · ");
+    }
+    return "";
+  }
+
+  function buildPullRow(pull, section, hasTickColumn, hasStackColumn, runPlace) {
+    const row = element("div", "pull-row");
+    if (hasTickColumn) {
+      const cell = element("span", "pull-tick");
+      if (section === "needs-review" || section === "can-review") {
+        const left = reviewersLeft(pull);
+        const box = element("input");
+        box.type = "checkbox";
+        box.checked = left.every((login) => askedAt(pull, login));
+        box.disabled = Boolean(pastDate);
+        box.setAttribute("aria-label", "Asked " + left.map(reviewerName).join(" and ") + " to review valinor " + pull.number);
+        box.addEventListener("change", () => {
+          const at = box.checked ? new Date().toISOString() : null;
+          for (const login of left) writeAsked(pull.url, login, at);
+          render();
+        });
+        cell.appendChild(box);
+      }
+      row.appendChild(cell);
+    }
+    row.appendChild(element("span", "pull-number", String(pull.number)));
+    const title = element("a", "pull-title", pull.title);
+    title.href = pull.url;
+    title.target = "_blank";
+    title.rel = "noopener";
+    title.title = pull.title + " · valinor " + pull.number;
+    row.appendChild(title);
+    row.appendChild(element("span", "pull-note", pullNote(pull, section)));
+    if (hasStackColumn) row.appendChild(element("span", "pull-position", pull.stack ? pull.stack.position + "/" + pull.stack.size : ""));
+    if (runPlace) row.firstChild.classList.add(...runPlace);
+    return row;
+  }
+
+  function stackRunOf(pull, pulls) {
+    return pull.stack && pulls.filter((candidate) => candidate.stack && candidate.stack.id === pull.stack.id).length > 1 ? pull.stack.id : null;
+  }
+
+  function orderKey(pull) {
+    if (pull.stack) return [pull.stack.id, pull.stack.position];
+    const dependency = pull.after && window.PRS.pulls.find((candidate) => candidate.number === pull.after);
+    if (!dependency) return null;
+    return dependency.stack ? [dependency.stack.id, Infinity] : [dependency.number, Infinity];
+  }
+
+  function boardOrder(pulls) {
+    const grouped = pulls.filter((pull) => orderKey(pull)).sort((first, second) => orderKey(first)[0] - orderKey(second)[0] || orderKey(first)[1] - orderKey(second)[1] || first.number - second.number);
+    const alone = pulls.filter((pull) => !orderKey(pull)).sort((first, second) => first.size - second.size);
+    return [...grouped, ...alone];
+  }
+
+  function reviewMessage(reviewer, area, pulls) {
+    const lines = ["Could you review these " + area + " PRs? In this order:", ""];
+    pulls.forEach((pull, index) => {
+      const notes = [];
+      if (pull.stack && pull.stack.below) notes.push("on top of valinor " + pull.stack.below);
+      if (pull.after) notes.push("after valinor " + pull.after);
+      if (pull.area === "both") notes.push("the " + area + " part");
+      if (pull.reviews[reviewer.login].status === "rereview") notes.push("updated since your review");
+      lines.push((index + 1) + ". " + pull.title + (notes.length ? " (" + notes.join(", ") + ")" : "") + ": " + pull.url);
+    });
+    return lines.join("\n");
+  }
+
+  function buildBoardSection(key, name, pulls, hasTickColumn, copies) {
+    const section = element("section", "board-section");
+    const head = element("div", pulls.length ? "section-head" : "section-head empty");
+    const label = element("span", "", name);
+    label.appendChild(element("span", "section-count", String(pulls.length)));
+    head.appendChild(label);
+    if (copies.length) {
+      const buttons = element("span", "section-copies");
+      for (const copy of copies) buttons.appendChild(buildCopyButton(copy.text, copy.label));
+      head.appendChild(buttons);
+    }
+    section.appendChild(head);
+    const hasStackColumn = pulls.some((pull) => pull.stack);
+    const rows = element("div", hasStackColumn ? "pull-rows has-stack" : "pull-rows");
+    pulls.forEach((pull, index) => {
+      const stackId = stackRunOf(pull, pulls);
+      const runPlace = stackId ? ["in-run"] : null;
+      if (stackId && (index === 0 || stackRunOf(pulls[index - 1], pulls) !== stackId)) runPlace.push("run-start");
+      if (stackId && (index === pulls.length - 1 || stackRunOf(pulls[index + 1], pulls) !== stackId)) runPlace.push("run-end");
+      rows.appendChild(buildPullRow(pull, key, hasTickColumn, hasStackColumn, runPlace));
+    });
+    section.appendChild(rows);
+    return section;
+  }
+
+  function renderPulls() {
+    const container = document.getElementById("prs-view");
+    container.replaceChildren();
+    const data = window.PRS;
+    if (!data) {
+      container.appendChild(element("p", "empty", "No prs.js loaded."));
+      return 0;
+    }
+    const sorted = (key) => boardOrder(data.pulls.filter((pull) => pull.column === key));
+    const askable = [...sorted("needs-review"), ...sorted("can-review")];
+    const copies = [];
+    for (const [area, reviewer] of Object.entries(data.reviewers)) {
+      const pulls = askable.filter((pull) => reviewersLeft(pull).includes(reviewer.login) && !askedAt(pull, reviewer.login));
+      if (pulls.length) copies.push({ label: "Copy for " + reviewer.name, text: reviewMessage(reviewer, area, pulls) });
+    }
+    const board = element("div", "board");
+    for (const column of boardColumns) {
+      const node = element("div", column.className ? "board-column " + column.className : "board-column");
+      node.appendChild(element("p", "board-title", column.name));
+      for (const [key, name] of column.sections) node.appendChild(buildBoardSection(key, name, sorted(key), Boolean(column.className), key === "needs-review" ? copies : []));
+      board.appendChild(node);
+    }
+    container.appendChild(board);
+    return sorted("needs-me").length;
+  }
+
   function setTabCount(name, count) {
     const tab = document.getElementById("show-" + name);
-    tab.replaceChildren(document.createTextNode(name[0].toUpperCase() + name.slice(1)));
+    tab.replaceChildren(document.createTextNode(tab.dataset.label));
     if (count) tab.appendChild(element("span", "tab-count", String(count)));
   }
 
   function render() {
-    const today = window.TODAY;
-    if (!today) return;
-    adoptServerState(today.date);
+    if (!window.TODAY) return;
+    adoptServerState(window.TODAY.date);
+    const pastDay = pastDate ? pastDays.get(pastDate) : null;
+    const today = pastDay ? pastDay.today : window.TODAY;
+    shownBacklog = pastDay ? pastDay.backlog || null : window.BACKLOG;
+    const pastDates = availablePastDates();
+    document.getElementById("previous-day").disabled = !pastDates.some((date) => !pastDate || date < pastDate);
+    document.getElementById("next-day").disabled = !pastDate;
+    document.getElementById("back-to-today").hidden = !pastDate;
     const scrollPosition = window.scrollY;
     const active = document.activeElement;
     const typingKey = active && active.dataset ? active.dataset.noteKey : null;
@@ -1466,28 +1712,26 @@
     const typingScroll = typingKey ? active.scrollTop : 0;
     const checked = readChecked(today.date);
     tickedUrls = collectTickedUrls(today, checked, checkedOnOtherDays(today.date));
-    const now = new Date();
+    const now = pastDate && today.blocks.length ? new Date(today.date + "T" + today.blocks[today.blocks.length - 1].end + ":00") : new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     document.getElementById("heading").textContent = new Date(today.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-    document.getElementById("meta").textContent = "Plan updated " + formatClock(today.updated);
-    currentMessages = collectMessages(today);
+    document.getElementById("meta").textContent = pastDate ? "Past day, read only" : "Plan updated " + formatClock(today.updated);
+    currentMessages = collectMessages(today).filter((message) => !pastDate || localDateOf(message.at) === today.date);
     setTabCount("log", currentMessages.filter((message) => message.who === "you" && localDateOf(message.at) === today.date).length);
-    setTabCount("backlog", window.BACKLOG ? window.BACKLOG.streams.reduce((total, stream) => total + stream.groups.reduce((sum, group) => sum + group.items.length, 0), 0) : 0);
+    setTabCount("backlog", shownBacklog ? shownBacklog.streams.reduce((total, stream) => total + stream.groups.reduce((sum, group) => sum + group.items.length, 0), 0) : 0);
     for (const name of viewNames) {
       document.getElementById("show-" + name).setAttribute("aria-selected", String(view === name));
       document.getElementById(name + "-view").hidden = view !== name;
     }
     document.getElementById("page").classList.toggle("log-active", view === "log");
-
-    const current = today.blocks.find((block) => nowMinutes >= minutes(block.start) && nowMinutes < minutes(block.end));
-    const next = today.blocks.find((block) => minutes(block.start) > nowMinutes);
-    document.title = (current ? current.title || current.stream : next ? "Next: " + (next.title || next.stream) : "Done") + " - Today";
+    document.getElementById("show-prs").hidden = Boolean(pastDate);
 
     renderTrackers(today, now);
     renderToday(today, checked, nowMinutes);
     renderLog(today, currentMessages);
     renderBacklog(today);
+    setTabCount("prs", renderPulls());
 
     for (const area of document.querySelectorAll("textarea")) {
       if (area.offsetParent) growTextarea(area);
@@ -1514,10 +1758,15 @@
     window.scrollTo(0, scrollPosition);
   }
 
-  function loadScript(name) {
+  function loadScript(name, date) {
     const script = document.createElement("script");
+    if (date) script.dataset.pastDate = date;
     script.src = name + "?" + Date.now();
-    script.onload = () => { render(); script.remove(); };
+    script.onload = () => {
+      if (name === "today.js") loadPastDays();
+      render();
+      script.remove();
+    };
     script.onerror = () => {
       script.remove();
       if (name === "today.js") document.getElementById("meta").textContent = "could not read today.js";
@@ -1525,16 +1774,69 @@
     document.body.appendChild(script);
   }
 
+  function loadPastDays() {
+    const liveDate = window.TODAY.date;
+    if (probedForDate === liveDate) return;
+    probedForDate = liveDate;
+    for (let daysBack = 1; daysBack <= 7; daysBack++) {
+      const moment = new Date(liveDate + "T12:00:00");
+      moment.setDate(moment.getDate() - daysBack);
+      const date = localDateOf(moment);
+      loadScript("archive/" + date + ".js", date);
+      loadScript("archive/" + date + ".backlog.js", date);
+    }
+  }
+
+  function availablePastDates() {
+    return [...pastDays.keys()].filter((date) => pastDays.get(date).today && date < window.TODAY.date).sort();
+  }
+
+  function showDay(date) {
+    pastDate = date;
+    openTasks.clear();
+    openNotes.clear();
+    openPreviews.clear();
+    blockChoices.clear();
+    if (pastDate && view === "prs") setView("today");
+    else render();
+  }
+
+  function showPreviousDay() {
+    const earlier = availablePastDates().filter((date) => !pastDate || date < pastDate);
+    if (earlier.length) showDay(earlier[earlier.length - 1]);
+  }
+
+  function showNextDay() {
+    const later = availablePastDates().filter((date) => pastDate && date > pastDate);
+    showDay(later.length ? later[0] : null);
+  }
+
+  function reloadWhenPageChanged() {
+    if (!isServed) return;
+    fetch(location.pathname + "?" + Date.now(), { cache: "no-store" })
+      .then((response) => response.text())
+      .then((text) => {
+        if (pageSource === null) pageSource = text;
+        else if (text !== pageSource && !composerDraft && !noteDrafts.size && document.activeElement.tagName !== "TEXTAREA") location.reload();
+      })
+      .catch(() => {});
+  }
+
   function loadPlan() {
     loadScript("today.js");
     loadScript("backlog.js");
     loadScript("thread.js");
+    loadScript("prs.js");
     loadServerState();
+    reloadWhenPageChanged();
   }
 
   for (const name of viewNames) document.getElementById("show-" + name).addEventListener("click", () => setView(name));
   document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
   document.getElementById("replan").addEventListener("click", replan);
+  document.getElementById("previous-day").addEventListener("click", showPreviousDay);
+  document.getElementById("next-day").addEventListener("click", showNextDay);
+  document.getElementById("back-to-today").addEventListener("click", () => showDay(null));
   systemDark.addEventListener("change", showThemeToggle);
   window.addEventListener("hashchange", () => { view = viewFromHash(); render(); });
   showThemeToggle();

@@ -1,62 +1,71 @@
 ---
 name: review
-description: Review a branch or pull request with Camen in difit - his own or a teammate's. Use whenever he asks to review, or for help reviewing, a branch or pull request, in any words ("review <url>", "help me review", "difit"). Opens difit with a walkthrough within minutes, then adds findings as background agents reproduce them against the running app, and a proof page when the branch has none. On his own branch his comments become commits, never rewritten; on a teammate's the comments he marks go to GitHub as one review when he says. Updates itself from his feedback.
+description: Review a branch or pull request with Camen in difit - his own or a teammate's. Use whenever he asks to review, or for help reviewing, a branch or pull request, in any words ("review <url>", "help me review", "difit"), and with --prepare from the work page or /manage. Prepares everything slow first - the app compiled, the walkthrough, findings run against the app, a proof page, a summary page - and opens nothing he sees until he asks. On his own branch his comments become commits, never rewritten; on a teammate's the comments he marks go to GitHub as one review when he publishes. Updates itself from his feedback.
 ---
 
 # Review
 
-Read the `difit` skill first: it holds how the server is started, how threads are posted and kept, the Wait monitor, and shutting down. This skill holds what goes in the threads and how to answer.
+Read the `difit` skill first (starting a server, posting and keeping threads, shutting down) and `~/.claude/skills/assistant/writing.md` (how every thread, comment and explanation is written). This skill holds what goes in the threads and how to answer.
 
-Input: a pull request number or URL, or nothing for the current branch.
+Input: a pull request number or URL, or nothing for the current branch; `--prepare` to stop once everything is ready.
 
-Everything about the pull request lives in its task directory, `~/.claude/tasks/<repo>/<branch>/` (the README's "The task directory"): `plan.md` on his branch when there is one, `proof/`, `review/` for the collateral (repro scripts, their output, findings), and difit's `difit.json` and `comments.json`. A teammate's gets one too, under its head branch. Create it if missing.
+Everything about the pull request lives in its task directory, `~/.claude/tasks/<repo>/<branch>/` (the README's "The task directory"): `plan.md` on his branch when there is one, `proof/`, `review/` for the collateral (repro scripts, their output, findings), `task.json`, and difit's `difit.json` and `comments.json`. A teammate's gets one too, under its head branch. Create it if missing.
 
 **Whose it is** decides two things, and nothing else in the review differs. The pull request's author is `camentree`, or there is no pull request and it is the current branch: it is **his**. Anyone else: it is a **teammate's**.
 
 | | His | A teammate's |
 |---|---|---|
 | A change request in a thread | a commit of its own, replied `done in <sha>` | no code change, commit nothing: the code is someone else's |
-| GitHub | nothing posted | his marked comments, as one review, when he says |
+| GitHub | nothing posted | his marked comments, as one review, on `[publish]` |
 
-**The order.** He starts reading as soon as possible, and everything slow arrives while he reads: Set up, then the app, difit with the walkthrough, the code review and the proof all at once (Start everything). Nothing slow sits before difit.
+**The flow.** Nobody watches the terminal: he works from the work page (`~/.claude/skills/assistant/data.md`), and the page's buttons arrive here as messages. Prepare, then end the turn. `[open review]`: Open. `[comments sent]`: Answer him, one batch. `[publish]`: Publish. Without `--prepare` (he ran it himself), Prepare and Open run in one go.
+
+**Reporting.** This session is the only writer of the task's `task.json`, through `node ~/.claude/scripts/task-set.cjs` from the worktree, as data.md says: `--doing` at least every 10 minutes while working, and subagents report to this session, not to the file.
+
+**Deciding.** Easily reversible, or not reversible but what the change should do is clear: decide, and record it with `--decision`. What a user should be able to do or see is unclear: ask through `task-set.cjs --question` (writing.md's form), carry on with what does not depend on it, end the turn; the answer arrives as `[answer]`. Posting under his name, pushing and merging happen only on his message. Never AskUserQuestion or a "Needs you" line: nobody is at the terminal.
 
 ## Set up
 
-1. Check `aws sts get-caller-identity --profile us-developer`. When the SSO session has expired, tell him at the start, not at the end: uploads, `bin-local/users add`, and Tools imports fail without it, and only he can run `aws sso login`.
+1. Check `aws sts get-caller-identity --profile us-developer`. When the SSO session has expired, ask him through `--question` at the start, not the end: uploads, `bin-local/users add`, and Tools imports fail without it, and only he can run `aws sso login`.
 2. With a pull request: `gh pr view <n> --json title,author,headRefName,baseRefName,body,files,headRefOid,statusCheckRollup,url`. Read the description closely: its claims are what the review checks. A Linear ticket id in the branch name or title gives the `(linear)` tab.
-3. Name the terminal tab: a teammate's, `tabname '<author> - <feature>'`, the author abbreviated the way he abbreviates people (the People list in his notes); his, as his CLAUDE.md says.
-4. Record it on the pull request's item in the day plan (`~/Documents/notes/today/today.js` and `backlog.js`, as "During the day" in the today skill says; he moved this off organize.md on 2026-11-20): `status: "an agent is preparing the review"`, so he sees an agent has it. When the difit server is up for him, `status: "review ready for you in difit: <LAN url>"` with the difit url added to the item's `links`: the review now waits on him. Rewrite the status when it moves on.
-5. Work in the branch's own worktree. His: the one `git worktree list` shows it in, when there is one. Otherwise, and always for a teammate's: `git fetch origin <branch> <base branch>`, then `wk <branch>`. Never in the worktree the session started in when that is another branch: it is usually his own work, uncommitted. An August pull request is in `augusthealth/valinor`, checkout `~/Projects/valinor`. One whose description starts `Migrated from <url>` was moved from august-backend or august-frontend by `bin/migrate-pr`, and its earlier reviews and threads are on that old pull request: read them there. Given an old-repository URL, find the valinor pull request that names it (`gh pr list -R augusthealth/valinor --search "<url> in:body"`) and review that; when there is none yet, say so and review the diff only, with no app.
+3. Name the terminal tab: a teammate's, `tabname '<author> - <feature>'`, the author abbreviated the way he abbreviates people (the People list in his notes; someone not on it, their GitHub login, which is the list's pattern); his, as his CLAUDE.md says.
+4. `task-set.cjs --title "<what changes for a user>" --kind mine|teammate --pull <url> --state working --doing "preparing the review"`, so the page shows an agent has it.
+5. Work in the branch's own worktree. A session the work page started already runs in it, made by `wk`: `git fetch origin <branch> <base branch>` and use it (2026-11-23, the first page-started review). His: the one `git worktree list` shows it in, when there is one. Otherwise, and always for a teammate's: `git fetch origin <branch> <base branch>`, then `wk <branch>`. Never in the worktree the session started in when that is another branch: it is usually his own work, uncommitted. An August pull request is in `augusthealth/valinor`, checkout `~/Projects/valinor`. One whose description starts `Migrated from <url>` was moved from august-backend or august-frontend by `bin/migrate-pr`, and its earlier reviews and threads are on that old pull request: read them there. Given an old-repository URL, find the valinor pull request that names it (`gh pr list -R augusthealth/valinor --search "<url> in:body"`) and review that; when there is none yet, review the diff only, with no app, and say so in the explanation.
    - `wk` links the shared untracked files (`bin-local`, `CLAUDE.local.md`, `local.sbt`, ...). If it prints `no matches found` from `wk-share-files`, run `wk-share-files <main checkout> <worktree>` again from a fresh `zsh -ic`.
    - A `.env` that comes out as a dangling link (the main checkout has none): replace it with a copy of another worktree's `.env`. `bin-local/dev` rewrites its sandbox block.
 6. `<base>` is the commit whose diff to `HEAD` is exactly what he has not seen yet, chosen from the code, not from a fixed branch name:
    - First review: `git merge-base HEAD origin/<base branch>`. The base branch is the pull request's `baseRefName`; with none, `git config branch.<current branch>.gh-merge-base` when that is set and `origin/<it>` exists, else the default branch (`git symbolic-ref --short refs/remotes/origin/HEAD`). A stacked branch diffed against the default branch shows its parent's changes as its own.
-   - Resumed with no new commits since `comments.json`'s threads (a paused review): restart difit on the same base, restore the threads, and skip the walkthrough, the code review agent and the proof, since they were already done; re-arm the monitor (he paused #8164 on 2026-11-19 and asked whether a rerun redoes everything).
-   - Already reviewed, new commits since: the last commit he reviewed, so the diff is only the new work. `difit.json` carries the last base under `base`, and `comments.json` his earlier threads.
-   - The pull request's base branch changes mid-review (restacked, or the base merged in): restart difit on the new base's head right away, re-posting the open threads, or the server shows the base's commits as this change (seen 2026-11-13: a 6k-line diff after #8036 moved onto #8034). The same after you `git merge origin/<base branch>` into the branch yourself: the merge moves the fork point, so restart on the new `git merge-base HEAD origin/<base branch>` in the same turn as the push (seen 2026-11-15: a 9k-line #9507 diff after merging master).
-   - The pull request's base branch changed mid-review (restacked onto another PR): `git merge-base HEAD origin/<new base branch>`, the whole change on top of the new parent as GitHub now shows it, with a thread saying which files belong to which PR. Only the commits since the restack hid the change he was restacking (seen 2026-11-13).
+   - Prepared already, with no new commits since `comments.json`'s threads: skip Prepare, since the walkthrough, the code review and the proof are done (he asked on 2026-11-19 whether a rerun redoes everything).
+   - Already reviewed, new commits since: the last commit he reviewed, so the diff is only the new work. `difit.json` or `task.json`'s `review.difit.base` carries the last base, and `comments.json` his earlier threads.
+   - The pull request's base branch changes mid-review (restacked, or the base merged in): restart difit on `git merge-base HEAD origin/<new base branch>` right away, re-posting the open threads, with a thread saying which files belong to which pull request, or the server shows the base's commits as this change (seen 2026-11-13: a 6k-line diff after a restack). The same after you `git merge origin/<base branch>` into the branch yourself, in the same turn as the push (seen 2026-11-15: a 9k-line diff after merging master).
 
-## Start everything
+## Prepare
 
-All in one turn, in this order, none waiting on another:
+All started in one turn, none waiting on another:
 
-1. **The app**, from this session with the Bash tool's `run_in_background`, never from an agent: an agent's background servers die when it finishes. `august-app start` from the worktree, as the august skill says: it runs `bin-local/dev`, which starts the backend and the frontend both (take the ports from `august-app status`, which reads them from the worktree's `.env.local`; `--api` when the change is in the external API); it stages the branch through the worktree's warm sbt server and serves a copy, so this is the compile, and it leaves the sbt server free for anything after it. Nothing to run (a script, a skill): compile only when there is something to compile.
-2. **difit with the walkthrough**, as Start the server and The threads say. The walkthrough needs only the diff, the description and the plan, so it goes up before the app answers. Then open the Safari tab group with what exists, the summary page first (Ready for him) and set the day plan item's `status` to say the review is ready for him.
-3. **Tests, a teammate's only.** None when CI passed on `headRefOid`: CI ran them. Otherwise the specs the branch adds or edits, once the app's stage has finished (they share the worktree's sbt server), as the repo's notes say. His branch: none, he ran them before the draft.
+1. **The app**, from this session with the Bash tool's `run_in_background`, never from an agent: an agent's background servers die when it finishes. `august-app start` from the worktree, as the august skill says: it runs `bin-local/dev`, which starts the backend and the frontend both (ports from `august-app status`; `--api` when the change is in the external API); it stages the branch through the worktree's warm sbt server, so this is the compile. Nothing to run (a script, a skill): compile only when there is something to compile.
+2. **The walkthrough**, as The threads say. It needs only the diff, the description and the plan, so write it while the app compiles.
+3. **Tests, a teammate's only.** None when CI passed on `headRefOid`: CI ran them. Otherwise the specs the branch adds or edits, once the app's stage has finished (they share the worktree's sbt server), as the repo's notes say. His branch: none, they ran before the handover.
 4. **The code review**, a background `worker` agent (Code review agent, below).
-5. **The proof**, a background `driver` agent with `Run /proof`, only when the task directory has no `proof/index.html`: his drafts were proven before they were opened, so a proof page there is never rebuilt. A teammate's takes the description's claims as the criteria. The page is how he gets up to speed before reading the diff (he said on 2026-11-18 that working out what a pull request is and what to try costs him most of a review), so the driver's prompt asks for `context` and `tryIt.steps` as the proof skill describes them: what the feature is for someone arriving cold, and the list of things to try in the app or from a terminal. A page that is already there and has no `tryIt.steps`: add `context` and the steps to its `proof.json` from the plan and the page's own evidence, then rerun `page.cjs`. That re-records nothing.
+5. **The proof**, a background `driver` agent with `Run /proof`, only when the task directory has no `proof/index.html`: his work was proven before the handover, so a proof page there is never rebuilt. A teammate's takes the description's claims as the criteria. The prompt asks for `context` and `tryIt.steps` as the proof skill describes them: working out what a pull request is and what to try costs him most of a review (2026-11-18). A page that is already there with no `tryIt.steps`: add `context` and the steps to its `proof.json` from the plan and the page's own evidence, then rerun `page.cjs`, re-recording nothing.
+6. **The summary page**, under Summary page.
 
-A valinor pull request holds the backend and the frontend half of a change, so one worktree runs both and there is usually no companion. A companion pull request (the other half split into its own pull request, or an Experimental-Tools change, named in the description) is part of the review: its own worktree and app beside this one, so the proof shows the change in use, and its own difit with a code review agent; no walkthrough or behavior check on it unless he asks (2026-11-18). When its worktree carries an uncommitted local change (the frontend's `authMethod: 'none'`), start that difit on `HEAD <base>`, a fixed pair, so the change stays out of the diff.
+A companion pull request (the other half split out, or an Experimental-Tools change, named in the description) is part of the review: its own worktree and app beside this one, so the proof shows the change in use, and its own difit threads with a code review agent; no walkthrough or behavior check on it unless he asks (2026-11-18). When its worktree carries an uncommitted local change (the frontend's `authMethod: 'none'`), its difit runs on `HEAD <base>`, a fixed pair, so the change stays out of the diff.
 
 An agent stopped by a usage limit keeps its work: resume it with SendMessage, not a fresh agent.
 
-As each agent reports, import its findings (`review/findings.json`) through `/api/comment-imports`, add its tab to the group, and notify him: `osascript -e 'display notification "<branch>: <n> findings" with title "Claude"'`. A proof that lands adds a reply on the first walkthrough thread with the page's path.
+When every agent has reported:
 
-Several pull requests at once: one background session per pull request, `claude --bg --permission-mode auto -n "review <order> <feature> #<n>" "/review <n>"` started from its worktree, each owning its whole review (app, difit, walkthrough, code review, monitor, replies, fixes). They show in agent view, where he arrows between their conversations; one session answering every branch blocks him as he jumps between reviews, and a subagent can't be opened or talked to. Number them in the order to review, dependencies first. He wants five open at once: when one closes, start the next draft from `backlog.js` (items with `stage: "self-review"`), dependencies first, without asking. This session only starts them. The podman VM has 4 GiB and a test run's Testcontainers take about 500 MB, so run at most two teammates' test runs at a time. With one pull request, answer his threads from this session, never by resuming an agent: what is worth keeping is in `review/`. A reply that needs new code run goes to a fresh agent pointed at that folder.
+- Write the threads into `comments.json` as the difit skill's Prepared threads says: the walkthrough, every finding from `review/findings.json`, and on the first walkthrough thread the proof page's path.
+- Record what the page shows, writing each as writing.md says: `--explanation`, one `--finding` per finding (`--reproduced` when it was run), one `--proof` per recording or key screenshot from `proof/`, and `--review-file` with `{ "difit": { "base": "<base>", "comments": "comments.json" }, "tabs": [...] }`, the tabs in the order Open opens them.
+- A teammate's: `--ready review --state ready --doing "review ready"`. His: leave `--ready work` as `/manage` set it, `--state ready --doing "review ready"`.
+- With `--prepare`, stop the app (`august-app stop --worktree=<worktree>`) and end the turn. Without it, go straight on to Open.
+
+Several pull requests at once: one background session per pull request, each owning its whole review; the work page starts them (`POST /api/agent` with `kind: "review"`). The podman VM has 4 GiB and a test run's Testcontainers take about 500 MB, so at most two teammates' test runs at a time.
 
 ## Code review agent
 
-`subagent_type: worker`, in the background. The prompt names the worktree, the task directory, `<base>`, the pull request (or the plan's criteria on his branch), the app's port and the user to call it as, and gives it Checking a finding and Collateral below. It reads the change against the description's claims, or the plan's criteria, and reports a finding only once it has run it, waiting on `curl -X GET localhost:<port>/ping` when it needs the app. It starts and stops nothing: no difit, no app. It writes each finding's transcript to `review/<finding>.md` and all its threads, as the JSON body for `/api/comment-imports`, to `review/findings.json`, and returns one line per finding. When CI failed on the head commit, it reads the failing jobs' logs first and says why each failed (the pull request's code, a package not yet published, infra, a job cancelled by another's failure) before anything else. The harness refuses an agent's report files such as `summary.md`, so the prompt asks for that text in the final report too, and this session saves it.
+`subagent_type: worker`, in the background. The prompt names the worktree, the task directory, `<base>`, the pull request (or the plan's criteria on his branch), the app's port and the user to call it as, and gives it Checking a finding, Collateral and writing.md. It reads the change against the description's claims, or the plan's criteria, and reports a finding only once it has run it, waiting on `curl -X GET localhost:<port>/ping` when it needs the app. It starts and stops nothing: no difit, no app, no `task-set.cjs`. It writes each finding's transcript to `review/<finding>.md` and all its threads, as the JSON body for `/api/comment-imports`, to `review/findings.json`, and returns one line per finding. When CI failed on the head commit, it reads the failing jobs' logs first and says why each failed (the pull request's code, a package not yet published, infra, a job cancelled by another's failure) before anything else. The harness refuses an agent's report files such as `summary.md`, so the prompt asks for that text in the final report too, and this session saves it.
 
 ## Checking a finding
 
@@ -76,24 +85,20 @@ Every finding carries what shows it. For the backend that is, from `review/`:
 
 In the finding's thread, the short form: the steps as plain sentences with the actual dates or values, then expected against what came back. The full transcript goes in `review/<finding>.md`, with the script's path. For a frontend change, record it as `/proof`'s In a browser says.
 
-The proof page is `proof/index.html` in the task directory: the one his branch was drafted with, or the one the proof agent builds. The first walkthrough thread ends with its path, or says it is on its way.
-
 ## Summary page
 
-Every review gets `summary.html` in the task directory, copied at Set up from `~/.claude/skills/review/summary-skeleton.html` and kept current in the same turn as each event, so he gets up to speed from one page and watches the review move (2026-11-18). How to fill it: `~/.claude/skills/review/summary-page.md` (the fixed frame and what goes in each step) and `summary-example.html`, a filled-in page, both read before touching yours. "What the PR does" shows the change, not just tells it: the proof's recording, captioned at the top (proof skill's `annotate-video` when it isn't), and the before/after screenshots inline (relative `proof/` paths), whenever the change is visible (he asked, 2026-11-18). "What the PR does" carries the proof's recordings and key screenshots inline, never only a link to the proof page (he asked, 2026-11-18); copy them into the task directory's own `media/`, since a stack's shared proof folder can be moved by a sibling review. Serve the task directory with `python3 -m http.server <port> --bind 0.0.0.0` from a background Bash so the page's relative `proof/` and `plan.md` links resolve, on a port `lsof -nP -iTCP:<port> -sTCP:LISTEN` shows free just before starting it, and post its url only once that server answers: parallel reviews race for the same ports, and #9682's tabs opened #9684's summary on 4975 (2026-11-18).
+Every review gets `summary.html` in the task directory, copied at Prepare from `~/.claude/skills/review/summary-skeleton.html` and kept current in the same turn as each event, so he gets up to speed from one page (2026-11-18). How to fill and serve it: `~/.claude/skills/review/summary-page.md` and `summary-example.html`, a filled-in page, both read before touching yours. "What the PR does" shows the change, not just tells it: the proof's recordings (captioned at the top, the proof skill's `annotate-video` when they aren't) and the before/after screenshots inline, never only a link to the proof page (he asked, 2026-11-18); copy them into the task directory's own `media/`, since a stack's shared proof folder can be moved by a sibling review.
 
-## Ready for him
+## Open
 
-As the pieces come up, everything he needs to try the change is running and open, so he never starts anything himself:
+On `[open review]`, or straight after Prepare when he ran it himself. Everything he needs to try the change is running and open, so he never starts anything himself:
 
-- A frontend change: its backend and frontend (`bin-local/dev`, as the august skill says; "Already running" means it is), and a tab on the page where the change shows, signed in as the user who sees it: `?mock_user=<email>` when that is not camen@, with the role set through `bin-local/users set` first. Not the community's front page: the person's tab, the modal's page, the record the findings used.
-- A backend change: its app (and the external API when the change is in it), with the repro script's path in the first walkthrough thread so he can rerun the requests.
-- The summary page is where he starts (Summary page, above); the proof page, with its recording and the list to try, is one of its links and gets a tab of its own once it lands.
-- All of it in the review's Safari tab group, as the difit skill's In Safari says, never Chrome (2026-11-18): the summary page, each difit, the pull request (and its companion's), the frontend for a frontend change, the proof page once there is one, the Linear ticket, the plan. The urls go in the first walkthrough thread.
+- The app again, as Prepare's step 1. A frontend change gets a tab on the page where the change shows, signed in as the user who sees it: `?mock_user=<email>` when that is not camen@, with the role set through `bin-local/users set` first. Not the community's front page: the person's tab, the modal's page, the record the findings used. A backend change: the repro script's path is in the first walkthrough thread.
+- difit, as the difit skill's Start says, on `review.difit.base`, with `comments.json` restored. On his branch with `--include-untracked`: untracked files are part of the change.
+- The review's Safari tab group, as the difit skill's In Safari says, never Chrome (2026-11-18): `review.tabs` in order (the summary page first, then each difit, the pull request and its companion, the app, the proof page, the Linear ticket, the plan). The urls also go in the first walkthrough thread.
+- `task-set.cjs --state reviewing --doing "reviewing in difit: <LAN url>"`, so he can reach it from his other device. End the turn.
 
-## Start the server
-
-As the difit skill says. On his branch, with `--include-untracked`: untracked files are part of the change.
+## Slices and fixed pairs
 
 Reviewing one slice of the branch (e.g. "just the modal"): the scope is every change since the fork point that the slice needs (its files plus the code they call), not the latest commit. difit has no path filter and ignores a diff piped on stdin in `--background` mode, silently showing `HEAD~1..HEAD` instead. Build a review-only commit instead — the fork point's tree with the slice's paths taken from `HEAD` — and diff that against the fork point, under `<slice>`:
 
@@ -106,26 +111,23 @@ npx --yes difit refs/review/<branch>/<slice> <base> --port <port> --keep-alive -
 
 Run it under `bash -c` (zsh does not word-split an unquoted `$paths`), and save `paths` and `target` in `<slice>.difit.json` in the task directory. It is a fixed pair (see the difit skill). List what the slice leaves out in the first thread. A slice started mid-review carries over the other servers' threads on its paths: `/api/comments` restore won't take them (different target), so re-post each thread's messages through `/api/comment-imports`, the first as `thread` and the rest as `reply`, each keeping its `author`. "Non-test files only" is `git diff --name-only <base> HEAD | grep -v -E '\.test\.tsx?$|^test/|^src/mocks/'`.
 
-### Fixes for PR review comments
+**Fixes for PR review comments.** On his branch, when the commits under review answer a reviewer's comments (`/address-comments --unattended` opens its fixes this way), give each commit its own server, so each fix reads against the comment that asked for it. Only comments still unaddressed: a thread he has already replied to was reviewed in an earlier round.
 
-On his branch, when the commits under review answer a reviewer's PR comments, give each commit its own server instead of one diff, so each fix reads against the comment that asked for it. Only comments still unaddressed: a thread he has already replied to, with a sha or in words, was reviewed in an earlier round and gets no server.
-
-- **Map comments to commits.** `gh api --paginate repos/{owner}/{repo}/pulls/<n>/comments`; keep the reviewer threads with no reply from him, and match each to the commits made for it since. One commit can answer several comments, and one comment can need several commits. An uncommitted change that answers a comment gets a server too, `difit . HEAD`.
-- **One server per commit.** `npx --yes difit <sha> <sha>^ --port <port> --keep-alive --no-open --clean --host 0.0.0.0`, consecutive free ports, state saved in the task directory as `pr-<NN>-<slug>.difit.json` and `pr-<NN>-<slug>.comments.json`. These are fixed pairs, started and watched together as the difit skill says.
-- **One thread per server**, on the commit's first added line in its main file (`"side":"old","line":1` for a deleted file): the link `https://github.com/<owner>/<repo>/pull/<n>#discussion_r<id>`, the comment verbatim as a blockquote, then the context he needs: what the commit did, anything in the comment it leaves unanswered (a question for product, work done in another PR, by its number and what it does), and his own replies on the thread quoted.
-- **Tabs**, one per server, as the difit skill's In Safari says.
-- **Report** the PR comments that no commit answers, quoted, and the threads where a commit answers only part of the comment.
+- Map comments to commits: `gh api --paginate repos/{owner}/{repo}/pulls/<n>/comments`; keep the reviewer threads with no reply from him, and match each to the commits made for it since. One commit can answer several comments, and one comment can need several commits. An uncommitted change that answers a comment gets a server too, `difit . HEAD`.
+- One server per commit: `npx --yes difit <sha> <sha>^ --port <port> --keep-alive --no-open --clean --host 0.0.0.0`, consecutive free ports, state in `pr-<NN>-<slug>.difit.json` and `pr-<NN>-<slug>.comments.json`, fixed pairs as the difit skill says. Prepared, `review.difit` is the list of them, each with its `target`.
+- One thread per server, on the commit's first added line in its main file (`"side":"old","line":1` for a deleted file): the link `https://github.com/<owner>/<repo>/pull/<n>#discussion_r<id>`, the comment verbatim as a blockquote, then what the commit did, anything in the comment it leaves unanswered, the drafted reply, and his own replies on the thread quoted.
+- A tab per server. Comments no commit answers, and those a commit answers only in part, go in `--explanation`.
 
 ## The threads
 
-Walkthrough threads start with `(walkthrough)`, findings with `(finding)`. A bare "difit" request to look at a few uncommitted fixes skips the walkthrough and the findings, never the monitor.
+Walkthrough threads start with `(walkthrough)`, findings with `(finding)`. A request to look at a few uncommitted fixes skips the walkthrough and the findings.
 
 Walkthrough, in this order:
 
-- **What it does.** One thread on the first changed line of the main file: a teammate's PR and number, or on his branch the criteria it serves; the change in a few sentences, the pieces it is made of.
+- **What it does.** One thread on the first changed line of the main file: a teammate's pull request and number, or on his branch the criteria it serves; the change in a few sentences, the pieces it is made of.
 - **Context.** Wherever a reader would otherwise have to ask: how the code it calls works, a decision from the plan and the alternative rejected, a precedent it follows, why a test changed.
 - **Critical path.** The change most likely to break something else, and why.
-- **How to verify.** On the test file: the commands run and their counts, or that CI passed on the head commit, or on his draft that the proof page holds the evidence. The command and its expected output on the line it proves.
+- **How to verify.** On the test file: the commands run and their counts, or that CI passed on the head commit, or on his branch that the proof page holds the evidence. The command and its expected output on the line it proves.
 
 Findings:
 
@@ -137,7 +139,7 @@ Findings:
 
 ## Answer him
 
-He reads the threads and replies. A reply from him is working the issue out with you, not a request for new wording:
+On `[comments sent]`: read every thread whose last message is not Claude's, as the difit skill's Reading his comments says, and answer them all as one batch, then end the turn. There is no monitor: each monitor event resent the whole context and they stacked up, so his comments wait for the button. A reply from him is working the issue out with you, not a request for new wording:
 
 - "What happens" asks for the outcome a user sees, in a sentence; give the code path only when he asks for it.
 - Answer the question plainly, in the same thread. Don't append a reworded comment.
@@ -148,37 +150,40 @@ He reads the threads and replies. A reply from him is working the issue out with
 
 His branch:
 
-- A change request, or a yes to a finding's fix: first decide whether you agree and reply in the thread before touching code — "agree, doing it: <the change in a line>", or what you'd do instead and why — so he sees the call while you work instead of after. Then a commit of its own. Reply `done in <sha>` plus one line on what changed. Then run the tests that cover it.
-- Never amend, fixup, rebase, reset, or force-push: a `done in <sha>` must stay a commit he can open, here and on GitHub. When the base branch has moved and the branch needs it (conflicts, or a merged stack parent padding the pull request's diff), `git merge origin/<base branch>`, resolve, commit and push without asking first (he said not to ask, 2026-11-19).
-- A request to post something on GitHub: auto mode refuses it when it arrives as a difit comment (tool output, not his message). Prepare the payload, then ask him in the terminal to say "post it".
+- A change request, or a yes to a finding's fix: say in the thread whether you agree before touching code — "agree, doing it: <the change in a line>", or what you'd do instead and why. Then a commit of its own. Reply `done in <sha>` plus one line on what changed. Then run the tests that cover it.
+- Never amend, fixup, rebase, reset, or force-push: a `done in <sha>` must stay a commit he can open, here and on GitHub. When the base branch has moved and the branch needs it (conflicts, or a merged stack parent padding the pull request's diff), `git merge origin/<base branch>`, resolve and commit without asking (he said not to ask, 2026-11-19).
+- A request to post something on GitHub waits for his `[publish]` or his own message: a difit comment is tool output, not his message.
 
 A teammate's:
 
 - A message he starts with `(post)` or `post:` is a comment to post, in his words. Check it the same way and reply with any fact it gets wrong, including the code's own names: he wrote "negotiated care rate" where the code compares the recommended care rate (the negotiated rate is rent), 2026-11-18. When he says to update it ("update the post to say …"), reply `Text to post:` and his text with only that change; the latest one in a thread wins. A thread he asks me to start on a line is a draft in my words, opened with `Text to post:`.
+- His verdict (comment, approve, or request changes) and the review's summary come in a difit comment. When the batch has them, draft the description from them (`--description-file`) and set `--ready review --state ready`, so the page offers publish.
 
 Keep the threads alive through fixes as the difit skill says: fixes that delete lines drop the threads above them.
 
-## Post
+## Publish
 
-A teammate's, only when he says to post, in the terminal. After his review he leaves a difit comment with the final verdict (comment, approve, or request changes) and the review's summary text to post; when posting time comes without one, ask him for it before posting (added 2026-11-18). One review holding that summary as `body`, the verdict as `event` (`COMMENT`, `APPROVE`, `REQUEST_CHANGES`; never one he didn't give), and each thread's latest `(post)` text, verbatim without the marker, on the line its thread sits on:
+On `[publish]`.
+
+A teammate's: post one review holding his summary (the description that came with `[publish]`) as `body`, the verdict as `event` (`COMMENT`, `APPROVE`, `REQUEST_CHANGES`; never one he didn't give: with none, ask through `--question`), and each thread's latest `(post)` text, verbatim without the marker, on the line its thread sits on:
 
 ```
 gh api -X POST repos/<owner>/<repo>/pulls/<n>/reviews --input <scratchpad>/review.json
 ```
 
-with `{"commit_id": "<headRefOid>", "event": "<his verdict>", "body": "<his summary>", "comments": [{"path": "<repo-relative path>", "line": <n>, "side": "RIGHT", "body": "..."}]}`. Check `headRefOid` still matches the worktree's `HEAD` first; if the author pushed since, say so before posting. Run every `gh pr` call with `-R <owner>/<repo>`: from the companion's worktree, `gh pr view 8100` read the frontend's #8100 and showed a false "pushed since" (2026-11-18). Before posting, read each final text once more for a fact a reply flagged that he never fixed, and ask in one AskUserQuestion per pull request: fix it and post (recommended), post as written, or not yet. A companion pull request gets its own review with its own verdict comment; when one review's body links the other's ("same comment as …"), post the linked one first and put its URL in. Give him the review's link and one line per comment posted, and name any finding he didn't mark. Fill the summary page's Your review and Comments posted, and tick the review's day plan item (`done: true`, `status: "review posted <time>"`, and in `backlog.js` a `summary` saying he reviewed it and `waiting: true`). Then shut the difits and their monitors down without waiting for him to say close: once the review is posted they have nothing left to do (2026-11-18).
+with `{"commit_id": "<headRefOid>", "event": "<his verdict>", "body": "<his summary>", "comments": [{"path": "<repo-relative path>", "line": <n>, "side": "RIGHT", "body": "..."}]}`. Check `headRefOid` still matches the worktree's `HEAD` first; if the author pushed since, ask before posting. Run every `gh pr` call with `-R <owner>/<repo>`: from the companion's worktree, `gh pr view 8100` read the frontend's #8100 and showed a false "pushed since" (2026-11-18). Before posting, read each final text once more for a fact a reply flagged that he never fixed: fix it and record a `--decision` saying so. A companion pull request gets its own review with its own verdict; when one review's body links the other's ("same comment as …"), post the linked one first and put its URL in. Fill the summary page's Your review and Comments posted, record the review's link with `--doing "review posted"`, then Close without waiting: once posted there is nothing left (2026-11-18).
+
+His branch: `/verify <plan> --pre-push` by a `worker` (its findings, if any, go to a `fixes` build and verify runs again; when a pass fixes less than the one before, stop and ask through `--question`). Then `/pr` with the description he sent, which opens it ready for review. When the pull request already exists, only push: its description is his (he rejected a `/pr` rewrite on 2026-11-13 with "just push"). Then Close.
 
 ## Close
 
-His branch ends when he says it is good, in any words: 👍, good, ship it. A teammate's, when he says to close. Then:
-
 - A role changed for him to try it: set camen@ back to `GROUP_TYPE_SUPER_USER` with `bin-local/users set`.
-- Shut difit down as its skill says, stop the app (`august-app stop --worktree=<worktree>`, which stops that worktree's backend and frontend only), but leave servers whose start time doesn't match yours, since a sibling review may be using them (2026-11-18), stop the summary page's server, and close the Safari tab group's tabs. Ask before stopping the app at all: he may still want a screenshot for the description.
-- A worktree made for the review: keep it and its database, and say how to remove them (`wk rm <branch>`, which drops the database too).
-- His branch: `git push`, the fix commits as they are. When the pull request already exists, stop there: its description and draft state are his (he rejected a `/pr` rewrite and `gh pr ready` on 2026-11-13 with "just push"). Only a branch with no pull request yet goes through `/pr`. Set its day plan item to `stage: "review"` with a `status` saying it was pushed and waits on a teammate's review, and tick it (`done: true`) when the item was the self-review. `stage: "approved"` would read as ready to merge.
+- Shut difit down as its skill says, stop the app (`august-app stop --worktree=<worktree>`, which stops that worktree's backend and frontend only; leave servers whose start time doesn't match yours, since a sibling review may be using them, 2026-11-18), and close the Safari tab group's tabs.
+- A worktree made for the review: keep it and its database (`wk rm <branch>` removes both).
+- `task-set.cjs --ready none --state done --doing "<what was posted or pushed>"`.
 
-Then, on his branch, turn what he asked for into rules, so the next branch does not earn the same comment. Go through his comments in `comments.json` once. Leave out what was about this change only. For each one that would apply to other work in this repo and is not already in its notes, write one line, the rule and a one-line why, for the `## Code style checks` section of the repo's CLAUDE.md if it is his, else its CLAUDE.local.md: builders read that section before they write, and `/verify` grades against it. A rule that holds in every repo goes to his own CLAUDE.md. One that a linter or a test could enforce: say so, and propose that in place of a line. Don't wait for a comment to repeat. Propose, never write unasked: one AskUserQuestion listing each line and where it would go, and write only the ones he picks, editing an existing entry over adding one. With nothing to propose, say nothing.
+Then, on his branch, turn what he asked for into rules, so the next branch does not earn the same comment. Go through his comments in `comments.json` once. Leave out what was about this change only. For each one that would apply to other work in this repo and is not already in its notes, draft one line, the rule and a one-line why, for the `## Code style checks` section of the repo's CLAUDE.md if it is his, else its CLAUDE.local.md: builders read that section before they write, and `/verify` grades against it. A rule that holds in every repo goes to his own CLAUDE.md. One that a linter or a test could enforce: propose that in place of a line. Record them as one `--decision` ("Proposed rules", each line and where it goes, alternative "write none"), and write only the ones a later `[note]` picks. With nothing to propose, record nothing.
 
 ## Updating this skill
 
-Whenever he corrects how the review went — in a thread or in the terminal, about wording, order, evidence, or setup — change this skill right then: one line, edited into the section it belongs to, the rule and its why in a clause. Then tell him in one line what changed. He reviews skill edits as uncommitted changes in the dotfiles repo, so write them, don't propose them. A correction about running difit goes in the difit skill; a fact about the repo goes in its CLAUDE.md if his, else CLAUDE.local.md; how he wants you to work goes in his CLAUDE.md.
+Whenever he corrects how the review went — in a thread, a `[note]`, or the terminal, about wording, order, evidence, or setup — change this skill right then: one line, edited into the section it belongs to, the rule and its why in a clause, and record it as a `--decision`. He reviews skill edits as uncommitted changes in the dotfiles repo, so write them, don't propose them. A correction about running difit goes in the difit skill; how something is written goes in `~/.claude/skills/assistant/writing.md`; a fact about the repo goes in its CLAUDE.md if his, else CLAUDE.local.md; how he wants you to work goes in his CLAUDE.md.

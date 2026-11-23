@@ -39,6 +39,7 @@ From a session, start them with `bash ~/Projects/dotfiles/claude/scripts/august-
 - A resident made through `POST .../facilities/<id>/people` needs `admissionsInformation.startDate`, and comes with its own Self contact.
 - The backend runs as a staged copy (`$TMPDIR/loquat-staged/<name>`) of the worktree as it was at start. To restart only the backend, kill the java pid `lsof -nP -iTCP:<PLAY_HTTP_PORT> -sTCP:LISTEN` names, then `bin-local/dev` again, which stages and starts it and, finding the frontend up, holds the backend until it is ended; `bin-local/dev stop` would also kill the warm sbt server.
 - A worktree whose `backend/.env` has no `AWS_PROFILE` line uses the default AWS profile, whose token is invalid: put `AWS_PROFILE=us-developer` in front of a hand-started `bin-local/dev` and `sbt "it-only ..."`, or KMS calls (the example import sheet's SSNs, uploads) fail.
+- `EsignApiSpec` "validate callbacks with the fallback api key" fails locally with "Empty key" (`hellosign.prevApiKey` is empty in `backend/.env`) and passes on CI: don't count it against a branch.
 - `august-app stop --worktree=<worktree>`, or `bin-local/dev stop` inside it, stops that worktree's backend, frontend, sbt server and difit servers, and nothing else.
 - After a backend code change, stop and start again. `bin-local/dev stop` ends a worktree's servers; `bin-local/dev rm` also drops its database, and `wk rm` runs it.
 - A step the scripts do not do yet is added to the script, not run by hand.

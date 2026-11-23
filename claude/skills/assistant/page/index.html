@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f4f6;
+    --card: #ffffff;
+    --text: #1d1d20;
+    --muted: #74767e;
+    --faint: #b4b6bd;
+    --line: #dcdce2;
+    --field: #f1f1f4;
+    --accent: #5b5bd6;
+    --track: #dfdff0;
+    --failure: #c4372a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e0e10;
+      --card: #19191c;
+      --text: #e9e9ec;
+      --muted: #8b8d96;
+      --faint: #55575f;
+      --line: #2d2d33;
+      --field: #232327;
+      --accent: #8f94f2;
+      --track: #2a2c40;
+      --failure: #ef8a7b;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+  main { max-width: 880px; margin: 0 auto; padding: 0 44px 96px; }
+  main.wide { max-width: 1180px; }
+  button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 6px; cursor: pointer; padding: 0; }
+  button:disabled { cursor: default; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 17px; height: 17px; margin: 3px 0 0; border: 1.5px solid var(--faint); border-radius: 5px; flex-shrink: 0; cursor: pointer; display: grid; place-items: center; }
+  input[type=checkbox]:checked { background: var(--muted); border-color: var(--muted); }
+  input[type=checkbox]:checked::after { content: ""; width: 9px; height: 5px; border-left: 2px solid var(--card); border-bottom: 2px solid var(--card); transform: rotate(-45deg) translateY(-1px); }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; padding: 32px 0 0; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .head-buttons { display: flex; gap: 16px; align-items: center; color: var(--muted); font-size: 13px; }
+  .agents-menu { position: relative; }
+  .agents-menu ul { position: absolute; right: 0; top: 24px; z-index: 3; width: 320px; list-style: none; margin: 0; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
+  .agents-menu li button { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding: 6px 8px; text-align: left; color: var(--text); }
+  .agents-menu li button:hover { background: var(--field); }
+  .agents-menu li span { color: var(--muted); }
+  .agents-menu li.none { padding: 6px 8px; }
+  .links { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; margin-top: 8px; }
+  .links a { color: var(--accent); }
+  .bubble a { color: inherit; text-decoration: underline; }
+  .head-buttons .bad { font-size: 13px; }
+  .bot { display: inline-flex; align-items: center; gap: 5px; }
+  .bot svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .ask-button { position: relative; font-size: 16px; font-weight: 600; color: var(--text); padding: 0 6px; }
+  .ask-button b { position: absolute; top: 1px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
+
+  .trackers { display: grid; gap: 6px; margin-top: 14px; width: 298px; }
+  .tracker { display: grid; grid-template-columns: 48px 1fr; align-items: center; column-gap: 10px; font-size: 13px; }
+  .tracker[data-tracker] { cursor: pointer; }
+  .tracker i { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+  .tracker i u { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+  .tracker span { grid-column: 2; color: var(--muted); font-size: 12px; line-height: 1.3; }
+  .tracker b { font-weight: 400; }
+  .tracker.due b, .tracker.due span { color: var(--failure); }
+  .tracker.due i u { background: var(--failure); }
+
+  nav { display: flex; gap: 22px; margin-top: 26px; }
+  nav button { padding: 4px 0; color: var(--muted); border-radius: 0; border-bottom: 2px solid transparent; }
+  nav button.on { color: var(--text); border-bottom-color: var(--text); }
+  nav.sub { margin-top: 12px; gap: 6px; flex-wrap: wrap; }
+  nav.sub button { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 14px; background: var(--card); }
+  nav.sub button.on { border-color: var(--text); font-weight: 600; }
+  nav.sub button i { font-style: normal; color: var(--faint); margin-right: 6px; font-weight: 400; }
+  nav.sub button b { margin-left: 7px; font-weight: 600; color: var(--text); }
+  nav.sub button.none, nav.sub button.none b { color: var(--faint); font-weight: 400; }
+  #view { margin-top: 18px; }
+  .empty { color: var(--muted); font-size: 14px; margin: 4px 0 14px; }
+
+  .task { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+  .task.waits { opacity: 0.5; }
+  .task.done { opacity: 0.5; }
+  .task.done .name a, .task.done .name > span:last-child, .task.done .asks { text-decoration: line-through; }
+  .task.dragging { opacity: 0.3; }
+  .gutter { position: absolute; left: -32px; top: 10px; width: 24px; height: 24px; border-radius: 50%; color: var(--faint); font-size: 18px; line-height: 22px; }
+  .gutter:hover { color: var(--text); background: var(--card); }
+  .face { padding: 12px 14px; }
+  .title-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: flex-start; }
+  .title-row > input { flex: none; }
+  .name { flex: 1 1 300px; min-width: 0; font-weight: 500; }
+  .tag { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border: 1px solid var(--faint); border-radius: 4px; color: var(--muted); margin-right: 6px; vertical-align: 2px; font-weight: 400; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-items: center; margin-left: auto; }
+  .detail.no-proof { grid-template-columns: 1fr; height: auto; max-height: 240px; }
+  .actions button, .small { font-size: 13px; padding: 2px 9px; border: 1px solid var(--line); }
+  .actions button.main, .small.main { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
+  .actions button:disabled { color: var(--faint); cursor: default; }
+  .actions button.bot { border-color: transparent; color: var(--accent); padding-left: 4px; }
+  .actions button.more { border-color: transparent; color: var(--muted); padding: 2px 5px; }
+  .actions button.bot.stopped { color: var(--failure); }
+  .facts { display: grid; grid-template-columns: 104px 58px 62px 142px 74px 66px 1fr; gap: 0 10px; font-size: 13px; color: var(--muted); margin: 4px 0 0 27px; }
+  .facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .facts { align-items: start; }
+  .facts .size { height: 20px; }
+  .facts > span:last-child { white-space: normal; }
+  .past-hours { display: block; margin: 0 0 14px; color: var(--faint); font-size: 13px; }
+  .past-hours:hover { color: var(--muted); }
+  .hidden-cards { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .hidden-cards > button { color: var(--muted); text-decoration: underline; }
+  .hidden-row { display: flex; gap: 12px; align-items: center; padding: 6px 0; }
+  .hidden-row a { flex: 1; min-width: 0; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .proof-page { padding: 0 14px; text-align: center; color: var(--accent); font-weight: 600; }
+  .proof-page small { display: block; margin-top: 6px; color: var(--muted); font-weight: 400; }
+  .detail.nothing { display: block; height: auto; color: var(--muted); font-size: 13px; }
+  .size { display: inline-flex; align-items: center; gap: 6px; }
+  .size i { width: 56px; height: 4px; border-radius: 2px; background: var(--field); overflow: hidden; flex-shrink: 0; }
+  .size i u { display: block; height: 100%; background: var(--muted); }
+  .bad { color: var(--failure); }
+
+  .strip { display: flex; gap: 6px; align-items: flex-start; padding: 0 14px 12px 41px; flex-wrap: wrap; }
+  textarea, .line-input { flex: 1; width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--field); border: 0; border-radius: 8px; padding: 9px 11px; min-height: 40px; resize: none; }
+  .strip .label { font-size: 13px; color: var(--muted); padding: 3px 4px 0 0; }
+
+  .detail { border-top: 1px solid var(--line); padding: 12px 14px 14px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; height: 240px; }
+  .proof { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); min-height: 0; }
+  .video { flex: 1; min-height: 0; display: grid; place-items: center; background: var(--field); border-radius: 8px; text-align: center; padding: 0 10px; overflow: hidden; }
+  .video.media { padding: 0; }
+  .video img { width: 100%; height: 100%; object-fit: contain; cursor: zoom-in; display: block; }
+  .video video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000000; }
+  .stepper { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .stepper span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stepper div { display: flex; gap: 4px; flex-shrink: 0; }
+  .stepper button { width: 30px; height: 26px; border: 1px solid var(--line); font-size: 17px; line-height: 1; color: var(--text); }
+  .stepper button:disabled { color: var(--faint); }
+  .side { display: flex; flex-direction: column; min-height: 0; }
+  .detail-tabs { display: flex; gap: 16px; font-size: 13px; margin-bottom: 6px; }
+  .detail-tabs button { color: var(--muted); }
+  .detail-tabs button.on { color: var(--text); font-weight: 600; }
+  .panel { font-size: 14px; overflow: auto; flex: 1; }
+  .panel p { margin: 0 0 8px; }
+  .panel dl { margin: 0; }
+  .panel dt { font-weight: 500; }
+  .panel dd { margin: 0 0 10px; color: var(--muted); }
+  @media (max-width: 760px) { .detail { grid-template-columns: 1fr; height: auto; } .facts { grid-template-columns: repeat(3, auto); } main { padding: 0 16px 96px 44px; } }
+
+  .asks { flex: 1; font-size: 16px; font-weight: 600; line-height: 1.35; }
+  .answer { border-top: 1px solid var(--line); padding: 12px 14px 14px; }
+  .option { display: flex; gap: 10px; padding: 5px 0; font-size: 14px; cursor: pointer; }
+  .option small { display: block; color: var(--muted); }
+  .answer .line-input { margin-top: 8px; }
+  .send { display: flex; gap: 6px; margin-top: 8px; }
+
+  .hour { margin: 18px 0 8px; display: flex; gap: 10px; align-items: baseline; }
+  .hour-block:first-child .hour { margin-top: 0; }
+  .hour-block.past { opacity: 0.5; }
+  .hour time { width: 54px; flex-shrink: 0; color: var(--muted); font-size: 13px; }
+  .hour.now time { color: var(--accent); font-weight: 600; }
+  .hour [contenteditable] { font-weight: 600; border-radius: 4px; padding: 0 4px; margin-left: -4px; min-width: 120px; }
+  .hour [contenteditable]:hover, .hour [contenteditable]:focus { background: var(--card); outline: none; }
+  .hour [contenteditable]:empty::before { content: "Name this hour"; color: var(--faint); font-weight: 400; }
+  .meeting { font-size: 14px; color: var(--muted); margin: 0 0 8px 64px; }
+  .slot { margin-left: 64px; min-height: 6px; }
+
+  .stream { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; }
+  .stream-head { cursor: pointer; padding: 12px 14px; }
+  .stream .line { display: flex; justify-content: space-between; font-weight: 500; }
+  .stream .line span { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .stream .bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; margin: 6px 0 0; }
+  .stream .bar u { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .stream .tasks { padding: 14px 14px 1px 44px; background: var(--page); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+
+  .new-task { margin-bottom: 14px; }
+  .new-task .line-input { background: var(--card); border: 1px dashed var(--line); }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 900px) { .columns { grid-template-columns: 1fr; } }
+  .columns > div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .columns h2 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+  .columns h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 4px; }
+  .columns h3 span { color: var(--faint); margin-left: 4px; }
+  .pull { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, auto) 38px 48px; gap: 10px; font-size: 13px; padding: 3px 0; }
+  a.pull:hover { text-decoration: none; }
+  a.pull:hover .title { text-decoration: underline; }
+  .pull .number, .pull .where, .pull .what { color: var(--muted); white-space: nowrap; }
+  .pull .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pull .what { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .pull .days { text-align: right; color: var(--muted); white-space: nowrap; }
+  .pull .days.old { color: var(--failure); }
+
+  main.log { padding-bottom: 16px; }
+  .chat { display: flex; flex-direction: column; min-height: calc(100vh - 290px); }
+  .bubbles { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+  .bubble { max-width: 72%; padding: 8px 13px; border-radius: 18px; background: var(--card); margin: 4px 0; font-size: 15px; align-self: flex-start; white-space: pre-wrap; }
+  .bubble.me { align-self: flex-end; background: var(--accent); color: #ffffff; }
+  .stamp { font-size: 11px; color: var(--muted); text-align: center; margin: 10px 0 4px; }
+  .compose { display: flex; gap: 8px; margin-top: 12px; position: sticky; bottom: 16px; }
+  .compose input { flex: 1; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; }
+  .compose button { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #ffffff; font-size: 17px; }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; cursor: zoom-out; }
+  .lightbox img, .lightbox video { width: min(1000px, 90vw); max-height: 90vh; object-fit: contain; border-radius: 12px; background: var(--card); }
+</style>
+</head>
+<body>
+<main id="main">
+  <div class="head">
+    <h1 id="date"></h1>
+    <div class="head-buttons">
+      <span class="bad" id="offline" hidden>can't reach the server</span>
+      <button id="refresh" title="Read GitHub again now"></button>
+      <span class="agents-menu"><button class="bot" id="agents"></button><ul id="agents-list" hidden></ul></span>
+      <button class="ask-button" id="ask-button" title="Agents have questions for you" hidden>?<b></b></button>
+    </div>
+  </div>
+  <div class="trackers" id="trackers"></div>
+  <nav id="nav"></nav>
+  <nav class="sub" id="sub"></nav>
+  <div id="view"></div>
+</main>
+<div class="lightbox" id="lightbox" hidden></div>
+
+<script>
+  const robot = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5" width="11" height="8" rx="2"/><path d="M8 5V2.5M6 9v1M10 9v1"/></svg>'
+  const tabs = ['Day', 'Status', 'Projects', 'PRs', 'Log']
+  const buttonOrder = ['merge', 'agent', 'open', 'send', 'publish', 'start', 'note', 'snooze', 'dismiss']
+  const buttonLabels = { open: 'review', send: 'send comments' }
+  const agentKinds = { Review: 'review', Respond: 'address' }
+  const fixture = new URLSearchParams(location.search).has('fixture')
+  const storageKey = 'work-page'
+
+  const main = document.getElementById('main')
+  const nav = document.getElementById('nav')
+  const sub = document.getElementById('sub')
+  const view = document.getElementById('view')
+  const lightbox = document.getElementById('lightbox')
+  const askButton = document.getElementById('ask-button')
+
+  let state = null
+  let stateText = ''
+  let tab = 'Status'
+  let section = 'Answer'
+  let shownLogLength = -1
+  const ui = { open: {}, fields: {}, panel: {}, proofIndex: {}, confirm: {} }
+
+  const escape = (text) => String(text ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
+  const minutesSince = (iso) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))
+  const ago = (iso) => {
+    if (!iso) return ''
+    const minutes = minutesSince(iso)
+    if (minutes < 60) return `${minutes} min`
+    if (minutes < 1440) return `${Math.floor(minutes / 60)}h`
+    return `${Math.floor(minutes / 1440)}d`
+  }
+  const ageOf = (iso) => {
+    if (!iso) return 'new'
+    const minutes = minutesSince(iso)
+    if (minutes >= 1440) return `${Math.floor(minutes / 1440)}d old`
+    if (minutes >= 60) return `${Math.floor(minutes / 60)}h old`
+    return 'new'
+  }
+  const hourLabel = (hour) => `${hour % 12 === 0 ? 12 : hour % 12} ${hour < 12 ? 'am' : 'pm'}`
+  const clockOf = (date) => date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase()
+  const localDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  const currentHour = () => state && state.date === localDate(new Date()) ? new Date().getHours() : null
+  const paragraphs = (text) => text ? String(text).split(/\n\s*\n/).map((paragraph) => `<p>${escape(paragraph)}</p>`).join('') : ''
+  const sectionOf = (id) => (state.sections.find((entry) => entry.cards.includes(id)) || {}).name
+  const ticked = (item) => item.reviewer ? Boolean(item.asked) : Boolean(item.checked)
+  const unanswered = (item) => item.question && !item.question.answer
+  const countOf = (entry) => entry.cards.filter((id) => state.cards[id] && !ticked(state.cards[id]) && !state.cards[id].waits).length
+  const isOpen = (part, place, id, fallback) => {
+    const key = `${part}|${place}|${id}`
+    return key in ui.open ? ui.open[key] : fallback
+  }
+
+  const loadPlace = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}')
+      if (tabs.includes(saved.tab)) tab = saved.tab
+      if (saved.section) section = saved.section
+    } catch (error) {}
+    const hash = new URLSearchParams(location.hash.slice(1))
+    if (tabs.includes(hash.get('tab'))) tab = hash.get('tab')
+    if (hash.get('section')) section = hash.get('section')
+  }
+  const savePlace = () => {
+    try { localStorage.setItem(storageKey, JSON.stringify({ tab: tab, section: section })) } catch (error) {}
+    const hash = tab === 'Status' ? `#tab=Status&section=${encodeURIComponent(section)}` : `#tab=${tab}`
+    history.replaceState(null, '', location.pathname + location.search + hash)
+  }
+
+  const proofView = (id, proof) => {
+    if (!proof.length) return '<div class="proof"><div class="video">no proof recorded yet</div></div>'
+    const index = Math.min(ui.proofIndex[id] || 0, proof.length - 1)
+    const entry = proof[index]
+    const media = entry.kind === 'video'
+      ? `<video controls preload="metadata" src="${escape(entry.url)}"></video>`
+      : entry.kind !== 'image'
+      ? `<a class="proof-page" href="${escape(entry.url)}" target="_blank" rel="noopener">Open the proof page<small>${escape(entry.caption)}</small></a>`
+      : `<img src="${escape(entry.url)}" alt="${escape(entry.caption)}" draggable="false" data-action="enlarge">`
+    const caption = entry.caption ? ` · ${escape(entry.caption)}` : ''
+    return `
+      <div class="proof">
+        <div class="video media">${media}</div>
+        <div class="stepper"><span title="${escape(entry.caption)}">${index + 1} of ${proof.length}${caption}</span><div><button data-action="enlarge" title="Enlarge">⤢</button><button data-action="proof-back" title="Previous" ${index === 0 ? 'disabled' : ''}>‹</button><button data-action="proof-next" title="Next" ${index === proof.length - 1 ? 'disabled' : ''}>›</button></div></div>
+      </div>`
+  }
+
+  const detail = (id, proof, panels, open) => {
+    const names = Object.keys(panels)
+    const chosen = names.includes(ui.panel[id]) ? ui.panel[id] : names[0]
+    const nothingRecorded = !proof.length && names.length === 1 && panels.Explanation.includes('No explanation written yet')
+    if (nothingRecorded) return `<div class="detail nothing" data-part="detail" ${open ? '' : 'hidden'}>Nothing recorded yet. An agent adds the explanation and proof when it works on this.</div>`
+    return `
+      <div class="detail${proof.length ? '' : ' no-proof'}" data-part="detail" ${open ? '' : 'hidden'}>
+        ${proof.length ? proofView(id, proof) : ''}
+        <div class="side">
+          <div class="detail-tabs">${names.map((name) => `<button class="${name === chosen ? 'on' : ''}" data-action="panel" data-panel="${escape(name)}">${escape(name)}</button>`).join('')}</div>
+          ${names.map((name) => `<div class="panel" ${name === chosen ? '' : 'hidden'}>${panels[name]}</div>`).join('')}
+        </div>
+      </div>`
+  }
+
+  const cardPanels = (item) => {
+    const links = (item.links || []).length ? `<div class="links">${item.links.map((link) => `<a href="${escape(link.url)}" target="_blank" rel="noopener">${escape(link.label)}</a>`).join('')}</div>` : ''
+    const panels = { Explanation: `${paragraphs(item.explanation) || '<p>No explanation written yet.</p>'}${links}` }
+    if ((item.decisions || []).length) panels.Decisions = `<dl>${item.decisions.map((decision) => `<dt>${escape(decision.title)}</dt><dd>${escape(decision.why)}${decision.alternative ? ` Alternative: ${escape(decision.alternative)}.` : ''}</dd>`).join('')}</dl>`
+    if ((item.findings || []).length) panels['Agent review'] = `<dl>${item.findings.map((finding) => `<dt>${escape(finding.title)}</dt><dd>${finding.reproduced ? 'Reproduced: ' : 'Not reproduced: '}${escape(finding.detail)}</dd>`).join('')}</dl>`
+    return panels
+  }
+
+  const agentStatus = (item) => {
+    if (!item.agent) return ''
+    const agent = item.agent
+    const withoutAddress = (agent.doing || '').replace(/:?\s*https?:\S+/g, '').trim()
+    const doing = withoutAddress.length > 36 ? `${withoutAddress.slice(0, 35)}…` : withoutAddress
+    const needsApproval = agent.state === 'stopped' && /approval/.test(agent.doing || '')
+    const text = needsApproval ? doing
+      : agent.state === 'working' ? `${doing || 'working'}, ${ago(agent.since)}`
+      : agent.state === 'stopped' ? `stopped, ${ago(agent.since)}`
+      : (doing || agent.state)
+    const title = agent.doing ? `${agent.doing}. Open this agent in a terminal` : 'Open this agent in a terminal'
+    return `<button class="bot${agent.state === 'stopped' ? ' stopped' : ''}" data-action="terminal" title="${escape(title)}">${robot}${escape(text)}</button>`
+  }
+
+  const cardButtons = (item) => buttonOrder.filter((name) => (item.buttons || []).includes(name)).map((name) => {
+    const primary = name === item.primary
+    const disabled = primary && item.waits
+    const label = name === 'merge' && ui.confirm[item.id] ? `merge #${item.id.split('#')[1]}?` : (buttonLabels[name] || name)
+    const behaviour = name === 'agent' || name === 'note' ? 'data-toggle="note"' : name === 'publish' ? 'data-toggle="publish"' : `data-action="${name}"`
+    return `<button class="${primary && !disabled ? 'main' : ''}" ${behaviour} ${disabled ? 'disabled' : ''}>${escape(label)}</button>`
+  }).join('')
+
+  const facts = (item) => {
+    const sizeCell = item.lines != null
+      ? `<span class="size"><i><u style="width:${Math.min(100, Math.round(item.lines / 11))}%"></u></i>${item.lines} lines</span>`
+      : `<span>${escape(item.size)}</span>`
+    const checks = { pass: 'CI pass', fail: 'CI fail', pending: 'CI pending' }[item.checks] || ''
+    const reviews = item.reviews == null ? '' : `${item.reviews} review${item.reviews === 1 ? '' : 's'}`
+    return `<div class="facts"><span>${escape(item.ref)}</span><span>${escape(item.who)}</span><span>${ageOf(item.opened)}</span>${sizeCell}<span class="${item.checks === 'fail' ? 'bad' : ''}">${checks}</span><span>${reviews}</span><span>${escape(item.waits || item.standing)}</span></div>`
+  }
+
+  const hourPicker = (item, place) => {
+    const now = currentHour()
+    const hours = state.day.filter((entry) => now === null || entry.hour >= now)
+    return `<div class="strip" data-part="add" ${isOpen('add', place, item.id, false) ? '' : 'hidden'}><span class="label">Add to</span>${hours.map((entry) => `<button class="small" data-action="day-add" data-hour="${entry.hour}">${hourLabel(entry.hour)}${entry.cards.includes(item.id) ? ' ✓' : ''}</button>`).join('')}</div>`
+  }
+
+  const checkbox = (item) => `<input type="checkbox" data-action="tick" ${ticked(item) ? 'checked' : ''} title="${item.reviewer ? `I asked ${escape(item.reviewer)}` : 'Done'}">`
+
+  const questionCard = (item, place) => {
+    const question = item.question
+    const pictures = (question.pictures || []).map((url) => ({ url: url, kind: 'image', caption: '' }))
+    const panels = { Explanation: paragraphs(question.explanation) || '<p>No explanation written yet.</p>', 'Why you': paragraphs(question.why) || '<p>Not given.</p>' }
+    const options = (question.options || []).map((option) => {
+      const key = `option:${item.id}:${option.label}`
+      return `<label class="option"><input type="checkbox" data-field="${escape(key)}" ${ui.fields[key] ? 'checked' : ''}><span>${escape(option.label)}<small>${escape(option.cost)}</small></span></label>`
+    }).join('')
+    return `
+      <div class="face"><div class="title-row">${checkbox(item)}<div class="asks">${escape(question.text)}</div><div class="actions"><button class="bot" data-action="terminal" title="Open this agent in a terminal">${robot}blocked, ${ago(question.asked)}</button><button class="more" data-toggle="body" title="Proof, explanation and answer">⌄</button></div></div></div>
+      ${hourPicker(item, place)}
+      <div data-part="body" ${isOpen('body', place, item.id, place === 'Answer') ? '' : 'hidden'}>
+        ${detail(item.id, pictures, panels, true)}
+        <div class="answer">
+          ${options}
+          <input class="line-input" type="text" data-field="answer:${escape(item.id)}" data-enter="answer" value="${escape(ui.fields[`answer:${item.id}`])}" placeholder="Answer in your own words, or ask the agent something first">
+          <div class="send"><button class="small main" data-action="answer">send</button></div>
+        </div>
+      </div>`
+  }
+
+  const plainCard = (item, place) => {
+    const title = item.url ? `<a href="${escape(item.url)}" target="_blank" rel="noreferrer">${escape(item.title)}</a>` : `<span>${escape(item.title)}</span>`
+    const publishText = ui.fields[`publish:${item.id}`] ?? item.description ?? ''
+    return `
+      <div class="face">
+        <div class="title-row">
+          ${checkbox(item)}
+          <div class="name">${(item.tags || []).map((tag) => `<span class="tag">${escape(tag)}</span>`).join('')}${title}</div>
+          <div class="actions">${agentStatus(item)}${cardButtons(item)}<button class="more" data-toggle="detail" title="Proof and explanation">⌄</button></div>
+        </div>
+        ${facts(item)}
+      </div>
+      <div class="strip" data-part="note" ${isOpen('note', place, item.id, false) ? '' : 'hidden'}><textarea rows="1" data-field="note:${escape(item.id)}" placeholder="${(item.buttons || []).includes('note') ? 'Tell this agent something' : 'Anything the agent should know or do differently? Optional'}">${escape(ui.fields[`note:${item.id}`])}</textarea><button class="small main" data-action="agent-start">${(item.buttons || []).includes('note') ? 'send' : 'start'}</button></div>
+      <div class="strip" data-part="publish" ${isOpen('publish', place, item.id, false) ? '' : 'hidden'}><textarea rows="5" data-field="publish:${escape(item.id)}">${escape(publishText)}</textarea><button class="small main" data-action="publish-send">open pull request</button></div>
+      ${hourPicker(item, place)}
+      ${detail(item.id, item.proof || [], cardPanels(item), isOpen('detail', place, item.id, false))}`
+  }
+
+  const card = (id, place, hour) => {
+    const item = state.cards[id]
+    if (!item) return ''
+    const gutter = place === 'day'
+      ? '<button class="gutter" data-action="remove" title="Remove from the day">−</button>'
+      : '<button class="gutter" data-toggle="add" title="Add to the day">+</button>'
+    const classes = `task${ticked(item) ? ' done' : ''}${item.waits ? ' waits' : ''}`
+    return `
+    <div class="${classes}" draggable="true" data-id="${escape(id)}" data-place="${escape(place)}" ${hour != null ? `data-hour="${hour}"` : ''}>
+      ${gutter}
+      ${unanswered(item) ? questionCard(item, place) : plainCard(item, place)}
+    </div>`
+  }
+
+  const statusView = () => {
+    const entry = state.sections.find((candidate) => candidate.name === section) || state.sections[0]
+    const hiddenHere = (state.hidden || []).filter((hiddenCard) => hiddenCard.section === entry.name)
+    const hiddenRows = ui.open['hidden|' + entry.name]
+      ? hiddenHere.map((hiddenCard) => `<div class="hidden-row"><a href="${escape(hiddenCard.url)}" target="_blank" rel="noopener">${escape(hiddenCard.title)}</a><span>${escape(hiddenCard.why)}</span><button class="small" data-action="restore" data-restore="${escape(hiddenCard.id)}" data-why="${escape(hiddenCard.why)}">restore</button></div>`).join('')
+      : ''
+    const hiddenBlock = hiddenHere.length ? `<div class="hidden-cards"><button data-action="show-hidden">${hiddenHere.length} hidden</button>${hiddenRows}</div>` : ''
+    if (!entry.cards.length) return `<p class="empty">Nothing here.</p>${hiddenBlock}`
+    return `<div class="list" data-list="${escape(entry.name)}">${entry.cards.map((id) => card(id, entry.name)).join('')}</div>${hiddenBlock}`
+  }
+
+  const dayView = () => {
+    const now = currentHour()
+    const emptyAndPast = (entry) => now !== null && entry.hour < now && !entry.title && !ui.fields[`hour:${entry.hour}`] && !entry.cards.length && !(entry.meetings || []).length
+    return state.day.map((entry, index) => {
+      if (emptyAndPast(entry) && !ui.open.pastHours) {
+        if (index > 0 && emptyAndPast(state.day[index - 1])) return ''
+        const runEnd = state.day.slice(index).findIndex((later) => !emptyAndPast(later))
+        const last = state.day[(runEnd === -1 ? state.day.length : index + runEnd) - 1]
+        const span = last.hour === entry.hour ? hourLabel(entry.hour) : `${hourLabel(entry.hour)} to ${hourLabel(last.hour)}`
+        return `<button class="past-hours" data-action="past-hours">${span}, nothing planned</button>`
+      }
+      const title = ui.fields[`hour:${entry.hour}`] ?? entry.title ?? ''
+      return `
+      <section class="hour-block${now !== null && entry.hour < now ? ' past' : ''}">
+        <div class="hour${entry.hour === now ? ' now' : ''}"><time>${hourLabel(entry.hour)}</time><div contenteditable="true" spellcheck="false" data-field="hour:${entry.hour}" data-title-hour="${entry.hour}">${escape(title)}</div></div>
+        ${(entry.meetings || []).map((meeting) => `<div class="meeting">${escape(meeting)}</div>`).join('')}
+        <div class="slot list" data-list="day:${entry.hour}">${entry.cards.map((id) => card(id, 'day', entry.hour)).join('')}</div>
+      </section>`
+    }).join('')
+  }
+
+  const projectsView = () => state.projects.map((project) => {
+    const due = project.due ? `due ${new Date(`${project.due}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''
+    const count = [project.total ? `${project.done} of ${project.total}` : '', due].filter(Boolean).join(' · ')
+    const width = project.total ? Math.round(project.done / project.total * 100) : 0
+    const key = `task:${project.name}`
+    return `
+    <div class="stream">
+      <div class="stream-head" data-action="project" data-project="${escape(project.name)}"><div class="line">${escape(project.name)} <span>${escape(count)}</span></div><div class="bar"><u style="width:${width}%"></u></div></div>
+      <div class="tasks" ${isOpen('project', 'projects', project.name, false) ? '' : 'hidden'}>
+        <div class="list" data-list="project:${escape(project.name)}">${project.cards.map((id) => card(id, 'projects')).join('')}</div>
+        <div class="new-task"><input class="line-input" type="text" data-field="${escape(key)}" data-enter="task" data-project="${escape(project.name)}" value="${escape(ui.fields[key])}" placeholder="+ Add a task to ${escape(project.name)}, then press return"></div>
+      </div>
+    </div>`
+  }).join('')
+
+  const pullRow = (row) => {
+    const cells = `<span class="number">${escape(row.number)}</span><span class="title">${escape(row.title)}</span><span class="what">${escape(row.note)}</span><span class="where">${escape(row.stack)}</span><span class="days${row.old ? ' old' : ''}">${escape(row.age)}</span>`
+    return row.url ? `<a class="pull" href="${escape(row.url)}" target="_blank" rel="noreferrer">${cells}</a>` : `<div class="pull">${cells}</div>`
+  }
+  const pullColumn = (heading, groups) => `
+    <div>
+      <h2>${heading}</h2>
+      ${groups.length ? groups.map((group) => `<h3>${escape(group.heading)} <span>${group.rows.length}</span></h3>${group.rows.map(pullRow).join('')}`).join('') : '<p class="empty">Nothing here.</p>'}
+    </div>`
+  const pullsView = () => `<div class="columns">${pullColumn('You', state.pulls.you || [])}${pullColumn('Waiting on others', state.pulls.others || [])}</div>`
+
+  const stampText = (at, previous) => {
+    const today = new Date()
+    const yesterday = new Date(today.getTime() - 86400000)
+    const sameDay = previous && localDate(previous) === localDate(at)
+    if (sameDay) return clockOf(at)
+    const day = localDate(at) === localDate(today) ? 'Today' : localDate(at) === localDate(yesterday) ? 'Yesterday' : at.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    return `${day} ${clockOf(at)}`
+  }
+  const logView = () => {
+    let previous = null
+    const bubbles = state.log.map((message) => {
+      const at = new Date(message.at)
+      const stamp = !previous || at - previous >= 10 * 60000 ? `<div class="stamp">${stampText(at, previous)}</div>` : ''
+      previous = at
+      const linked = escape(message.text).replace(/#(\d+)/g, (whole, number) => {
+        const known = state.cards[`valinor#${number}`]
+        return known ? `<a href="${escape(known.url)}" target="_blank" rel="noopener" title="${escape(known.title)}">#${number}</a>` : whole
+      })
+      return `${stamp}<div class="bubble${message.from === 'me' ? ' me' : ''}">${linked}</div>`
+    }).join('')
+    return `
+    <div class="chat">
+      <div class="bubbles">${bubbles}</div>
+      <div class="compose"><input type="text" data-field="log" data-enter="log" value="${escape(ui.fields.log)}" placeholder="Message the assistant"><button data-action="log" title="Send">↑</button></div>
+    </div>`
+  }
+
+  const renderTrackers = () => {
+    if (!state) return
+    const now = new Date()
+    const start = new Date(now)
+    start.setHours(8, 0, 0, 0)
+    const share = Math.min(1, Math.max(0, (now - start) / (10 * 3600000)))
+    const tracker = (label, name) => {
+      const marks = (state.trackers || {})[name] || []
+      const last = marks.length ? marks.reduce((latest, mark) => new Date(mark) > new Date(latest) ? mark : latest) : null
+      const minutes = last ? minutesSince(last) : null
+      const text = minutes === null ? 'no mark yet' : minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m ago` : `${minutes} min ago`
+      const width = minutes === null ? 100 : Math.min(100, Math.round(minutes / 60 * 100))
+      const due = minutes === null || minutes >= 60
+      return `<div class="tracker${due ? ' due' : ''}" data-tracker="${name}" title="Click to mark now"><b>${label}</b><i><u style="width:${width}%"></u></i><span>${text}</span></div>`
+    }
+    document.getElementById('trackers').innerHTML = `<div class="tracker"><b>Day</b><i><u style="width:${Math.round(share * 100)}%"></u></i><span>${clockOf(now)}</span></div>${tracker('Water', 'water')}${tracker('Stand', 'stood')}`
+  }
+
+  const render = () => {
+    if (!state) return
+    document.getElementById('date').textContent = new Date(`${state.date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    const agents = document.getElementById('agents')
+    agents.innerHTML = `${state.agentsWorking || 0} ${robot}`
+    agents.title = `${state.agentsWorking || 0} agents working`
+    document.getElementById('agents-list').innerHTML = (state.agents || []).map((agent) => `<li><button data-session="${escape(agent.name)}" title="Open in a terminal">${escape(agent.name)}<span>${escape(agent.status)}</span></button></li>`).join('') || '<li class="none">No agent sessions</li>'
+    document.getElementById('refresh').textContent = state.updated ? `updated ${ago(state.updated)} ago` : 'never updated'
+    const answer = state.sections.find((entry) => entry.name === 'Answer')
+    askButton.hidden = !answer || !answer.cards.length
+    renderTrackers()
+    if (!state.sections.some((entry) => entry.name === section)) section = state.sections[0].name
+    nav.innerHTML = tabs.map((name) => `<button data-name="${name}" class="${name === tab ? 'on' : ''}">${name}</button>`).join('')
+    sub.hidden = tab !== 'Status'
+    sub.innerHTML = state.sections.map((entry, index) => `<button data-name="${escape(entry.name)}" class="${countOf(entry) ? '' : 'none'}${entry.name === section ? ' on' : ''}"><i>${index + 1}</i>${escape(entry.name)}<b>${countOf(entry)}</b></button>`).join('')
+    main.classList.toggle('wide', tab === 'PRs')
+    main.classList.toggle('log', tab === 'Log')
+    const views = { Day: dayView, Status: statusView, Projects: projectsView, PRs: pullsView, Log: logView }
+    view.innerHTML = views[tab]()
+    if (tab === 'Log' && state.log.length !== shownLogLength) {
+      shownLogLength = state.log.length
+      window.scrollTo(0, document.body.scrollHeight)
+    }
+    if (tab !== 'Log') shownLogLength = -1
+  }
+
+  const fieldFocused = () => {
+    const element = document.activeElement
+    return Boolean(element && (element.matches('input[type=text], textarea') || element.isContentEditable))
+  }
+  const videoPlaying = () => [...document.querySelectorAll('video')].some((video) => !video.paused && !video.ended)
+
+  const redrawKeepingFocus = () => {
+    const element = document.activeElement
+    const field = element && element.dataset ? element.dataset.field : null
+    const selection = field && 'selectionStart' in element ? [element.selectionStart, element.selectionEnd] : null
+    render()
+    if (!field) return
+    const replacement = view.querySelector(`[data-field="${CSS.escape(field)}"]`)
+    if (!replacement) return
+    replacement.focus()
+    if (selection && replacement.setSelectionRange) {
+      try { replacement.setSelectionRange(selection[0], selection[1]) } catch (error) {}
+    }
+  }
+
+  const fetchState = async (force) => {
+    let text
+    try {
+      const response = await fetch(fixture ? 'fixture.json' : '/api/state', { cache: 'no-store' })
+      if (!response.ok) throw new Error(`state answered ${response.status}`)
+      text = await response.text()
+      document.getElementById('offline').hidden = true
+    } catch (error) {
+      document.getElementById('offline').hidden = false
+      return
+    }
+    if (text === stateText && !force) return
+    if (!force && state && (fieldFocused() || videoPlaying())) return
+    state = JSON.parse(text)
+    stateText = text
+    redrawKeepingFocus()
+  }
+
+  const post = async (path, body) => {
+    if (fixture) {
+      console.log('fixture, not sent', path, JSON.stringify(body))
+    } else {
+      try {
+        await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      } catch (error) {
+        document.getElementById('offline').hidden = false
+      }
+    }
+    await fetchState(true)
+  }
+
+  const enlarge = (cardElement) => {
+    const id = cardElement.dataset.id
+    const item = state.cards[id]
+    const proof = unanswered(item) ? (item.question.pictures || []).map((url) => ({ url: url, kind: 'image' })) : (item.proof || [])
+    const entry = proof[Math.min(ui.proofIndex[id] || 0, proof.length - 1)]
+    if (!entry) return
+    cardElement.querySelectorAll('.detail video').forEach((video) => video.pause())
+    lightbox.innerHTML = entry.kind === 'video' ? `<video controls autoplay src="${escape(entry.url)}"></video>` : `<img src="${escape(entry.url)}" alt="${escape(entry.caption)}">`
+    lightbox.hidden = false
+  }
+  const closeLightbox = () => {
+    lightbox.hidden = true
+    lightbox.innerHTML = ''
+  }
+
+  const showTab = (name) => {
+    tab = name
+    savePlace()
+    render()
+    if (name !== 'Log') window.scrollTo(0, 0)
+  }
+
+  nav.addEventListener('click', (event) => {
+    const button = event.target.closest('button')
+    if (button) showTab(button.dataset.name)
+  })
+  sub.addEventListener('click', (event) => {
+    const button = event.target.closest('button')
+    if (!button) return
+    section = button.dataset.name
+    showTab('Status')
+  })
+  document.getElementById('agents').addEventListener('click', () => {
+    const list = document.getElementById('agents-list')
+    list.hidden = !list.hidden
+  })
+  document.getElementById('agents-list').addEventListener('click', (event) => {
+    const chosen = event.target.closest('[data-session]')
+    if (chosen) post('/api/terminal', { session: chosen.dataset.session })
+  })
+  document.getElementById('refresh').addEventListener('click', async (event) => {
+    event.target.textContent = 'reading GitHub…'
+    await post('/api/refresh', {})
+  })
+  askButton.addEventListener('click', () => {
+    section = 'Answer'
+    showTab('Status')
+  })
+  document.getElementById('trackers').addEventListener('click', (event) => {
+    const tracker = event.target.closest('[data-tracker]')
+    if (tracker) post('/api/tracker', { name: tracker.dataset.tracker })
+  })
+  lightbox.addEventListener('click', (event) => {
+    if (event.target.tagName !== 'VIDEO') closeLightbox()
+  })
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !lightbox.hidden) closeLightbox()
+  })
+
+  view.addEventListener('click', (event) => {
+    const cardElement = event.target.closest('.task')
+    const id = cardElement ? cardElement.dataset.id : null
+    const place = cardElement ? cardElement.dataset.place : null
+    const toggle = event.target.closest('[data-toggle]')
+    if (toggle && cardElement) {
+      const part = cardElement.querySelector(`[data-part="${toggle.dataset.toggle}"]`)
+      part.hidden = !part.hidden
+      ui.open[`${toggle.dataset.toggle}|${place}|${id}`] = !part.hidden
+      return
+    }
+    const target = event.target.closest('[data-action]')
+    if (!target) return
+    const action = target.dataset.action
+    if (action === 'tick') return
+    if (action === 'project') {
+      const key = `project|projects|${target.dataset.project}`
+      ui.open[key] = !isOpen('project', 'projects', target.dataset.project, false)
+      target.nextElementSibling.hidden = !ui.open[key]
+      return
+    }
+    if (action === 'past-hours') {
+      ui.open.pastHours = true
+      render()
+      return
+    }
+    if (action === 'show-hidden') {
+      ui.open['hidden|' + section] = !ui.open['hidden|' + section]
+      render()
+      return
+    }
+    if (action === 'restore') {
+      post(target.dataset.why === 'dismissed' ? '/api/dismiss' : '/api/snooze', { id: target.dataset.restore, undo: true })
+      return
+    }
+    if (action === 'log') {
+      const text = (ui.fields.log || '').trim()
+      if (!text) return
+      delete ui.fields.log
+      post('/api/log', { text: text })
+      return
+    }
+    if (action === 'panel') {
+      ui.panel[id] = target.dataset.panel
+      const side = target.closest('.side')
+      side.querySelectorAll('.detail-tabs button').forEach((button) => button.classList.toggle('on', button === target))
+      side.querySelectorAll('.panel').forEach((panel, index) => { panel.hidden = side.querySelectorAll('.detail-tabs button')[index] !== target })
+      return
+    }
+    if (action === 'proof-back' || action === 'proof-next') {
+      ui.proofIndex[id] = Math.max(0, (ui.proofIndex[id] || 0) + (action === 'proof-next' ? 1 : -1))
+      render()
+      return
+    }
+    if (action === 'enlarge') { enlarge(cardElement); return }
+    if (action === 'terminal') { post('/api/terminal', { id: id }); return }
+    if (action === 'merge') {
+      if (!ui.confirm[id]) {
+        ui.confirm[id] = true
+        render()
+        return
+      }
+      delete ui.confirm[id]
+      post('/api/merge', { id: id })
+      return
+    }
+    if (action === 'open' || action === 'send' || action === 'snooze' || action === 'dismiss') { post(`/api/${action}`, { id: id }); return }
+    if (action === 'start') { post('/api/agent', { id: id, kind: 'start', note: '' }); return }
+    if (action === 'agent-start') {
+      const note = ui.fields[`note:${id}`] || ''
+      delete ui.fields[`note:${id}`]
+      ui.open[`note|${place}|${id}`] = false
+      post('/api/agent', { id: id, kind: agentKinds[sectionOf(id)] || 'fix', note: note })
+      return
+    }
+    if (action === 'publish-send') {
+      const description = ui.fields[`publish:${id}`] ?? state.cards[id].description ?? ''
+      delete ui.fields[`publish:${id}`]
+      ui.open[`publish|${place}|${id}`] = false
+      post('/api/publish', { id: id, description: description })
+      return
+    }
+    if (action === 'answer') {
+      const question = state.cards[id].question
+      const options = (question.options || []).map((option) => option.label).filter((label) => ui.fields[`option:${id}:${label}`])
+      const text = (ui.fields[`answer:${id}`] || '').trim()
+      if (!text && !options.length) return
+      delete ui.fields[`answer:${id}`]
+      ;(question.options || []).forEach((option) => { delete ui.fields[`option:${id}:${option.label}`] })
+      post('/api/answer', { id: id, text: text, options: options })
+      return
+    }
+    if (action === 'day-add') {
+      post('/api/day', { action: 'add', hour: Number(target.dataset.hour), id: id })
+      return
+    }
+    if (action === 'remove') {
+      post('/api/day', { action: 'remove', hour: Number(cardElement.dataset.hour), id: id })
+      return
+    }
+  })
+
+  view.addEventListener('input', (event) => {
+    const field = event.target.dataset.field
+    if (!field) return
+    if (event.target.isContentEditable) ui.fields[field] = event.target.textContent
+    else if (event.target.type !== 'checkbox') ui.fields[field] = event.target.value
+  })
+
+  view.addEventListener('change', (event) => {
+    const target = event.target
+    if (target.dataset.field && target.type === 'checkbox') {
+      ui.fields[target.dataset.field] = target.checked
+      return
+    }
+    if (target.dataset.action !== 'tick') return
+    const cardElement = target.closest('.task')
+    const item = state.cards[cardElement.dataset.id]
+    cardElement.classList.toggle('done', target.checked)
+    if (item.reviewer) post('/api/asked', { id: item.id, reviewer: item.reviewer, asked: target.checked })
+    else post('/api/tick', { id: item.id, checked: target.checked })
+  })
+
+  view.addEventListener('keydown', (event) => {
+    const target = event.target
+    if (target.isContentEditable && event.key === 'Enter') {
+      event.preventDefault()
+      target.blur()
+      return
+    }
+    if (event.key !== 'Enter' || !target.dataset.enter) return
+    const text = target.value.trim()
+    if (target.dataset.enter === 'log' && text) {
+      delete ui.fields.log
+      post('/api/log', { text: text })
+    }
+    if (target.dataset.enter === 'task' && text) {
+      delete ui.fields[target.dataset.field]
+      post('/api/task', { project: target.dataset.project, title: text })
+    }
+    if (target.dataset.enter === 'answer') target.closest('.answer').querySelector('[data-action="answer"]').click()
+  })
+
+  view.addEventListener('focusout', (event) => {
+    const target = event.target
+    if (!target.dataset.titleHour) return
+    const hour = Number(target.dataset.titleHour)
+    const title = target.textContent.trim()
+    delete ui.fields[`hour:${hour}`]
+    const entry = state.day.find((candidate) => candidate.hour === hour)
+    if (entry && (entry.title || '') !== title) post('/api/day', { action: 'title', hour: hour, title: title })
+  })
+
+  let dragged = null
+  let orderBefore = ''
+  const listIds = (list) => [...list.children].filter((child) => child.classList.contains('task')).map((child) => child.dataset.id)
+  view.addEventListener('dragstart', (event) => {
+    dragged = event.target.closest('.task')
+    if (!dragged) return
+    orderBefore = listIds(dragged.parentElement).join('\n')
+    dragged.classList.add('dragging')
+  })
+  view.addEventListener('dragend', () => {
+    if (!dragged) return
+    dragged.classList.remove('dragging')
+    const list = dragged.parentElement
+    dragged = null
+    const ids = listIds(list)
+    if (ids.join('\n') !== orderBefore && list.dataset.list) post('/api/order', { list: list.dataset.list, ids: ids })
+  })
+  view.addEventListener('dragover', (event) => {
+    const over = event.target.closest('.task')
+    if (!dragged || !over || over === dragged || over.parentElement !== dragged.parentElement) return
+    event.preventDefault()
+    const box = over.getBoundingClientRect()
+    over.parentElement.insertBefore(dragged, event.clientY < box.top + box.height / 2 ? over : over.nextSibling)
+  })
+
+  loadPlace()
+  savePlace()
+  fetchState(true)
+  setInterval(() => fetchState(false), 30000)
+  setInterval(renderTrackers, 60000)
+  window.addEventListener('hashchange', () => { loadPlace(); if (state) render() })
+  window.addEventListener('focus', () => fetchState(false))
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchState(false) })
+</script>
+</body>
+</html>

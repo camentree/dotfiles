@@ -48,7 +48,7 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
-- "difit" means run `/review` (my branch or someone else's pull request), never a bare `npx difit`: the skill arms the comment monitor and keeps the threads.
+- "difit" means run `/review` (my branch or someone else's pull request), never a bare `npx difit`: the skill prepares the threads and keeps them.
 - difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
 
 ## Tab title

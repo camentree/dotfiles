@@ -36,7 +36,7 @@ No other classes and no inline styles. `~/.claude/skills/review/summary-example.
 
 ## Keeping it current
 
-Update it in the same turn as each event (the app answers, an agent reports, he comments, a comment is queued, a review is posted), then reload the tab in place (the difit skill's In Safari URL recipe) with `#step-<id>` to land on the section that changed. Agents return their part in plain words (`review/summary.md`, `proof/summary.md`, or in their report when the harness refuses the file), and the session turns it into the page.
+Update it in the same turn as each event (the app answers, an agent reports, he comments, a comment is queued, a review is posted), then, once his tabs are open, reload the tab in place (the difit skill's In Safari URL recipe) with `#step-<id>` to land on the section that changed. Agents return their part in plain words (`review/summary.md`, `proof/summary.md`, or in their report when the harness refuses the file), and the session turns it into the page.
 
 ## Length
 
@@ -44,4 +44,4 @@ No subtitle or last-updated line, which he called bloat. Inside a section lead w
 
 ## Serving
 
-`python3 -I -m http.server <port> --bind 127.0.0.1` from the task directory, in the background, so its relative links into `proof/` work; the first tab in the Safari tab group.
+The work server serves the task directory, so its relative links into `proof/` work: `http://localhost:4990/files/<repo>/<branch>/summary.html`, the first of `review.tabs` and the first tab in the Safari tab group. No server of its own: parallel reviews raced for the same ports, and one review's tabs opened another's summary (2026-11-18).

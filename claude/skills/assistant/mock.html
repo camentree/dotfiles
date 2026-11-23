@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock 9</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f4f6;
+    --card: #ffffff;
+    --text: #1d1d20;
+    --muted: #74767e;
+    --faint: #b4b6bd;
+    --line: #dcdce2;
+    --field: #f1f1f4;
+    --accent: #5b5bd6;
+    --track: #dfdff0;
+    --failure: #c4372a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e0e10;
+      --card: #19191c;
+      --text: #e9e9ec;
+      --muted: #8b8d96;
+      --faint: #55575f;
+      --line: #2d2d33;
+      --field: #232327;
+      --accent: #8f94f2;
+      --track: #2a2c40;
+      --failure: #ef8a7b;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+  main { max-width: 880px; margin: 0 auto; padding: 0 44px 96px; }
+  main.wide { max-width: 1180px; }
+  button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 6px; cursor: pointer; padding: 0; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 17px; height: 17px; margin: 3px 0 0; border: 1.5px solid var(--faint); border-radius: 5px; flex-shrink: 0; cursor: pointer; display: grid; place-items: center; }
+  input[type=checkbox]:checked { background: var(--muted); border-color: var(--muted); }
+  input[type=checkbox]:checked::after { content: ""; width: 9px; height: 5px; border-left: 2px solid var(--card); border-bottom: 2px solid var(--card); transform: rotate(-45deg) translateY(-1px); }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; padding: 32px 0 0; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .head-buttons { display: flex; gap: 16px; align-items: center; color: var(--muted); font-size: 13px; }
+  .bot { display: inline-flex; align-items: center; gap: 5px; }
+  .bot svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .ask-button { position: relative; font-size: 16px; font-weight: 600; color: var(--text); padding: 0 6px; }
+  .ask-button b { position: absolute; top: 1px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
+
+  .trackers { display: grid; gap: 6px; margin-top: 14px; width: 298px; }
+  .tracker { display: grid; grid-template-columns: 48px 1fr; align-items: center; column-gap: 10px; font-size: 13px; }
+  .tracker i { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+  .tracker i u { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+  .tracker span { grid-column: 2; color: var(--muted); font-size: 12px; line-height: 1.3; }
+  .tracker b { font-weight: 400; }
+  .tracker.due b, .tracker.due span { color: var(--failure); }
+  .tracker.due i u { background: var(--failure); }
+
+  nav { display: flex; gap: 22px; margin-top: 26px; }
+  nav button { padding: 4px 0; color: var(--muted); border-radius: 0; border-bottom: 2px solid transparent; }
+  nav button.on { color: var(--text); border-bottom-color: var(--text); }
+  nav.sub { margin-top: 12px; gap: 6px; flex-wrap: wrap; }
+  nav.sub button { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 14px; background: var(--card); }
+  nav.sub button.on { border-color: var(--text); font-weight: 600; }
+  nav.sub button i { font-style: normal; color: var(--faint); margin-right: 6px; font-weight: 400; }
+  nav.sub button b { margin-left: 7px; font-weight: 600; color: var(--text); }
+  nav.sub button.none, nav.sub button.none b { color: var(--faint); font-weight: 400; }
+  #view { margin-top: 18px; }
+
+  .task { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+  .task.waits { opacity: 0.5; }
+  .task.done { opacity: 0.5; }
+  .task.done .name a, .task.done .asks { text-decoration: line-through; }
+  .task.dragging { opacity: 0.3; }
+  .gutter { position: absolute; left: -32px; top: 10px; width: 24px; height: 24px; border-radius: 50%; color: var(--faint); font-size: 18px; line-height: 22px; }
+  .gutter:hover { color: var(--text); background: var(--card); }
+  .face { padding: 12px 14px; }
+  .title-row { display: flex; gap: 10px; align-items: flex-start; }
+  .name { flex: 1; min-width: 0; font-weight: 500; }
+  .tag { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border: 1px solid var(--faint); border-radius: 4px; color: var(--muted); margin-right: 6px; vertical-align: 2px; font-weight: 400; }
+  .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .actions button, .small { font-size: 13px; padding: 2px 9px; border: 1px solid var(--line); }
+  .actions button.main, .small.main { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
+  .actions button:disabled { color: var(--faint); cursor: default; }
+  .actions button.bot { border-color: transparent; color: var(--accent); padding-left: 4px; }
+  .actions button.more { border-color: transparent; color: var(--muted); padding: 2px 5px; }
+  .facts { display: grid; grid-template-columns: 104px 58px 62px 142px 62px 78px 1fr; gap: 0 10px; font-size: 13px; color: var(--muted); margin: 4px 0 0 27px; }
+  .facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .size { display: inline-flex; align-items: center; gap: 6px; }
+  .size i { width: 56px; height: 4px; border-radius: 2px; background: var(--field); overflow: hidden; flex-shrink: 0; }
+  .size i u { display: block; height: 100%; background: var(--muted); }
+  .bad { color: var(--failure); }
+
+  .strip { display: flex; gap: 6px; align-items: flex-start; padding: 0 14px 12px 41px; flex-wrap: wrap; }
+  textarea, .line-input { flex: 1; width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--field); border: 0; border-radius: 8px; padding: 9px 11px; min-height: 40px; resize: none; }
+  .strip .label { font-size: 13px; color: var(--muted); padding: 3px 4px 0 0; }
+
+  .detail { border-top: 1px solid var(--line); padding: 12px 14px 14px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; height: 240px; }
+  .proof { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); min-height: 0; }
+  .video { flex: 1; display: grid; place-items: center; background: var(--field); border-radius: 8px; cursor: zoom-in; text-align: center; padding: 0 10px; }
+  .stepper { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .stepper div { display: flex; gap: 4px; }
+  .stepper button { width: 30px; height: 26px; border: 1px solid var(--line); font-size: 17px; line-height: 1; color: var(--text); }
+  .side { display: flex; flex-direction: column; min-height: 0; }
+  .detail-tabs { display: flex; gap: 16px; font-size: 13px; margin-bottom: 6px; }
+  .detail-tabs button { color: var(--muted); }
+  .detail-tabs button.on { color: var(--text); font-weight: 600; }
+  .panel { font-size: 14px; overflow: auto; flex: 1; }
+  .panel p { margin: 0 0 8px; }
+  .panel dl { margin: 0; }
+  .panel dt { font-weight: 500; }
+  .panel dd { margin: 0 0 10px; color: var(--muted); }
+  @media (max-width: 760px) { .detail { grid-template-columns: 1fr; height: auto; } .facts { grid-template-columns: repeat(3, auto); } main { padding: 0 16px 96px 44px; } }
+
+  .asks { flex: 1; font-size: 16px; font-weight: 600; line-height: 1.35; }
+  .answer { border-top: 1px solid var(--line); padding: 12px 14px 14px; }
+  .option { display: flex; gap: 10px; padding: 5px 0; font-size: 14px; cursor: pointer; }
+  .option small { display: block; color: var(--muted); }
+  .answer .line-input { margin-top: 8px; }
+  .send { display: flex; gap: 6px; margin-top: 8px; }
+
+  .hour { margin: 18px 0 8px; display: flex; gap: 10px; align-items: baseline; }
+  .hour:first-child { margin-top: 0; }
+  .hour time { width: 54px; color: var(--muted); font-size: 13px; }
+  .hour.now time { color: var(--accent); font-weight: 600; }
+  .hour [contenteditable] { font-weight: 600; border-radius: 4px; padding: 0 4px; margin-left: -4px; min-width: 120px; }
+  .hour [contenteditable]:hover, .hour [contenteditable]:focus { background: var(--card); outline: none; }
+  .hour [contenteditable]:empty::before { content: "Name this hour"; color: var(--faint); font-weight: 400; }
+  .meeting { font-size: 14px; color: var(--muted); margin: 0 0 8px 64px; }
+  .slot { margin-left: 64px; min-height: 6px; }
+
+  .stream { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; }
+  .stream-head { cursor: pointer; padding: 12px 14px; }
+  .stream .line { display: flex; justify-content: space-between; font-weight: 500; }
+  .stream .line span { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .stream .bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; margin: 6px 0 0; }
+  .stream .bar u { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .stream .tasks { padding: 14px 14px 1px 44px; background: var(--page); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+
+  .new-task { margin-bottom: 14px; }
+  .new-task .line-input { background: var(--card); border: 1px dashed var(--line); }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 900px) { .columns { grid-template-columns: 1fr; } }
+  .columns > div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .columns h2 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+  .columns h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 4px; }
+  .columns h3 span { color: var(--faint); margin-left: 4px; }
+  .pull { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto 38px 34px; gap: 10px; font-size: 13px; padding: 3px 0; }
+  .pull .number, .pull .where, .pull .what { color: var(--muted); white-space: nowrap; }
+  .pull .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pull .days { text-align: right; color: var(--muted); }
+  .pull .days.old { color: var(--failure); }
+
+  .chat { display: flex; flex-direction: column; min-height: calc(100vh - 330px); }
+  .bubbles { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+  .bubble { max-width: 72%; padding: 8px 13px; border-radius: 18px; background: var(--card); margin: 4px 0; font-size: 15px; align-self: flex-start; }
+  .bubble.me { align-self: flex-end; background: var(--accent); color: #ffffff; }
+  .stamp { font-size: 11px; color: var(--muted); text-align: center; margin: 10px 0 4px; }
+  .compose { display: flex; gap: 8px; margin-top: 12px; position: sticky; bottom: 16px; }
+  .compose input { flex: 1; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; }
+  .compose button { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #ffffff; font-size: 17px; }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; cursor: zoom-out; }
+  .lightbox div { width: min(1000px, 90vw); aspect-ratio: 16 / 9; background: var(--card); border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<main id="main">
+  <div class="head">
+    <h1>Monday, November 23</h1>
+    <div class="head-buttons">
+      <span class="bot" title="3 agents working">3 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5" width="11" height="8" rx="2"/><path d="M8 5V2.5M6 9v1M10 9v1"/></svg></span>
+      <button class="ask-button" id="ask-button" title="Agents have questions for you">?<b></b></button>
+    </div>
+  </div>
+  <div class="trackers">
+    <div class="tracker"><b>Day</b><i><u style="width:58%"></u></i><span>1:41 pm</span></div>
+    <div class="tracker due"><b>Water</b><i><u style="width:60%"></u></i><span>1h 31m ago</span></div>
+    <div class="tracker due"><b>Stand</b><i><u style="width:40%"></u></i><span>1h 31m ago</span></div>
+  </div>
+  <nav id="nav"></nav>
+  <nav class="sub" id="sub"></nav>
+  <div id="view"></div>
+</main>
+<div class="lightbox" id="lightbox" hidden><div></div></div>
+
+<script>
+  const robot = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5" width="11" height="8" rx="2"/><path d="M8 5V2.5M6 9v1M10 9v1"/></svg>'
+  const size = (lines, width) => `<span class="size"><i><u style="width:${width}%"></u></i>${lines} lines</span>`
+  const bad = (text) => `<span class="bad">${text}</span>`
+  const agent = '<button data-toggle="note">agent</button>'
+  const snooze = '<button>snooze</button>'
+  const dismiss = '<button>dismiss</button>'
+  const start = '<button>start</button>'
+  const hours = ['1 pm', '2 pm', '3 pm', '4 pm', '5 pm']
+
+  const detail = (item) => {
+    const panels = { Explanation: `<p>${item.plain || 'What this change is, in plain words, written for someone new to this part of the code.'}</p>`, ...(item.panels || {}) }
+    const names = Object.keys(panels)
+    return `
+      <div class="detail" data-part="detail" ${item.opened ? '' : 'hidden'}>
+        <div class="proof"><div class="video">${item.proof || 'no proof recorded yet'}</div>${item.proof ? '<div class="stepper"><span>1 of 3</span><div><button>‹</button><button>›</button></div></div>' : ''}</div>
+        <div class="side">
+          <div class="detail-tabs">${names.map((name, index) => `<button class="${index === 0 ? 'on' : ''}" data-panel="${name}">${name}</button>`).join('')}</div>
+          ${names.map((name, index) => `<div class="panel" data-panel="${name}" ${index === 0 ? '' : 'hidden'}>${panels[name]}</div>`).join('')}
+        </div>
+      </div>`
+  }
+
+  const task = (item, inDay) => {
+    const gutter = inDay ? '<button class="gutter" data-remove title="Remove from the day">−</button>' : '<button class="gutter" data-toggle="add" title="Add to the day">+</button>'
+    const check = `<input type="checkbox" ${item.done ? 'checked' : ''}>`
+    const strips = `<div class="strip" data-part="add" hidden><span class="label">Add to</span>${hours.map((hour) => `<button class="small" data-hour="${hour}">${hour}</button>`).join('')}</div>`
+    if (item.question) return `
+    <div class="task${item.done ? ' done' : ''}" draggable="true" data-id="${item.id}">
+      ${gutter}
+      <div class="face"><div class="title-row">${check}<div class="asks">${item.question}</div><div class="actions"><button class="bot" title="Open this agent in a terminal">${robot}blocked, ${item.waited}</button><button class="more" data-toggle="body" title="Proof, explanation and answer">⌄</button></div></div></div>
+      ${strips}
+      <div data-part="body" ${inDay ? 'hidden' : ''}>
+      ${detail({ ...item, opened: true })}
+      <div class="answer">
+        ${item.options.map((option) => `<label class="option"><input type="checkbox"><span>${option[0]}<small>${option[1]}</small></span></label>`).join('')}
+        <input class="line-input" type="text" placeholder="Answer in your own words, or ask the agent something first">
+        <div class="send"><button class="small main">send</button></div>
+      </div>
+      </div>
+    </div>`
+    const [reference, who, opened, lines, checks, reviews, standing] = item.facts
+    return `
+    <div class="task${item.done ? ' done' : ''}${item.waits ? ' waits' : ''}" draggable="true" data-id="${item.id}">
+      ${gutter}
+      <div class="face">
+        <div class="title-row">
+          ${check}
+          <div class="name">${(item.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join('')}<a href="#" title="Opens the pull request">${item.name}</a></div>
+          <div class="actions">${item.bot ? `<button class="bot" title="Open this agent in a terminal">${robot}${item.bot}</button>` : ''}${item.buttons.join('')}<button class="more" data-toggle="detail" title="Proof and explanation">⌄</button></div>
+        </div>
+        <div class="facts"><span>${reference}</span><span>${who}</span><span>${opened}</span>${lines}<span>${checks}</span><span>${reviews}</span><span>${standing}</span></div>
+      </div>
+      <div class="strip" data-part="note" hidden><textarea rows="1" placeholder="Anything the agent should know or do differently? Optional"></textarea><button class="small main">start</button></div>
+      <div class="strip" data-part="publish" hidden><textarea rows="5">Adds residents' contacts and uploaded documents to the CopyFacility job.
+
+- Documents are copied in batches of 100
+- A document whose file is missing is skipped and logged
+- Proof: recording of a 4,000-document facility copied end to end</textarea><button class="small main">open pull request</button></div>
+      ${strips}
+      ${detail({ ...item, opened: item.opened && !inDay })}
+    </div>`
+  }
+
+  const items = {
+    q1: { question: 'Should the email log record emails sent to staff, or only to families?', waited: '4d', proof: 'screenshot: the share dialog with a staff recipient',
+      plain: 'When a community shares a task with a family member, we send an email. The new table records each of those emails so a community can prove how many times a family was asked to sign. Staff sometimes get the same emails.',
+      panels: { 'Why you': '<p>It turns on what Naomi meant by "prove how many times a family was asked". That is about the feature, and changing it later needs a migration that can\'t recover past sends.</p>' },
+      options: [['Families only', 'Can\'t be added back for past sends.'], ['Everyone, with a staff flag', 'One extra column; reports filter it.']] },
+    q2: { question: 'The lock on the Self contact hides the Remove button. Should it show the button disabled with a reason instead?', waited: '20 min', proof: 'screenshot: the contact card with no Remove button',
+      plain: 'Josh\'s review asks why a user can\'t tell that removing is blocked. Hiding matches the ticket; disabling with a tooltip matches how other locked actions look in the app.',
+      panels: { 'Why you': '<p>The ticket says "cannot remove". Whether the user should see why is a product call, and Josh and the ticket disagree.</p>' },
+      options: [['Keep it hidden', 'Matches the ticket as written.'], ['Show it disabled with a reason', 'Matches the rest of the app; one more string to translate.']] },
+    m1: { tags: ['frontend'], name: 'Financial start date in the linked resident\'s room modals', facts: ['#85 → master', 'you', '3d old', size(214, 22), 'CI pass', '1 review', 'approved 2h ago'], buttons: ['<button class="main">merge</button>'], proof: '▶ proof recording, 0:31' },
+    m2: { waits: true, tags: ['frontend'], name: 'Copy "Other" uploads and insurance cards to a linked resident', facts: ['#91 → master', 'you', '3d old', size(160, 16), 'CI pass', '1 review', 'waits for #84'], buttons: ['<button disabled>merge</button>'] },
+    r1: { tags: ['backend', 'frontend'], name: 'Editable Recommended Care Rate on move-in agreements', facts: ['#76 → master', 'Naomi', '3d old', size(252, 25), 'CI pass', '0 reviews', 'waiting on you 3d'], bot: 'review ready', buttons: ['<button class="main">review</button>', snooze, dismiss], opened: true, proof: '▶ agent\'s recording, 0:36',
+      plain: 'A move-in agreement shows a care rate worked out from the resident\'s assessment. Sales staff sometimes agree a different rate. This adds a field where they can type the agreed rate, kept beside the worked-out one.',
+      panels: { 'Agent review': '<dl><dt>Typed rate is lost when the assessment is redone</dt><dd>Reproduced in the app: enter 4,200, redo the assessment, the field is empty.</dd><dt>No test for a rate of zero</dt><dd>Zero is saved as "no rate". Read from the code, not reproduced.</dd><dt>Migration has no default</dt><dd>Existing agreements get null, which the PDF prints as blank.</dd></dl>' } },
+    r2: { tags: ['backend'], name: 'Task documents in the emergency packet', facts: ['#75 → master', 'Naomi', '3d old', size(765, 70), 'CI pass', '2 reviews', 'waiting on you 1d'], bot: 'working, 6 min', buttons: [snooze, dismiss] },
+    r3: { tags: ['backend'], name: 'Bed assignments get the id of their admission', facts: ['#163 → master', 'Jesse', '5d old', size(410, 40), bad('CI fail'), '1 review', 'waiting on you 5d'], buttons: [agent, snooze, dismiss] },
+    r4: { tags: ['backend'], name: 'Treat a signature HelloSign already recorded as done', facts: ['#153 → master', 'Yuri', '1d old', size(88, 9), 'CI pass', '0 reviews', 'waiting on you 1d'], buttons: [agent, snooze, dismiss] },
+    c1: { tags: ['backend', 'frontend'], name: 'Linked resident rent and care totals', facts: ['#83 → master', 'you', '3d old', size(1139, 100), 'CI pass', '1 review', '4 threads from the bot, 1d'], bot: 'fixes ready', buttons: ['<button class="main">review</button>', snooze], proof: '▶ proof of the fixes, 0:52' },
+    c2: { tags: ['frontend'], name: 'Add reassigning Self as a contact action', facts: ['#87 → master', 'you', '3d old', size(387, 36), 'CI pass', '1 review', '6 threads from Josh, 3d'], buttons: [agent, snooze] },
+    c3: { tags: ['frontend'], name: 'Lock the Self contact\'s removal and relationship', facts: ['#88 → #87', 'you', '3d old', size(301, 28), 'CI pass', '1 review', '7 threads from Josh, 3d'], bot: 'blocked, asked you', buttons: [snooze] },
+    a1: { tags: ['backend'], name: 'Reassign SELF contact endpoint', facts: ['#94 → master', 'you', '3d old', size(320, 30), 'CI pass', '0 reviews', 'Jesse, not asked'], buttons: [] },
+    a2: { tags: ['backend'], name: 'Copy "Other" uploads and insurance cards', facts: ['#84 → master', 'you', '3d old', size(190, 18), 'CI pass', '0 reviews', 'Jesse, not asked'], buttons: [] },
+    a3: { done: true, tags: ['frontend'], name: 'Remove telecoms from Edit Person', facts: ['#86 → master', 'you', '3d old', size(387, 36), bad('CI fail'), '0 reviews', 'Josh, asked 2h ago'], buttons: [] },
+    w1: { tags: ['backend'], name: 'Copied contacts and documents in the CopyFacility job', facts: ['MOV-474 → master', 'agent', '1d old', size(352, 32), 'tests pass', 'no PR yet', 'ready 40 min ago'], bot: 'ready for review', buttons: ['<button class="main">review</button>', '<button data-toggle="publish">publish</button>'], opened: true, proof: '▶ proof recording, 0:48',
+      plain: 'Copying a facility makes a new facility from an old one. Until now the copy left out residents\' contacts and uploaded documents. This adds both to the copy job.',
+      panels: { Decisions: '<dl><dt>Copies documents in batches of 100</dt><dd>The job timed out copying a facility with 4,000 documents in one transaction. 100 kept each batch under two seconds. One constant to change.</dd><dt>A missing file is skipped and logged</dt><dd>Three documents in the test facility pointed at files that no longer exist. Failing the whole job would block every copy of that facility.</dd></dl>' } },
+    p1: { tags: ['frontend'], name: 'Float the linked resident\'s room to the top of the room modals', facts: ['#90 → master', 'you', '3d old', size(280, 27), 'CI pass', '1 review', 'Josh, asked 2h ago'], buttons: [] },
+    p2: { tags: ['frontend'], name: 'Fetch the person in usePerson through TanStack Query', facts: ['MOV-476', 'nobody', 'new', '<span>a couple of hours</span>', '', '', 'not started, no priority'], buttons: [start] },
+    p3: { tags: ['frontend'], name: 'Load the resident Details page\'s data through TanStack Query', facts: ['MOV-477', 'nobody', 'new', '<span>a couple of hours</span>', '', '', 'not started, no priority'], buttons: [start] },
+    p4: { name: 'Learn task definitions, task assignments and webforms', facts: ['no ticket', 'nobody', 'new', '<span>a couple of hours</span>', '', '', 'not started, priority 4 of 4'], buttons: [start] },
+    x1: { name: 'Post the heads-up in #team-ops about the database constraint', facts: ['no ticket', 'you', 'new', '<span>under an hour</span>', '', '', 'by hand'], buttons: [] },
+    x2: { name: 'Go through the 42 residents the demotion job can\'t handle', facts: ['no ticket', 'you', 'new', '<span>a couple of hours</span>', '', '', 'by hand'], buttons: [] },
+    p5: { tags: ['backend'], name: 'Log share and reminder emails against their tasks', facts: ['#93 → master', 'you', '4d old', size(540, 50), 'CI pass', '0 reviews', 'question for you, 4d'], bot: 'blocked, asked you', buttons: [] }
+  }
+  Object.keys(items).forEach((id) => { items[id].id = id })
+
+  const queue = [
+    { name: 'Answer', ids: ['q1', 'q2'] },
+    { name: 'Merge', ids: ['m1', 'm2'] },
+    { name: 'Review', ids: ['r1', 'r2', 'r3', 'r4'] },
+    { name: 'Respond', ids: ['c1', 'c2', 'c3'] },
+    { name: 'Ask', ids: ['a1', 'a2', 'a3'] },
+    { name: 'Agent work', ids: ['w1'] }
+  ]
+  const plan = [
+    { time: '1 pm', title: 'Share email log', ids: ['q1'], now: true },
+    { time: '2 pm', title: 'Reviews', ids: ['r1', 'r2'] },
+    { time: '3 pm', title: '', ids: [] },
+    { time: '4 pm', title: '', ids: [] },
+    { time: '5 pm', title: '', ids: [] },
+    { time: '6 pm', title: 'Meetings', ids: [], meeting: '6:45 pm Max <> Camen' }
+  ]
+  const streams = [
+    { name: 'Share email log', count: '0 of 1', width: 0, ids: ['p5'] },
+    { name: 'Linked Residents', count: '3 of 13 · due Nov 30', width: 23, ids: ['m1', 'p1', 'w1', 'p2', 'p3'], opened: true },
+    { name: 'SELF contacts', count: '1 of 18 · due Nov 30', width: 6, ids: ['c2', 'c3', 'a1'] },
+    { name: 'Webform Triggers', count: '0 of 2 · due Dec 31', width: 0, ids: ['p4'] },
+    { name: 'Misc', count: '', width: 0, ids: ['x1', 'x2'] }
+  ]
+
+  const day = () => plan.map((slot) => `
+    <div class="hour${slot.now ? ' now' : ''}"><time>${slot.time}</time><div contenteditable="true" spellcheck="false">${slot.title}</div></div>
+    ${slot.meeting ? `<div class="meeting">${slot.meeting}</div>` : ''}
+    <div class="slot" data-time="${slot.time}">${slot.ids.map((id) => task(items[id], true)).join('')}</div>`).join('')
+  const projects = () => streams.map((stream) => `
+    <div class="stream">
+      <div class="stream-head"><div class="line">${stream.name} <span>${stream.count}</span></div><div class="bar"><u style="width:${stream.width}%"></u></div></div>
+      <div class="tasks" ${stream.opened ? '' : 'hidden'}>${stream.ids.map((id) => task(items[id])).join('')}<div class="new-task"><input class="line-input" type="text" data-stream="${stream.name}" placeholder="+ Add a task to ${stream.name}, then press return"></div></div>
+    </div>`).join('')
+
+  const pull = (number, title, what, where, days) => `<div class="pull"><span class="number">${number}</span><span class="title">${title}</span><span class="what">${what}</span><span class="where">${where}</span><span class="days${parseInt(days) >= 4 && days.endsWith('d') ? ' old' : ''}">${days}</span></div>`
+  const pulls = () => `
+    <div class="columns">
+      <div>
+        <h2>You</h2>
+        <h3>Needs me <span>5</span></h3>
+        ${pull(87, 'Add reassigning Self as a contact action', '6 threads', '1/2', '3d')}
+        ${pull(88, 'Lock the Self contact\'s removal and relationship', '7 threads', '2/2', '3d')}
+        ${pull(92, 'August fields read phone and email from the SELF contact', '7 threads', '', '3d')}
+        ${pull(95, 'Resident and contact sheet importers', '5 threads', '2/10', '4d')}
+        ${pull(83, 'Linked resident rent and care totals', 'fixes ready', '', '1d')}
+        <h3>Accepted <span>1</span></h3>
+        ${pull(85, 'Financial start date in the room modals', 'merge', '', '2h')}
+        <h3>Not published <span>2</span></h3>
+        ${pull(93, 'Log share and reminder emails against their tasks', 'question', '', '4d')}
+        ${pull('', 'Copied contacts and documents in the CopyFacility job', 'agent work ready', '', '40m')}
+      </div>
+      <div>
+        <h2>Waiting on others</h2>
+        <h3>Needs review <span>3</span></h3>
+        ${pull(94, 'Reassign SELF contact endpoint', 'Jesse, not asked', '1/10', '3d')}
+        ${pull(84, 'Copy "Other" uploads and insurance cards', 'Jesse, not asked', '', '3d')}
+        ${pull(90, 'Float the linked resident\'s room to the top', 'Josh, asked', '', '2h')}
+        <h3>Can be reviewed <span>2</span></h3>
+        ${pull(96, 'Application constraint: refuse a second SELF contact', 'Jesse', '3/10', '5d')}
+        ${pull(98, 'Add is_self to contacts, backfilled', 'Jesse', '5/10', '5d')}
+        <h3>Wait to review <span>3</span></h3>
+        ${pull(99, 'Database constraint: one SELF contact per resident', 'Jesse', '6/10', '5d')}
+        ${pull(100, 'Read and write phone and email only on the SELF contact', 'Jesse', '7/10', '5d')}
+        ${pull(101, 'Refuse deleting a resident\'s SELF contact', 'Jesse', '8/10', '5d')}
+        <h3>Blocked <span>1</span></h3>
+        ${pull(91, 'Copy "Other" uploads and insurance cards, frontend', 'waits for 84', '', '1d')}
+      </div>
+    </div>`
+  const log = () => `
+    <div class="chat">
+      <div class="bubbles">
+        <div class="stamp">Today 1:05 pm</div>
+        <div class="bubble">The email log's failing check was a flaky download. I re-ran it and it's green.</div>
+        <div class="stamp">1:20 pm</div>
+        <div class="bubble me">the emergency packet review doesn't need to run the app, reading is enough</div>
+        <div class="bubble">Told the review agent to stop running the app and finish from the diff. Reviews of backend-only changes under 100 lines will skip the app from now on.</div>
+      </div>
+      <div class="compose"><input type="text" placeholder="Message the assistant"><button>↑</button></div>
+    </div>`
+
+  const pages = { Day: day, Projects: projects, PRs: pulls, Log: log }
+  const nav = document.getElementById('nav')
+  const sub = document.getElementById('sub')
+  const view = document.getElementById('view')
+  const lightbox = document.getElementById('lightbox')
+  const countOf = (entry) => entry.ids.filter((id) => !items[id].done && !items[id].waits).length
+  let page = 'Status'
+  let section = 'Merge'
+
+  const show = (name) => {
+    page = name
+    nav.querySelectorAll('button').forEach((button) => button.classList.toggle('on', button.dataset.name === name))
+    sub.hidden = name !== 'Status'
+    document.getElementById('main').classList.toggle('wide', name === 'PRs')
+    if (name !== 'Status') { view.innerHTML = pages[name](); return }
+    sub.innerHTML = queue.map((entry, index) => `<button data-name="${entry.name}" class="${countOf(entry) ? '' : 'none'}${entry.name === section ? ' on' : ''}"><i>${index + 1}</i>${entry.name}<b>${countOf(entry)}</b></button>`).join('')
+    view.innerHTML = queue.find((candidate) => candidate.name === section).ids.map((id) => task(items[id])).join('')
+  }
+  nav.innerHTML = ['Day', 'Status', 'Projects', 'PRs', 'Log'].map((name) => `<button data-name="${name}">${name}</button>`).join('')
+  nav.addEventListener('click', (event) => event.target.closest('button') && show(event.target.closest('button').dataset.name))
+  sub.addEventListener('click', (event) => {
+    if (!event.target.closest('button')) return
+    section = event.target.closest('button').dataset.name
+    show('Status')
+  })
+  document.getElementById('ask-button').addEventListener('click', () => { section = 'Answer'; show('Status') })
+  lightbox.addEventListener('click', () => { lightbox.hidden = true })
+
+  view.addEventListener('click', (event) => {
+    const card = event.target.closest('.task')
+    const panelButton = event.target.closest('.detail-tabs button')
+    if (panelButton) {
+      const side = panelButton.closest('.side')
+      side.querySelectorAll('.detail-tabs button').forEach((button) => button.classList.toggle('on', button === panelButton))
+      side.querySelectorAll('.panel').forEach((panel) => { panel.hidden = panel.dataset.panel !== panelButton.dataset.panel })
+      return
+    }
+    const video = event.target.closest('.video')
+    if (video) { lightbox.firstElementChild.textContent = video.textContent; lightbox.hidden = false; return }
+    const hourButton = event.target.closest('[data-hour]')
+    if (hourButton) {
+      const slot = plan.find((candidate) => candidate.time === hourButton.dataset.hour)
+      if (!slot.ids.includes(card.dataset.id)) slot.ids.push(card.dataset.id)
+      hourButton.textContent = `${hourButton.dataset.hour} ✓`
+      return
+    }
+    if (event.target.closest('[data-remove]')) {
+      const slot = plan.find((candidate) => candidate.time === card.parentElement.dataset.time)
+      slot.ids = slot.ids.filter((id) => id !== card.dataset.id)
+      card.remove()
+      return
+    }
+    const toggle = event.target.closest('[data-toggle]')
+    if (toggle) { const part = card.querySelector(`[data-part="${toggle.dataset.toggle}"]`); part.hidden = !part.hidden; return }
+    const head = event.target.closest('.stream-head')
+    if (head) {
+      const stream = streams.find((candidate) => head.textContent.trim().startsWith(candidate.name))
+      stream.opened = !stream.opened
+      head.nextElementSibling.hidden = !stream.opened
+    }
+  })
+  view.addEventListener('change', (event) => {
+    const card = event.target.closest('.task')
+    if (!card || event.target.closest('.option')) return
+    items[card.dataset.id].done = event.target.checked
+    card.classList.toggle('done', event.target.checked)
+  })
+
+  view.addEventListener('keydown', (event) => {
+    const field = event.target.closest('[data-stream]')
+    if (!field || event.key !== 'Enter' || !field.value.trim()) return
+    const stream = streams.find((candidate) => candidate.name === field.dataset.stream)
+    const id = `new${Object.keys(items).length}`
+    items[id] = { id: id, name: field.value.trim(), facts: ['no ticket', 'you', 'new', '<span>size not set</span>', '', '', 'not started'], buttons: [start] }
+    stream.ids.push(id)
+    stream.opened = true
+    show('Projects')
+  })
+
+  let dragged = null
+  view.addEventListener('dragstart', (event) => { dragged = event.target.closest('.task'); dragged.classList.add('dragging') })
+  view.addEventListener('dragend', () => { if (dragged) dragged.classList.remove('dragging'); dragged = null })
+  view.addEventListener('dragover', (event) => {
+    const over = event.target.closest('.task')
+    if (!dragged || !over || over === dragged || over.parentElement !== dragged.parentElement) return
+    event.preventDefault()
+    const box = over.getBoundingClientRect()
+    over.parentElement.insertBefore(dragged, event.clientY < box.top + box.height / 2 ? over : over.nextSibling)
+  })
+  show('Status')
+</script>
+</body>
+</html>

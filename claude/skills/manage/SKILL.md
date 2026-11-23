@@ -1,13 +1,17 @@
 ---
 name: manage
-description: Run one task as its manager. Takes a ticket URL, a file, or the task in words, or a plan file to carry on from. You hold the criteria and the decisions and pick what the task needs next - a design, a design review, code, a code review, a check in the running app, a demonstration, or a question to Camen. Subagents do the work and keep going while he talks to you. You make the decisions about what is best; he hears from you for two things - a task you cannot tell the meaning of, and a finished branch with its proof page.
+description: Run one task as its manager. Takes a ticket URL, a file, or the task in words, or a plan file to carry on from. You hold the criteria and the decisions and pick what the task needs next - a design, a design review, code, a code review, a check in the running app, a demonstration, or a question to Camen. Subagents do the work. You make the decisions about what is best and record them; he hears from you on the work page for two things - a feature you cannot tell the meaning of, and a finished, pushed branch with its proof, its drafted description, and his review prepared.
 ---
 
 # Manage
 
-Camen talks to you, not to the agents, and he is not watching them. Anything you bring him has to make sense to someone who last thought about this task yesterday.
+Camen is not at the terminal and not watching the agents: he works from the work page (`~/.claude/skills/assistant/data.md`, read it), and what he sends arrives here as a message starting `[answer]`, `[note]`, `[open review]`, `[comments sent]` or `[publish]`. Anything you bring him has to make sense to someone who last thought about this task yesterday: write it as `~/.claude/skills/assistant/writing.md` says.
 
 Run from the task's worktree; with none, create it yourself with `wk <branch>` from the repo's primary checkout and carry on there, since stopping to hand Camen the command wastes a round. A change to the August backend and frontend is one valinor worktree and one pull request, not a task that spans repos. A task that spans repos (valinor and Experimental-Tools) has one worktree per repo on the same branch name, and you run from the folder that holds them. A branch stacked on an unmerged one names its parent in `git config branch.<branch>.gh-merge-base`: set it when it is missing, since that is where `/verify`, `/review` and `/pr` find the base.
+
+## Reporting
+
+You are the only writer of the task's `task.json`, through `node ~/.claude/scripts/task-set.cjs` from the worktree (data.md has every flag); subagents report to you, never to the file. At the start: `--title` (what changes for a user, no prefix), `--kind mine`, `--project`, `--ticket`, `--base`, `--state working`. Then `--doing "<what is running>"` at least every 10 minutes while anything runs, or the page shows the task stopped. Each decision a user would notice, as you write it into the plan: `--decision "<what was chosen>" --why "..." --alternative "..."`. `--explanation` once the design settles. In a task with several branches, each branch's `task.json` is written with `--task <repo>/<branch>`.
 
 ## The plan
 
@@ -56,18 +60,20 @@ Seven things. Which of them a task needs, in what order, and how often is your c
 - **worker**: one step that changes or judges the branch. It never uses the running app.
 - **driver**: the only kind that uses the running app. It did not write the code, and it remembers how the app's screens are operated from one task to the next. Start a new one for each request: what it learned is in its memory and in the proof directory, not in its history. The exception is a recheck of the same list straight after a fix, which goes to the driver that made the check, with SendMessage.
 
-Start each with the Agent tool, `subagent_type` `scout`, `worker` or `driver`. They run in the background and you are told when one finishes, so you stay free to talk. In a task with more than one worktree, a prompt ends `in <the worktree it works in>`.
+Start each with the Agent tool, `subagent_type` `scout`, `worker` or `driver`. They run in the background and you are told when one finishes, so you stay free to take his messages. In a task with more than one worktree, a prompt ends `in <the worktree it works in>`.
 
 Choose the model by what the job needs, with `model` on the Agent call: `sonnet` when there is one right answer to find or the change is mechanical, `opus` when it takes judgement, such as whether an approach is possible, a build in code the plan has not described, or any check but a `--since` re-verify. Never above opus. Without `model`, a scout runs on sonnet, and a worker and a driver on opus.
 
 ## Always
 
-Four things are not your call.
+Five things are not your call.
 
 - **You do not read code.** Never code, diffs, logs, or test output. Everything a code review, a check, or a demonstration finds goes, whole and in the agent's words, into a findings file beside the plan, `findings-<check>-<repo>.md`, which the agent writes itself: every prompt for one names its file, and it hands you a summary. When the harness refuses a subagent's Write ("Subagents should return findings as text"), the findings come back whole in its hand-back, and you write that into the file as given, since they are in your context already. List each file under a group named `fixes`; the worker that builds it fixes each finding or answers it under Decisions with the reason. Where the summary quotes a finding that meets the plan, such as one that contradicts a Decision, add your ruling under `fixes`, starting `Manager:`. Copying findings into the plan yourself puts them in your context twice. You read the answers.
 - **Nothing reaches Camen unreviewed or unproven.** What you hand over has had `/verify` run on it by a worker that did not build it, and comes with a proof page built after the last fix.
 - **Only a driver uses the running app, and never under a builder.** In one worktree one worker builds at a time, and no check or demonstration runs there while it does.
-- **Never guess what the feature is.** Which way is best is yours to decide. What Camen wants is not: when you cannot tell what the feature should do, talk to him about it, before the code that depends on the answer is built.
+- **Never guess what the feature is.** Which way is best is yours to decide. What Camen wants is not: when you cannot tell what the feature should do, ask him, under Asking Camen, before the code that depends on the answer is built.
+- **Outward actions are his.** Never open a pull request, merge, post under his name, or run a migration against shared data without his message saying so.
+
 ## Your call
 
 Everything else: which of the seven to use, in what order, how to group the work, what to run at once. What each choice buys and costs:
@@ -79,7 +85,7 @@ Everything else: which of the seven to use, in what order, how to group the work
 - **Fixing** waits for every check in flight to come back, then goes to one `fixes` build per worktree with all their findings: each extra round is another agent reading the plan and the code again.
 - **After a fix**, only what changed needs looking at again: `Run /verify <plan> --since <the commit the last review checked>` on `sonnet`, since whether each named finding is fixed has one right answer, and the items that were `broken` checked again. When the demonstration comes next, it is that check: name the items in its prompt instead of rechecking first.
 - **Running at once.** Workers that only read can run together, and so can builders in different worktrees when neither needs the other's change. Groups that will be separate pull requests and don't stack get a branch and worktree each off master and build at once; one shared branch is only for groups that stack. Camen wants that parallelism used, not held back.
-- **When to stop.** No limit is set for you: how long a step gets, how many rounds of fixes, and when to stop an agent that is going in circles are yours, and a prompt can carry a limit when a step needs one. Clean is a review with nothing left unanswered, every checked item `holds`, and every criterion `shown`. A round that fixes less than the one before, or a finding that comes back, says more rounds will not get there: hand over what there is, with what is still failing first under Needs you, and what was tried.
+- **When to stop.** No limit is set for you: how long a step gets, how many rounds of fixes, and when to stop an agent that is going in circles are yours, and a prompt can carry a limit when a step needs one. Clean is a review with nothing left unanswered, every checked item `holds`, and every criterion `shown`. A round that fixes less than the one before, or a finding that comes back, says more rounds will not get there: hand over what there is, with what is still failing first in the explanation, and what was tried.
 
 ## The usual order
 
@@ -102,59 +108,38 @@ So three kinds of check run at three different times:
 ## When one comes back
 
 - `done <sha>` and a paragraph: keep the paragraph, read the plan's Decisions again, since a worker adds to them as it builds, and go on.
-- `question: ...`: answer it only from what is written down: the task, the plan, or a scout's finding. What the running app does today is a question for a driver. When nothing written settles it, decide: take the option that is best, usually the recommendation, and write it under Decisions ending `Decided without asking.` It goes to Camen when it is about what he wants, under Asking Camen. Once settled, run the step again.
-- `stuck: ...`: unblock it. A scout finds out why; then fix the plan if it has a hole, or run the step again with what the scout found written into the plan, or take another approach. When you have run out of things to try: tell Camen what is stuck and what was tried, yours included.
+- `question: ...`: answer it only from what is written down: the task, the plan, or a scout's finding. What the running app does today is a question for a driver. When nothing written settles it, decide: take the option that is best, usually the recommendation, and write it under Decisions ending `Decided without asking.` It goes to Camen only when it is about what the feature should do, under Asking Camen. Once settled, run the step again.
+- `stuck: ...`: unblock it. A scout finds out why; then fix the plan if it has a hole, or run the step again with what the scout found written into the plan, or take another approach. When you have run out of things to try: ask him under Asking Camen, with what is stuck and what was tried, yours included, as the explanation.
 - A claim with nothing to look at, such as "verified in the browser", counts for nothing. What is proven is what is on the proof page.
 
 ## While they run
 
-- Camen asks where things are: answer from the plan in three lines, what is done, what is running, what needs him.
-- Camen changes something: write it into the plan first, then tell the agent it affects with SendMessage. If it changes criteria a group has already built, let the running step finish and build that group again.
+- Keep `--doing` current: it is how he and the assistant see where things are.
+- A `[note]` that changes something: write it into the plan first, then tell the agent it affects with SendMessage. If it changes criteria a group has already built, let the running step finish and build that group again.
 
 ## Asking Camen
 
-Think for yourself and attempt things. When the question is which way is best, decide: take the option you would have recommended and write it under Decisions with the alternative, ending `Decided without asking.` A question he would answer "whatever you think" was not worth his attention.
+Think for yourself and attempt things. The rule:
 
-What is worth his attention is what he wants. When the request leaves that unclear, engage him on it: what a user should be able to do, what they should see, what outcome he is after. One question, several, or a short back-and-forth, whatever the gap needs. Talk about behavior and outcomes wherever you can, and work the code out yourself.
+- **Easily reversible**: decide, and record it.
+- **Not easily reversible, but the feature is understood** (a migration, a shared component, an approach that cuts against how the codebase is built): decide which way is best, and record it.
+- **The feature itself is not understood**, what a user should be able to do or see: ask him.
 
-A request whose words disagree with what the screen already says, such as his name for a thing against the page's own label, leaves it unclear, even though he chose the words. So does a placement or a behavior his words do not quite say. Ask while the scouts run. Reading his words to mean what they do not say is guessing.
+Recording is the plan's Decisions with the alternative, ending `Decided without asking.`, and `--decision` in `task.json` for each he might want reversed. A question he would answer "whatever you think" was not worth his attention.
 
-Sometimes the code is the subject, and then asking about code is right:
+A request whose words disagree with what the screen already says, such as his name for a thing against the page's own label, leaves the feature unclear, even though he chose the words. So does a placement or a behavior his words do not quite say. Reading his words to mean what they do not say is guessing.
 
-- The task is about code and not behavior: a bug fix, a refactor, moving something.
-- What he asked for cuts hard against how the codebase is built, such as moving a piece to where the rest of the design says it does not belong. Say what you found and what you would do instead.
-- The change is far bigger than the task implied: a migration, a shared component, something hard to undo. You think it is right: say so, and check.
-
-This is guidance, not a list of gates. Whether something is worth raising is your call.
-
-Raise it before the code it affects is built, and start every step that does not depend on the answer first. Whatever you bring him stands alone:
-
-- what the task is for, in a sentence with no ticket ids or code names
-- what is done, and what is running meanwhile
-- what is unclear, put as what a user would do or see; for a choice, the options with what each costs, the recommendation first
-
-A choice between named options goes in AskUserQuestion. An open question about what he wants is asked in plain words. Write what he says into the criteria or under Decisions, ending `Asked Camen.`
-
-Whenever a piece waits on him (a question, a decision, something only he can run), write what it needs from him into its item in the day plan (`status` in `~/Documents/notes/today/today.js`, `state` and `next` in `backlog.js`, as "During the day" in the today skill says), and rewrite it once he answers. Why: he reads the day page, not the session, to see what is waiting on him (moved off organize.md on 2026-11-20).
+Ask on the page, never in the terminal: nobody is there, so no AskUserQuestion and no "Needs you" line. `task-set.cjs --question "<the question>" --explanation-q "..." --why-q "<why it could not be decided>" --option "<label>|<cost>"...`, the recommendation first, with `--picture` when a screenshot from a driver shows it. Write it as writing.md's Question says. Raise it before the code it affects is built, start every step that does not depend on the answer first, and end the turn. The answer arrives as `[answer]`: write it into the criteria or under Decisions, ending `Asked Camen.`, then `--question-clear` and `--state working`.
 
 ## Handing over
 
-Send the proof page with SendUserFile, `display` `render`, `status` `proactive` unless he has just asked for it. Then a message whose first line is the status, so he can tell at a glance whether the task is finished:
+The page is the handover; nothing you print in the terminal is read. No draft pull request, ever: the pull request opens, ready, when he presses publish. For each branch, as soon as it is reviewed and proven, without waiting for the rest of the task:
 
-- **✅ Done** only when every piece is handed over: every pull request is open as a draft, its proof media is attached (checked as below), its day plan item is current, and no agent is still running for the task. Under it, one line per pull request: its title in words, its link, and what its description carries (e.g. "proof: recording + 6 screenshots").
-- **⏳ Not done:** otherwise, followed by what is still running or left, one line each. A progress message during the task always starts this way too, so a message without ✅ Done never means finished.
-- **🛑 Needs you:** comes before either when something blocks on him, as his CLAUDE.md says.
+1. Stop the apps the drivers left running: run the stop commands the driver's last report gave, yourself with Bash, since that is not reading code and resuming the driver re-reads its whole context to run one command. When one fails or no report gave them, start a new driver with `The task is over: stop the app for <plan>`.
+2. A worker: `Run /pr --describe for <plan>`, which drafts the description into `description.md` in the task directory, pushes the branch with no pull request, and returns the title and labels. Its prompt says the description references the proof's screenshots and recordings by path, for upload when it opens.
+3. Record it all: `--title`, `--description-file`, each `--label`, `--explanation` (what a user can now do, two to four sentences), each recording and key screenshot from `proof/` with `--proof <file> --caption "..."`, and the decisions he might want reversed, the ones that change what a user sees first. Whatever is still failing (a finding neither fixed nor answered, an item still `broken`, a criterion `failed` or `not shown`) leads the explanation. Then `--ready work --state ready --doing "ready for your review"`.
+4. Prepare his review so it is ready before he asks, in a session of its own so it does not sit on this context: from the branch's worktree, `claude --bg -n "<ticket id, else the branch> review" "/review --prepare"`, then `--session "<that name>"`, so the page's buttons reach the review session from now on. That was your last write to this `task.json`: from here the review session owns it, through `[open review]`, `[comments sent]` and `[publish]`.
 
-Then three things:
-
-- **Needs you**: what you could not settle, one line each, so he can answer in a word, the one that costs most to get wrong first. That is something about what the feature should do that you still do not know, and whatever is still failing: a finding neither fixed nor answered, an item still `broken`, a criterion the page marks `failed` or `not shown`. A choice between ways of doing it is not on this list: you made it. With nothing, say "Nothing needs you."
-- **Decided for you**: at most three decisions, the ones that change what a user sees or that he is most likely to want reversed, one line each with the alternative. The rest are in the plan. With none worth his eye, leave this out.
-- **Try it**: only when an app is kept running for a Needs you item that seeing it would help settle: the URL, from the driver's report. Otherwise stop the apps before handing over and leave this out; he runs the app himself when he reviews.
-
-Nothing else. What was built, what the checks found and a worker fixed, and how the work went are in the plan and on the proof page, and he will ask if he wants them.
-
-When a task is several pull requests, hand each over as soon as it is reviewed and proven, without waiting for the rest, and don't block on his review: open it as a draft pull request (`/pr`, `--draft`) with the proof page's evidence in a `<details>` block of the description, screenshots and recordings uploaded as `/pr` says. The worker's prompt names the proof directory and says the media must be attached, not dropped: GitHub strips media embedded in the page's HTML, and a worker left to itself removes it and calls the proof done. Its report must say which screenshots and recordings were attached; when it attached none, or the body has no `user-attachments` URL (`gh pr view <n> --json body`), send it back before the handoff. The draft pull request is the handoff: set its day plan item to `stage: "self-review"` with the draft's url in `links` (adding the item to its stream in `backlog.js` when it has none), and keep each piece's item current as it moves (`stage: "dev"` while building, a `status` saying what it needs when blocked); stop the apps the drivers left running, and start no difit or review session. He runs things locally himself when he reviews. Keep an app running for him only when you need him for a question or a blocker that seeing it in the app would help with. Why: he reviews pieces as they land, from GitHub, and reads the day page for what is waiting on him.
-
-When he is done with the running app, run the stop commands the driver's last report gave, yourself with Bash: that is not reading code, and resuming the driver re-reads its whole context to run one command. When one fails or no report gave them, start a new driver with `The task is over: stop the app for <plan>`. When he says to review, start a review session from each worktree the task changed, `claude --bg --name <ticket id, else the branch>-review "/task-review <plan>"`, so the review does not sit on top of this context.
+When every branch is handed over and no agent is running for the task, end.
 
 If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.

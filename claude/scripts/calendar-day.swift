@@ -14,6 +14,8 @@ guard accessGranted else {
     exit(1)
 }
 
+let excludedCalendars: Set<String> = ["Sarit"]
+
 let dayFormatter = DateFormatter()
 dayFormatter.dateFormat = "yyyy-MM-dd"
 let requestedDay = CommandLine.arguments.count > 1 ? dayFormatter.date(from: CommandLine.arguments[1]) : nil
@@ -23,7 +25,7 @@ let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart)!
 let timeFormatter = DateFormatter()
 timeFormatter.dateFormat = "HH:mm"
 let events = store.events(matching: store.predicateForEvents(withStart: dayStart, end: dayEnd, calendars: nil))
-for event in events.sorted(by: { $0.startDate < $1.startDate }) {
+for event in events.sorted(by: { $0.startDate < $1.startDate }) where !excludedCalendars.contains(event.calendar.title) {
     let myStatus = event.attendees?.first(where: { $0.isCurrentUser })?.participantStatus
     let declined = myStatus == .declined
     let fields = [

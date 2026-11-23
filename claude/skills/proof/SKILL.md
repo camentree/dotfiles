@@ -7,7 +7,7 @@ description: Show that a change works, in a form a person can look at - a record
 
 Input: the plan file. The proof directory is `proof/` in the pull request's branch directory, `~/.claude/tasks/<repo>/<branch>/proof/`, found from the worktree: `<repo>` is the `basename` of `git remote get-url origin` without `.git`, `<branch>` is `git branch --show-current`. Each pull request of a task has its own. Output: `index.html` in the proof directory, one self-contained file, with what it was built from beside it.
 
-The page is for Camen, who has not read the code and will not read it here. It replaces "I checked it" with something he can watch, so nothing goes on it that you did not see happen.
+The page is for Camen, who has not read the code and will not read it here. It replaces "I checked it" with something he can watch, so nothing goes on it that you did not see happen. Its summary, context, captions and steps are written as `~/.claude/skills/assistant/writing.md` says.
 
 1. Read the plan. Read how this app is run and got around: the app's own skill when the skill list has one; the project's CLAUDE.md and CLAUDE.local.md files load by themselves when you open a file in their directory with Read, so do not read them again. Read `checked.md` in the proof directory when there is one: the checks made while the task was built left there the paths they took and the data they created, so start from those. Local data only, never a deployed environment.
 2. Pick the evidence for each criterion. One the plan marks `(test)` is shown by its test. For the rest, the first of these that applies:

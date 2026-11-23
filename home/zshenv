@@ -9,6 +9,7 @@ export VISUAL="nvim"
 # mise (manages node, java, sbt, etc.) — also exports JAVA_HOME for the active java
 if command -v mise &> /dev/null; then
   eval "$(mise activate zsh)"
+  [[ -o interactive ]] || export PATH="$HOME/.local/share/mise/shims:$PATH"
 fi
 
 # Apple Shortcuts sets this variable which crashes JVM native socket binding

@@ -13,6 +13,19 @@ for (const name of ['today.js', 'backlog.js', 'thread.js']) {
     problem(name, `does not load (${error.message})`)
   }
 }
+const boardColumns = ['needs-review', 'can-review', 'wait-to-review', 'needs-me', 'accepted', 'blocked', 'drafted']
+if (fs.existsSync(path.join(directory, 'prs.js'))) {
+  try {
+    require(path.join(directory, 'prs.js'))
+  } catch (error) {
+    problem('prs.js', `does not load (${error.message}); run my-prs.cjs again`)
+  }
+  const prs = global.window.PRS
+  if (prs && (!prs.reviewers || !Array.isArray(prs.pulls))) problem('prs.js', 'has no reviewers or pulls; run my-prs.cjs again')
+  for (const pull of (prs && Array.isArray(prs.pulls) && prs.pulls) || []) {
+    if (!pull.url || !pull.title || !Array.isArray(pull.needs) || !pull.needs.every((login) => pull.reviews && pull.reviews[login]) || !Array.isArray(pull.notes) || !Array.isArray(pull.dependsOn) || !Array.isArray(pull.pair) || !boardColumns.includes(pull.column)) problem('prs.js', `pull request ${pull.number} is missing fields the page reads; run my-prs.cjs again`)
+  }
+}
 const today = global.window.TODAY
 const backlog = global.window.BACKLOG
 const thread = global.window.THREAD
@@ -59,8 +72,11 @@ if (today) {
       if (!copy.label || !copy.text) problem(where, `item ${item.id} has a copy entry without label or text`)
       if (/^copy( prompt)?$/i.test((copy.label || '').trim())) problem(where, `item ${item.id} copy label does not say what is copied`)
       if (/(^|&& )claude /.test(copy.text || '') && !/^cd /.test(copy.text)) problem(where, `item ${item.id} command does not start with cd`)
+      const launch = /(?:^|&& )claude\s+(\S+)/.exec(copy.text || '')
+      if (launch && /^[-"']/.test(launch[1]) && !/(?:^|&& )claude --model (?:fable|opus|sonnet) /.test(copy.text)) problem(where, `item ${item.id} starts a claude session without --model fable|opus|sonnet right after claude`)
     }
     if (item.items && depth >= 1) problem(where, `item ${item.id} nests more than one level`)
+    if (item.items && item.stage !== undefined) problem(where, `item ${item.id} has nested items and a stage; put the stage on its children`)
     for (const child of item.items || []) checkItem(child, where, depth + 1)
   }
   for (const block of today.blocks || []) {
@@ -104,6 +120,16 @@ if (today) {
       }
     }
   }
+}
+
+if (today) {
+  let state = {}
+  try {
+    state = JSON.parse(fs.readFileSync(path.join(directory, 'state.json'), 'utf8'))
+  } catch (error) {}
+  const earlierPlanDates = Object.keys(state).filter((date) => date < today.date).sort()
+  const lastPlanDate = earlierPlanDates[earlierPlanDates.length - 1]
+  if (lastPlanDate && !fs.existsSync(path.join(directory, 'archive', `${lastPlanDate}.js`))) problem('today.js', `is the plan for ${today.date}, but the plan for ${lastPlanDate} has no archive/${lastPlanDate}.js; run today-archive.cjs before writing a new day's plan`)
 }
 
 if (thread && !Array.isArray(thread.messages)) problem('thread.js', 'messages is not a list')
