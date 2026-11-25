@@ -3,12 +3,11 @@
   "date": "2026-11-23",
   "agentsWorking": 3,
   "sections": [
-    { "name": "Answer", "cards": ["valinor#93", "valinor#88", "valinor#92"] },
+    { "name": "Questions", "cards": ["valinor#93", "valinor#88", "valinor#92"] },
     { "name": "Merge", "cards": ["valinor#85", "valinor#91"] },
     { "name": "Review", "cards": ["valinor#76", "valinor#75", "valinor#163", "valinor#153"] },
-    { "name": "Respond", "cards": ["valinor#83", "valinor#87", "valinor#88"] },
-    { "name": "Ask", "cards": ["valinor#94", "valinor#84", "valinor#86"] },
-    { "name": "Agent work", "cards": ["valinor/camen/mov-474-copy-facility"] }
+    { "name": "Address", "cards": ["valinor#83", "valinor#87", "valinor#88", "valinor/camen/mov-474-copy-facility"] },
+    { "name": "Ask", "cards": ["valinor#94", "valinor#84", "valinor#86"] }
   ],
   "cards": {
     "valinor#93": {

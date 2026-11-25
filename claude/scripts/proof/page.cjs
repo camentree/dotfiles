@@ -107,7 +107,7 @@ function renderSections() {
       )
       names.forEach((name) => rendered.add(name))
       const heading = section.title
-        ? `<h2 class="section-title">${escapeHtml(section.title)}</h2>${section.summary ? `<p>${escapeHtml(section.summary)}</p>` : ''}`
+        ? `<h2 class="section-title"${section.id ? ` id="${escapeHtml(section.id)}"` : ''}>${escapeHtml(section.title)}</h2>${section.summary ? `<p>${escapeHtml(section.summary)}</p>` : ''}`
         : ''
       const offset = firstNumber
       firstNumber += section.criteria.length

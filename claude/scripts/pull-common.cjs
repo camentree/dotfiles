@@ -16,7 +16,34 @@ const checksFields = 'statusCheckRollup { contexts(first: 100) { nodes { __typen
 const directory = path.join(process.env.HOME, 'Documents/notes/today')
 const nixProfile = path.join('/etc/profiles/per-user', os.userInfo().username, 'bin')
 const ghEnvironment = { ...process.env, PATH: `${nixProfile}:${process.env.PATH || ''}` }
-const graphql = (text, variables = []) => JSON.parse(childProcess.execFileSync('gh', ['api', 'graphql', '-f', `query=${text}`, ...variables], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: ghEnvironment })).data
+const usage = { calls: 0, cost: 0, remaining: null }
+const splitResponse = (output) => {
+  const [head, ...body] = output.split(/\r?\n\r?\n/)
+  const headers = Object.fromEntries(head.split(/\r?\n/).slice(1).map((line) => [line.slice(0, line.indexOf(':')).toLowerCase(), line.slice(line.indexOf(':') + 1).trim()]))
+  return { headers, body: body.join('\n\n') }
+}
+const retryMomentOf = (headers) => {
+  if (headers['retry-after']) return new Date(Date.now() + Number(headers['retry-after']) * 1000).toISOString()
+  if (headers['x-ratelimit-remaining'] === '0' && headers['x-ratelimit-reset']) return new Date(Number(headers['x-ratelimit-reset']) * 1000).toISOString()
+  return null
+}
+const rateLimited = (error) => /rate limit/i.test(`${error.stderr || ''} ${error.stdout || ''}`)
+const graphql = (text, variables = []) => {
+  usage.calls += 1
+  const counted = text.replace(/}\s*$/, ' rateLimit { cost remaining } }')
+  let output
+  try {
+    output = childProcess.execFileSync('gh', ['api', '-i', 'graphql', '-f', `query=${counted}`, ...variables], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: ghEnvironment, stdio: ['ignore', 'pipe', 'pipe'] })
+  } catch (error) {
+    if (!rateLimited(error)) throw new Error((error.stderr || error.message).trim())
+    const retryAt = error.stdout ? retryMomentOf(splitResponse(error.stdout).headers) : null
+    throw new Error(`gh: GitHub rate limit: ${(error.stderr || '').replace(/^gh:\s*/, '').trim()}${retryAt ? ` retry after ${retryAt}` : ''}`)
+  }
+  const { data } = JSON.parse(splitResponse(output).body)
+  usage.cost += data.rateLimit.cost
+  usage.remaining = data.rateLimit.remaining
+  return data
+}
 
 const plainTitle = (title) => title.replace(/^(\s*\([^)]*\))+\s*/, '').trim()
 
@@ -46,7 +73,16 @@ const readMarks = () => {
   }
 }
 
+const migratedCommentPattern = /^\*\*([\w-]+)\*\* wrote on \[?the old pull request/
+const lastSpeakerOf = (comment) => {
+  if (!comment || !comment.author) return null
+  const migrated = migratedCommentPattern.exec(comment.body || '')
+  return migrated ? migrated[1] : comment.author.login
+}
+const threadWaitsOn = (thread, me) => !thread.isResolved && thread.lastComment.nodes.length > 0 && lastSpeakerOf(thread.lastComment.nodes[0]) !== me
+const lastCommentField = 'lastComment: comments(last: 1) { nodes { author { login } body } }'
+
 const pad = (number) => String(number).padStart(2, '0')
 const stamp = (moment) => `${moment.getFullYear()}-${pad(moment.getMonth() + 1)}-${pad(moment.getDate())} ${pad(moment.getHours())}:${pad(moment.getMinutes())}`
 
-module.exports = { reviewers, doNotMergeLabel, checksFields, directory, graphql, plainTitle, areaOf, checksOf, readMarks, stamp }
+module.exports = { reviewers, doNotMergeLabel, checksFields, directory, graphql, usage, plainTitle, areaOf, checksOf, readMarks, stamp, threadWaitsOn, lastCommentField, lastSpeakerOf }

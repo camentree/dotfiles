@@ -46,10 +46,11 @@ A ticket is done when every line of its acceptance criteria list holds. A criter
 - Before saying a tool can't do something, read the installed version's `--help` or man page. Memory of an older version, or an agent's report, is not enough: `gh pr edit --attach` uploads images, and was missed that way. When I say a tool can do something, go find how in its help; don't ask me how.
 
 - `curl -X GET` and `curl -X POST`, always explicit, so permission rules can tell reads from writes. Prefer WebFetch for read-only GETs.
+- In a background session, never `cd` into a git repo you aren't working in (`~/.claude/skills` resolves into dotfiles): the shell stays there and every edit is refused until a worktree, even to files outside it. When the same error comes back, stop retrying and find what changed since it last worked.
 - Worktrees: `wk <branch>` creates one under `~/Projects/.<repo>-worktrees/`, `wk rm` removes it and its branch.
 - `gh pr merge --delete-branch` fails from a worktree — it checks out the default branch to clean up, and the primary checkout is holding it. The merge itself still lands; only the cleanup aborts. Merge with `gh pr merge <n> --merge`, then `git push origin --delete <branch>` for the remote and `wk rm` for the local branch and worktree.
 - "difit" means run `/review` (my branch or someone else's pull request), never a bare `npx difit`: the skill prepares the threads and keeps them.
-- difit always binds the local network: `--host 0.0.0.0`, and give me the URL on the machine's LAN address rather than localhost. I review from a different device than the one the session runs on, and the default binding is only reachable from the session's own host.
+- difit binds localhost only: no `--host`, and give me localhost URLs, never a LAN address.
 
 ## Tab title
 

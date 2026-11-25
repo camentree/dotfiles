@@ -18,13 +18,13 @@ Read before writing anything he or a teammate reads: an explanation, a question,
 ## By kind
 
 - **Explanation** (`task.json`): two to four sentences. What the product does today, what changes, for whom.
-- **Question**: the question in one sentence ending in a question mark. A picture when there is one. The options, each with what it costs, the recommendation first. The long explanation and why it could not be decided go behind it, in `--explanation-q` and `--why-q`, never in front.
+- **Question**: the question in one sentence ending in a question mark. When it is about what a user sees or does, a screenshot or recording of that behavior with real values is required (`--picture`, .png or .mp4), since he can't answer one he can't picture (2026-11-25). The options, each with what it costs, the recommendation first. The long explanation and why it could not be decided go behind it, in `--explanation-q` and `--why-q`, never in front.
 - **Decision**: what was chosen, in a few words; then why, in a sentence; then what was rejected. "Copies documents in batches of 100. The job timed out on 4,000 in one transaction. Rejected: one transaction for the whole facility."
 - **Finding**: the behavior in a user's words, the steps with real values, expected against what happened. The code and the fix come last.
 - **Task title**: what changes for a user, as a phrase: "Editable care rate on move-in agreements". No `feat:` or other prefix, no ticket id.
 - **Pull request description**: short bullets for someone scanning. What behavior changed, how it was tested, the proof. No rationale or file names unless a reviewer needs them.
 - **Review comment for a teammate**: a question or a suggestion to a peer, never a verdict. One behavior per comment.
-- **Reply to a reviewer**: `Done in <sha>` and a line on what changed, or the answer in a sentence or two. No thanks, no apology.
+- **Reply to a reviewer**: for a change the reviewer asked for, the commit's full hash alone; for a question, the answer in a sentence or two. No thanks, no apology.
 - **Log message**: a short list, one line per item, each naming the thing in words and what happened to it. Nothing when nothing happened.
 - **Walkthrough thread**: what the change does, then only the context a reader would otherwise ask for.
 

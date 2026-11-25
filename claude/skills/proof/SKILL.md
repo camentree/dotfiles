@@ -44,6 +44,7 @@ walkthrough({ name: 'rename-project', directory: __dirname, baseUrl: 'http://127
 
 - `step(caption)` starts a step. The caption is what Camen reads beside the recording, so it says what a user is doing, not what the code does. Each step ends with a screenshot.
 - Keep a caption to the behavior under test and its values, one line: "Set to $0: it saves as $0.00, not the recommended rate". No test residents' made-up names ("Waiver", "Custom") or setup detail: he found them noise (2026-11-18). Every recording carries its step captions burned into a bar above the picture, never below it, where the player's controls sit; a recording without them (older proofs) gets them from `~/.claude/scripts/annotate-video <walkthrough>.walkthrough.json`, which writes `<name>.annotated.mp4` beside it; the walkthrough helper does not burn them itself, so run it after every recording, and `page.cjs` embeds the annotated file when it exists (he asked that any video say at the top what is going on, 2026-11-18).
+- When the change adds to something that already existed (rows in a modal, pages in a PDF), mark on the screenshot itself which parts were already there and which are new, and say so in the caption and the summary: a teammate's emergency packet proof left him unable to tell the original three items from the flagged tasks (2026-11-24).
 - `goTo`, `click`, `type`, `press` move a visible pointer and type key by key at a person's pace. `click` and `type` take a Playwright locator or a selector.
 - `see(text)` waits for text to be on screen and holds on it. A criterion about something appearing ends in a `see`; if it never appears, the walkthrough fails and the recording shows where.
 - `user.page` is the Playwright page, for waiting, reading, and putting data in place before the first step. Anything Camen should watch happen goes through `user`: a direct `page.click` happens in one frame.
@@ -105,7 +106,7 @@ Working the path out:
 
 Every criterion in scope gets an entry, in the plan's order. The page shows each recording once, above the criteria, however many of them cite it.
 
-For a stack proved on one page, put `"sections": [{ "title": "PR 1 (...)", "criteria": [...] }, ...]` in place of `criteria`: each section gets its heading, the recordings it first cites, and its criteria, numbered on across sections, so one section's media lifts into its own pull request.
+For a stack proved on one page, put `"sections": [{ "title": "PR 1 (...)", "criteria": [...] }, ...]` in place of `criteria`: each section gets its heading, the recordings it first cites, and its criteria, numbered on across sections, so one section's media lifts into its own pull request. Fixes to review comments use one section per commit with `"id": "<sha>"`, so each difit thread links to `index.html#<sha>`.
 
 - `shown`: the evidence on the page shows the criterion holding.
 - `failed`: the evidence shows it not holding, which includes the thing it describes not being there. Leave the recording in; it is the bug report.

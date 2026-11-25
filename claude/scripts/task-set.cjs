@@ -6,14 +6,17 @@ const tasksDirectory = path.join(process.env.HOME, '.claude/tasks')
 const states = ['working', 'blocked', 'ready', 'reviewing', 'done']
 const readies = ['review', 'fixes', 'work', 'none']
 const kinds = ['mine', 'teammate']
+const materialKinds = ['pr', 'difit', 'context', 'proof', 'linear', 'other']
 const videoExtensions = ['.mp4', '.mov', '.webm', '.m4v']
 const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']
 const usage = `usage: node task-set.cjs [--task <repo>/<branch>] [--title "..."] [--kind ${kinds.join('|')}] [--project "..."] [--pull <url>] [--ticket <url>] [--base <branch>]
-  [--state ${states.join('|')}] [--doing "..."] [--session "<name>"] [--session-id <uuid>] [--ready ${readies.join('|')}]
+  [--state ${states.join('|')}] [--doing "..."] [--session "<name>"] [--session-id <uuid>] [--agent-kind fix|address|review|start] [--ready ${readies.join('|')}]
   [--explanation "..."] [--description-file <path>] [--label <label>]...
   [--decision "<title>" --why "..." [--alternative "..."]] [--finding "<title>" --detail "..." [--reproduced]]
   [--proof <file> --caption "..."] [--proof-clear] [--findings-clear] [--decisions-clear]
+  [--context <file> --caption "..."] [--context-clear]
   [--question "<text>" --explanation-q "..." --why-q "..." --option "<label>|<cost>"... [--picture <file>]...] [--question-clear]
+  [--material "<${materialKinds.join('|')}>|<label>|<url>"]... [--material-clear] [--tab-group "<name>"]
   [--review-file <path to json>] [--json]`
 
 const fail = (message) => {
@@ -23,14 +26,14 @@ const fail = (message) => {
 
 const git = (args) => childProcess.execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
 
-const valueFlags = ['--task', '--title', '--kind', '--project', '--pull', '--ticket', '--base', '--state', '--doing', '--session', '--session-id', '--ready', '--explanation', '--description-file', '--label', '--decision', '--why', '--alternative', '--finding', '--detail', '--proof', '--caption', '--question', '--explanation-q', '--why-q', '--option', '--picture', '--review-file']
-const switchFlags = ['--reproduced', '--proof-clear', '--findings-clear', '--decisions-clear', '--question-clear', '--json']
+const valueFlags = ['--task', '--title', '--kind', '--project', '--pull', '--ticket', '--base', '--state', '--doing', '--session', '--session-id', '--agent-kind', '--ready', '--explanation', '--description-file', '--label', '--decision', '--why', '--alternative', '--finding', '--detail', '--proof', '--context', '--caption', '--question', '--explanation-q', '--why-q', '--option', '--picture', '--review-file', '--material', '--tab-group']
+const switchFlags = ['--reproduced', '--proof-clear', '--context-clear', '--findings-clear', '--decisions-clear', '--question-clear', '--material-clear', '--json']
 
 const flags = process.argv.slice(2)
-const options = { labels: [], decisions: [], findings: [], proofs: [], question: null }
+const options = { labels: [], decisions: [], findings: [], proofs: [], contexts: [], materials: [], question: null }
 let lastDecision = null
 let lastFinding = null
-let lastProof = null
+let lastMedia = null
 for (let index = 0; index < flags.length; index += 1) {
   const flag = flags[index]
   if (switchFlags.includes(flag)) {
@@ -44,7 +47,11 @@ for (let index = 0; index < flags.length; index += 1) {
   const value = flags[index + 1]
   index += 1
   if (flag === '--label') options.labels.push(value)
-  else if (flag === '--decision') {
+  else if (flag === '--material') {
+    const [kind, label, ...url] = value.split('|')
+    if (!materialKinds.includes(kind.trim()) || !(label || '').trim() || !/^https?:\/\//.test(url.join('|').trim())) fail(`--material must be "<${materialKinds.join('|')}>|<label>|<http url>", got "${value}"`)
+    options.materials.push({ kind: kind.trim(), label: label.trim(), url: url.join('|').trim() })
+  } else if (flag === '--decision') {
     lastDecision = { title: value, why: null, alternative: null }
     options.decisions.push(lastDecision)
   } else if (flag === '--why' || flag === '--alternative') {
@@ -56,13 +63,13 @@ for (let index = 0; index < flags.length; index += 1) {
   } else if (flag === '--detail') {
     if (!lastFinding) fail('--detail needs a --finding before it')
     lastFinding.detail = value
-  } else if (flag === '--proof') {
+  } else if (flag === '--proof' || flag === '--context') {
     const extension = path.extname(value).toLowerCase()
-    lastProof = { caption: null, file: value, kind: videoExtensions.includes(extension) ? 'video' : imageExtensions.includes(extension) ? 'image' : 'file' }
-    options.proofs.push(lastProof)
+    lastMedia = { caption: null, file: value, kind: videoExtensions.includes(extension) ? 'video' : imageExtensions.includes(extension) ? 'image' : 'file' }
+    options[flag === '--proof' ? 'proofs' : 'contexts'].push(lastMedia)
   } else if (flag === '--caption') {
-    if (!lastProof) fail('--caption needs a --proof before it')
-    lastProof.caption = value
+    if (!lastMedia) fail('--caption needs a --proof or --context before it')
+    lastMedia.caption = value
   } else if (flag === '--question') {
     options.question = { text: value, explanation: null, why: null, options: [], pictures: [], asked: null, answer: null }
   } else if (['--explanation-q', '--why-q', '--option', '--picture'].includes(flag)) {
@@ -126,6 +133,7 @@ try {
     decisions: [],
     findings: [],
     proof: [],
+    context: [],
     question: null,
     description: null,
     labels: [],
@@ -145,24 +153,38 @@ if (options['proof-clear']) task.proof = []
 task.decisions.push(...options.decisions)
 task.findings.push(...options.findings)
 task.proof.push(...options.proofs)
+if (options['context-clear']) task.context = []
+task.context = [...(task.context || []), ...options.contexts]
 if (options['review-file']) task.review = JSON.parse(fs.readFileSync(options['review-file'], 'utf8'))
 if (options['question-clear']) task.question = null
+if (options['material-clear']) task.materials = []
+if (options.materials.length) task.materials = [...(task.materials || []).filter((kept) => !options.materials.some((material) => material.url === kept.url)), ...options.materials]
+if (options['tab-group'] !== undefined) task.tabGroup = options['tab-group']
 
-const agent = task.agent || { session: null, sessionId: null, state: null, doing: null, since: null, heartbeat: null }
-if (options.session) agent.session = options.session
-if (options['session-id']) agent.sessionId = options['session-id']
-if (options.doing) agent.doing = options.doing
-if (options.question) {
-  task.question = { ...options.question, asked: now }
-  options.state = 'blocked'
+const agentFlags = ['state', 'doing', 'ready', 'session', 'session-id', 'agent-kind', 'description-file', 'proof-clear', 'findings-clear', 'decisions-clear', 'question-clear', 'review-file', 'material-clear']
+const agentActivity = agentFlags.some((name) => options[name] !== undefined) || options.decisions.length > 0 || options.findings.length > 0 || options.proofs.length > 0 || options.materials.length > 0 || Boolean(options.question)
+if (agentActivity) {
+  const agent = task.agent || { session: null, sessionId: null, state: null, doing: null, since: null, heartbeat: null }
+  if (options.session) agent.session = options.session
+  if (options['session-id'] && options['session-id'] !== agent.sessionId) delete agent.kind
+  if (options['session-id']) agent.sessionId = options['session-id']
+  if (options['agent-kind']) agent.kind = options['agent-kind']
+  if (options.doing) agent.doing = options.doing
+  if (options.question) {
+    task.question = { ...options.question, asked: now }
+    options.state = 'blocked'
+  }
+  if (options.state && options.state !== agent.state) {
+    agent.state = options.state
+    agent.since = now
+  }
+  agent.heartbeat = now
+  task.agent = agent
+  task.updated = now
+} else {
+  if (task.agent && !task.agent.state && !task.agent.session && !task.agent.sessionId) task.agent = null
+  task.described = now
 }
-if (options.state && options.state !== agent.state) {
-  agent.state = options.state
-  agent.since = now
-}
-agent.heartbeat = now
-task.agent = agent
-task.updated = now
 
 fs.mkdirSync(taskDirectory, { recursive: true })
 const temporaryPath = `${taskPath}.${process.pid}.tmp`

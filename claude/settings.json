@@ -6,18 +6,18 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
-      "Bash(git rebase origin/master)",
-      "Bash(git rebase --continue)",
-      "Bash(git push --force-with-lease *)",
+      "Bash(git push)",
+      "Bash(git push origin *)",
       "Bash(pbcopy)",
       "Bash(pbcopy *)",
       "Bash(git rm *)",
       "Bash(git commit *)",
-      "Bash(git rebase --onto *)",
       "Bash(git checkout * -- *)",
       "Bash(curl -s -X GET http://localhost:*)",
       "Bash(curl -s -X POST http://localhost:*)",
-      "Bash(curl -N -s http://localhost:*)"
+      "Bash(curl -N -s http://localhost:*)",
+      "Bash(gh api -X POST repos/*/pulls/*/reviews --input *)",
+      "Bash(gh api -X POST repos/*/pulls/*/comments/*/replies -f body=*)"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -29,6 +29,11 @@
       "Bash(git push --force)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
+      "Bash(git push --force-with-lease*)",
+      "Bash(git push * --force-with-lease*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f *)",
+      "Bash(git push * +*)",
       "Bash(chmod -R 777 *)",
       "Bash(curl * | sh)",
       "Bash(curl * | bash)",
@@ -39,7 +44,10 @@
     ],
     "defaultMode": "auto",
     "additionalDirectories": [
-      "~/",
+      "~/Projects",
+      "~/.claude",
+      "~/Documents/notes",
+      "~/Library/Logs",
       "/tmp"
     ]
   },

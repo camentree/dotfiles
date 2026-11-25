@@ -17,6 +17,7 @@
     --accent: #5b5bd6;
     --track: #dfdff0;
     --failure: #c4372a;
+    --on-accent: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -31,6 +32,7 @@
       --accent: #8f94f2;
       --track: #2a2c40;
       --failure: #ef8a7b;
+      --on-accent: #14141c;
     }
   }
   * { box-sizing: border-box; }
@@ -40,35 +42,111 @@
   main.wide { max-width: 1180px; }
   button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 6px; cursor: pointer; padding: 0; }
   button:disabled { cursor: default; }
+  button, input, textarea { transition: background-color 0.12s, border-color 0.12s, color 0.12s; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   a { color: inherit; text-decoration: none; }
   a:hover { text-decoration: underline; }
   input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 17px; height: 17px; margin: 3px 0 0; border: 1.5px solid var(--faint); border-radius: 5px; flex-shrink: 0; cursor: pointer; display: grid; place-items: center; }
+  input[type=checkbox]:hover { border-color: var(--text); }
   input[type=checkbox]:checked { background: var(--muted); border-color: var(--muted); }
   input[type=checkbox]:checked::after { content: ""; width: 9px; height: 5px; border-left: 2px solid var(--card); border-bottom: 2px solid var(--card); transform: rotate(-45deg) translateY(-1px); }
 
   .head { display: flex; justify-content: space-between; align-items: flex-start; padding: 32px 0 0; }
   h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
-  .head-buttons { display: flex; gap: 16px; align-items: center; color: var(--muted); font-size: 13px; }
-  .agents-menu { position: relative; }
-  .agents-menu ul { position: absolute; right: 0; top: 24px; z-index: 3; width: 320px; list-style: none; margin: 0; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
-  .agents-menu li button { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding: 6px 8px; text-align: left; color: var(--text); }
-  .agents-menu li button:hover { background: var(--field); }
-  .agents-menu li span { color: var(--muted); }
-  .agents-menu li.none { padding: 6px 8px; }
+  .head-buttons { display: flex; gap: 4px; align-items: center; color: var(--muted); font-size: 13px; margin-right: -8px; }
+  .head-buttons > button, .menu > button { padding: 4px 8px; }
+  .head-buttons > button:hover, .menu > button:hover, .menu > button[aria-expanded=true] { background: var(--card); color: var(--text); }
+  .menu { position: relative; }
+  .menu ul, .questions { position: absolute; right: 0; top: 32px; z-index: 3; width: 320px; list-style: none; margin: 0; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
+  .menu li button { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding: 6px 8px; text-align: left; color: var(--text); }
+  .menu li button:hover { background: var(--field); }
+  .menu li span { color: var(--muted); }
+  .menu li.none { padding: 6px 8px; }
+  .questions { width: min(440px, calc(100vw - 32px)); max-height: 72vh; overflow: auto; padding: 6px; color: var(--text); font-size: 14px; }
+  .questions h3 { margin: 10px 8px 2px; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .questions .empty { margin: 6px 8px; }
+  .ask { padding: 8px; border-radius: 8px; }
+  .questions h3.needs { display: flex; align-items: center; gap: 6px; color: var(--failure); font-weight: 600; }
+  .questions h3.needs::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--failure); }
+  .ask.open { margin: 6px 2px 12px; padding: 10px 12px 12px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--failure); border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06); }
+  .ask.open.sent { border-left-color: var(--accent); }
+  .your-answer { display: inline-block; max-width: 100%; margin: 6px 0 2px; padding: 6px 12px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-size: 14px; }
+  .pressed.waiting { color: var(--muted); }
+  .strip.answer .pressed, .questions .pressed { margin-left: 0; }
+  .answered .ask { padding: 4px 8px; font-size: 12px; }
+  .answered .pressed.seen { margin-top: 0; font-size: 12px; font-weight: 400; color: var(--muted); }
+  .nothing-waiting { margin: 8px 8px 10px; color: var(--muted); }
+  .answered { margin: 4px -6px -6px; padding: 4px 6px 8px; background: var(--page); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+  .ask.past { display: block; width: 100%; text-align: left; padding: 6px 8px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+  .ask.past:hover { background: var(--field); }
+  .ask.past small { display: none; }
+  .ask.past span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+  .ask.past .said-you { color: var(--accent); }
+  .ask.past.expanded small { display: block; margin-bottom: 2px; }
+  .ask.past.expanded span { display: block; }
+  .ask-title { display: block; width: 100%; text-align: left; font-weight: 600; line-height: 1.35; padding: 4px 6px; margin: -4px -6px 4px; }
+  .ask-title:hover { background: var(--field); }
+  .ask small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+  .ask .option, .ask .send { padding-left: 0; }
+  .ask .send { align-items: center; }
+  .ask .line-input { min-height: 34px; padding: 6px 10px; margin-top: 6px; }
+  .questions-button { position: relative; }
+  .questions-button b { position: absolute; top: 2px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
+  #help-button { font-size: 14px; font-weight: 600; }
+  .sync-button { display: inline-grid; place-items: center; width: 30px; height: 26px; }
+  .sync-button svg { width: 16px; height: 16px; }
+  .sync-button.good { color: #2f9e5b; }
+  .sync-button.bad { color: var(--failure); }
+  .sync-button.paused { color: var(--faint); }
+  .sync-button.running svg { animation: spin 1.2s linear infinite; }
+  #sync-list { width: min(400px, calc(100vw - 32px)); }
+  #sync-list ul { position: static; width: auto; list-style: none; margin: 0; padding: 0; border: 0; box-shadow: none; background: transparent; }
+  #sync-list .pressed { margin: 4px 8px; }
+  .sync-now { display: block; width: 100%; text-align: left; padding: 6px 8px; color: var(--text); }
+  .sync-now:hover:not(:disabled) { background: var(--field); }
+  .sync-now:disabled { color: var(--faint); }
+  .sync-row { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; padding: 4px 8px; font-size: 13px; }
+  .sync-row b { font-weight: 500; }
+  .sync-row span { color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+  .sync-row.bad span { color: var(--failure); }
+  .sync-row.move span { color: var(--faint); }
+  .sync-row.paused span { color: var(--faint); }
+  .sync-row small { color: var(--faint); font-size: 12px; }
+  .menu li.heading { padding: 8px 8px 2px; font-size: 12px; color: var(--muted); font-weight: 500; }
+  .menu li.session { display: flex; align-items: center; }
+  .menu li.session button[data-session] { flex: 1; min-width: 0; }
+  .menu li.session em { font-style: normal; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .menu li.session span { flex-shrink: 0; color: var(--accent); }
+  .menu li.session span.finished { color: var(--faint); }
+  .menu li.session span.alarm { color: var(--failure); }
+  .menu li.session span.opened { color: var(--text); font-weight: 600; }
+  .menu li.session small { flex-shrink: 0; margin-left: auto; color: var(--faint); font-size: 11px; }
+  .menu li.finished-group { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 4px; }
+  .menu li .finished-head { display: flex; justify-content: flex-start; align-items: center; gap: 6px; width: 100%; padding: 6px 8px; color: var(--muted); font-size: 12px; font-weight: 500; }
+  .menu li .finished-head span { color: var(--faint); }
+  .finished-head svg { width: 14px; height: 14px; transform: rotate(-90deg); transition: transform 0.2s ease; }
+  .finished-head.open svg { transform: none; }
+  #agents { position: relative; }
+  .robot-dot { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
+  .menu li .to-card { width: 26px; padding: 6px 0; text-align: center; color: var(--muted); }
   .links { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; margin-top: 8px; }
   .links a { color: var(--accent); }
   .bubble a { color: inherit; text-decoration: underline; }
   .head-buttons .bad { font-size: 13px; }
   .bot { display: inline-flex; align-items: center; gap: 5px; }
   .bot svg { width: 15px; height: 15px; flex-shrink: 0; }
-  .ask-button { position: relative; font-size: 16px; font-weight: 600; color: var(--text); padding: 0 6px; }
-  .ask-button b { position: absolute; top: 1px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
 
-  .trackers { display: grid; gap: 6px; margin-top: 14px; width: 298px; }
+  .trackers { display: grid; gap: 6px; margin-top: 14px; width: 324px; max-width: 100%; }
+  .tracker-row { display: grid; grid-template-columns: minmax(0, 298px) 20px; column-gap: 6px; align-items: start; }
+  .tracker-undo { width: 20px; height: 20px; color: var(--muted); line-height: 1; visibility: hidden; }
+  .tracker-row:hover .tracker-undo, .tracker-undo:focus-visible { visibility: visible; }
+  .tracker-undo:hover { background: var(--field); color: var(--text); }
+  @media (hover: none) { .tracker-undo { display: none; } }
   .tracker { display: grid; grid-template-columns: 48px 1fr; align-items: center; column-gap: 10px; font-size: 13px; }
-  .tracker[data-tracker] { cursor: pointer; }
+  .tracker[data-tracker] { cursor: pointer; text-align: left; }
+  .tracker b { line-height: 20px; }
   .tracker i { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
-  .tracker i u { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+  .tracker i u { display: block; height: 100%; border-radius: 3px; background: var(--accent); transition: width 160ms; }
   .tracker span { grid-column: 2; color: var(--muted); font-size: 12px; line-height: 1.3; }
   .tracker b { font-weight: 400; }
   .tracker.due b, .tracker.due span { color: var(--failure); }
@@ -76,9 +154,11 @@
 
   nav { display: flex; gap: 22px; margin-top: 26px; }
   nav button { padding: 4px 0; color: var(--muted); border-radius: 0; border-bottom: 2px solid transparent; }
+  nav button:hover { color: var(--text); }
   nav button.on { color: var(--text); border-bottom-color: var(--text); }
   nav.sub { margin-top: 12px; gap: 6px; flex-wrap: wrap; }
   nav.sub button { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 14px; background: var(--card); }
+  nav.sub button:hover { border-color: var(--muted); }
   nav.sub button.on { border-color: var(--text); font-weight: 600; }
   nav.sub button i { font-style: normal; color: var(--faint); margin-right: 6px; font-weight: 400; }
   nav.sub button b { margin-left: 7px; font-weight: 600; color: var(--text); }
@@ -88,29 +168,129 @@
 
   .task { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
   .task.waits { opacity: 0.5; }
-  .task.done { opacity: 0.5; }
-  .task.done .name a, .task.done .name > span:last-child, .task.done .asks { text-decoration: line-through; }
+  .task.done .name a, .task.done .name > span:last-child, .done-title { color: var(--muted); }
+  .task.compact .title-row { align-items: center; flex-wrap: nowrap; }
+  .task.compact .title-row > input { margin-top: 0; }
+  .task.compact .name { display: flex; align-items: center; gap: 8px; }
+  .done-title { min-width: 0; text-align: left; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .done-title:hover { color: var(--text); }
+  .alarm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--failure); flex-shrink: 0; }
   .task.dragging { opacity: 0.3; }
   .gutter { position: absolute; left: -32px; top: 10px; width: 24px; height: 24px; border-radius: 50%; color: var(--faint); font-size: 18px; line-height: 22px; }
+  .gutter { transition: transform 0.2s ease, background-color 0.12s, color 0.12s; }
   .gutter:hover { color: var(--text); background: var(--card); }
+  .gutter.open { color: var(--accent); transform: rotate(45deg); }
   .face { padding: 12px 14px; }
   .title-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: flex-start; }
   .title-row > input { flex: none; }
   .name { flex: 1 1 300px; min-width: 0; font-weight: 500; }
   .tag { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border: 1px solid var(--faint); border-radius: 4px; color: var(--muted); margin-right: 6px; vertical-align: 2px; font-weight: 400; }
-  .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-items: center; margin-left: auto; }
-  .detail.no-proof { grid-template-columns: 1fr; height: auto; max-height: 240px; }
+  .tag.bot-only { border-style: dashed; font-style: italic; }
+  .actions { display: flex; justify-content: flex-end; gap: 2px; align-items: center; margin-left: auto; }
+  .detail.no-proof { grid-template-columns: minmax(0, 1fr); height: auto; max-height: 240px; }
+  .context { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 8px; }
+  .context-item { display: flex; flex-direction: column; gap: 4px; width: 132px; text-align: left; cursor: zoom-in; }
+  .context-item small { color: var(--muted); font-size: 12px; line-height: 1.3; }
+  .thumb { position: relative; display: block; width: 132px; height: 82px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--field); }
+  .context-item:hover .thumb { border-color: var(--faint); }
+  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .thumb b { position: absolute; inset: 0; display: grid; place-items: center; color: #ffffff; font-size: 14px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
+  .doing { display: flex; gap: 6px; align-items: flex-start; color: var(--accent); font-size: 13px; }
+  .doing.finished { color: var(--muted); }
+  .doing svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; }
+  .strip.answer { display: block; }
+  .strip.answer .asks { display: block; font-size: 15px; margin-bottom: 4px; }
+  .strip.answer .asks small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+  @media (max-width: 760px) { .title-row .name { flex: 1 1 0; } }
+  .pressed { display: flex; align-items: center; gap: 8px; margin: 8px 0 0 27px; font-size: 13px; color: var(--accent); }
+  .answer .pressed, .notices .pressed { margin-left: 0; }
+  .pressed.seen { color: var(--text); font-weight: 600; }
+  .pressed.bad { color: var(--failure); font-weight: 600; }
+  .pressed i { width: 12px; height: 12px; flex-shrink: 0; border: 2px solid var(--track); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .pressed button { padding: 0 6px; color: var(--muted); font-weight: 400; }
+  .pressed button:hover { background: var(--field); color: var(--text); }
+  .pressed .undo { text-decoration: underline; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .notices { margin-bottom: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-size: 13px; display: grid; gap: 8px; }
+  .notices b { font-weight: 500; }
+  .notices .pressed { margin-top: 0; }
+  .small.busy, .small.busy:hover, .small.busy:active { opacity: 0.5; cursor: progress; background: transparent; border-color: var(--line); transform: none; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0 27px; }
   .actions button, .small { font-size: 13px; padding: 2px 9px; border: 1px solid var(--line); }
-  .actions button.main, .small.main { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; }
-  .actions button:disabled { color: var(--faint); cursor: default; }
-  .actions button.bot { border-color: transparent; color: var(--accent); padding-left: 4px; }
-  .actions button.more { border-color: transparent; color: var(--muted); padding: 2px 5px; }
-  .actions button.bot.stopped { color: var(--failure); }
-  .facts { display: grid; grid-template-columns: 104px 58px 62px 142px 74px 66px 1fr; gap: 0 10px; font-size: 13px; color: var(--muted); margin: 4px 0 0 27px; }
+  .actions button:hover, .small:hover, .small.open { background: var(--field); border-color: var(--faint); }
+  .actions button:active, .small:active { transform: translateY(1px); }
+  .small.off, .small.off:hover, .small.off:active { color: var(--faint); background: transparent; border-color: var(--line); border-style: dashed; cursor: not-allowed; transform: none; }
+  .actions button.more { border-color: transparent; color: var(--muted); width: 28px; height: 26px; padding: 0; display: inline-grid; place-items: center; }
+  .actions button.more:hover { border-color: transparent; }
+  .actions button.more:hover, .actions button.more.open { color: var(--text); }
+  .actions button.card-icon { border-color: transparent; color: var(--muted); min-width: 28px; height: 26px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; border-radius: 6px; font-size: 12px; }
+  .actions button.card-icon:hover, .actions button.card-icon.open { color: var(--text); background: var(--field); border-color: transparent; }
+  .card-icon svg { width: 15px; height: 15px; }
+  .card-icon.on-hover { visibility: hidden; }
+  .task:hover .card-icon.on-hover, .task:focus-within .card-icon.on-hover { visibility: visible; }
+  @media (hover: none) { .card-icon.on-hover { visibility: visible; } }
+  .more svg, .stream .line svg { width: 16px; height: 16px; transform: rotate(-90deg); transition: transform 0.2s ease; }
+  .more.open svg, .stream.open .line svg { transform: none; }
+  .comments-menu { position: absolute; z-index: 5; width: 340px; max-width: calc(100vw - 16px); max-height: 60vh; overflow-y: auto; padding: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); font-size: 13px; color: var(--text); }
+  .comment-box { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 4px; }
+  .comment-box textarea { flex: 1; }
+  .comment { padding: 6px 4px; border-top: 1px solid var(--line); }
+  .comment.editing { background: var(--field); }
+  .comment p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .comment small, .comment-none { display: flex; gap: 10px; margin-top: 2px; color: var(--muted); font-size: 12px; }
+  .comment small button { font-size: 12px; color: var(--muted); padding: 0; }
+  .comment small button:first-of-type { margin-left: auto; }
+  .comment small button:hover { color: var(--text); text-decoration: underline; }
+  .comment a { color: inherit; text-decoration: underline; text-decoration-color: var(--faint); }
+  .comment-none { margin: 4px; }
+  .pr-ref { color: inherit; text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 2px; }
+  .pr-ref:hover { text-decoration-color: currentColor; }
+  .pr-tip { position: fixed; z-index: 60; max-width: 380px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--text); font-size: 12px; line-height: 1.45; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); pointer-events: none; }
+  .blocked-why { margin: 8px 0 0 27px; font-size: 13px; color: var(--text); }
+  .blocked-why b { color: var(--failure); font-weight: 600; }
+  .blocked-why a, .blocked-why button { color: var(--text); text-decoration: underline; text-decoration-color: var(--faint); }
+  .blocked-why button { display: inline; padding: 0; font: inherit; text-align: left; }
+  .blocked-why a:hover, .blocked-why button:hover { text-decoration-color: var(--text); }
+  .agent-line { margin: 8px 0 0 27px; font-size: 13px; min-width: 0; }
+  .agent-line .bot { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; color: var(--accent); padding: 0 4px; margin-left: -4px; }
+  .agent-line .bot:hover { background: var(--field); }
+  .agent-line .bot svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .agent-line .bot span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-line .bot.stopped { color: var(--failure); }
+  .agent-line .bot.finished { color: var(--faint); }
+  .agent-line .bot.finished:hover { color: var(--muted); }
+  .facts { display: grid; grid-template-columns: 104px 58px 62px 142px 74px 34px 34px 1fr; gap: 0 10px; font-size: 13px; color: var(--muted); margin: 4px 0 0 27px; }
   .facts span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .facts { align-items: start; }
   .facts .size { height: 20px; }
   .facts > span:last-child { white-space: normal; }
+  .group { margin-bottom: 6px; }
+  .group-head { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 2px; margin: 0 0 6px -2px; font-weight: 600; font-size: 14px; }
+  .group-head:hover { background: var(--card); }
+  .group-head svg { width: 16px; height: 16px; color: var(--muted); transform: rotate(-90deg); transition: transform 0.2s ease; }
+  .group-head.open svg { transform: none; }
+  .group-head b { font-weight: 400; color: var(--muted); }
+  .group-head small { margin-left: 4px; font-weight: 400; font-size: 13px; color: var(--muted); }
+  .start-more { display: block; margin: -2px 0 14px 41px; font-size: 13px; color: var(--muted); }
+  .start-more:hover { color: var(--text); text-decoration: underline; }
+  .ghost { position: relative; margin: 26px 0 14px; max-height: 2000px; transition: opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease; }
+  .ghost-body { pointer-events: none; cursor: default; user-select: none; }
+  .ghost-body .task { margin-bottom: 0; background: transparent; box-shadow: none; border-style: dashed; }
+  .ghost-body *:not(input) { color: var(--faint) !important; border-color: var(--line) !important; background-color: transparent !important; }
+  .ghost-body .u, .ghost-body u { background-color: var(--line) !important; }
+  .ghost-body .gutter { display: none; }
+  .ghost-body input[data-ghost-tick] { pointer-events: auto; cursor: pointer; }
+  .ghost-pill, .ghost-close { position: absolute; top: -11px; z-index: 1; height: 22px; border: 1px solid var(--faint); background: var(--page); color: var(--muted); font-size: 12px; line-height: 20px; }
+  .ghost-pill { left: 18px; max-width: calc(100% - 70px); padding: 0 10px; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  button.ghost-pill:hover { color: var(--text); border-color: var(--muted); }
+  .ghost-pill.gone { cursor: default; border-style: dashed; }
+  .ghost-close { right: -11px; width: 22px; border-radius: 50%; padding: 0; font-size: 14px; }
+  .ghost-close:hover { color: var(--text); border-color: var(--muted); }
+  .ghost.fading { opacity: 0; max-height: 0 !important; margin: 0; }
+  .ghost-more { display: flex; gap: 10px; align-items: center; margin: -4px 0 14px; padding: 6px 14px 6px 41px; border: 1px dashed var(--line); border-radius: 10px; font-size: 13px; color: var(--faint); }
+  .ghost-more button { color: var(--muted); }
+  .ghost-more button:hover { color: var(--text); text-decoration: underline; }
+  .ghost-more button:last-child { margin-left: auto; }
   .past-hours { display: block; margin: 0 0 14px; color: var(--faint); font-size: 13px; }
   .past-hours:hover { color: var(--muted); }
   .hidden-cards { margin-top: 18px; font-size: 13px; color: var(--muted); }
@@ -128,6 +308,9 @@
   .strip { display: flex; gap: 6px; align-items: flex-start; padding: 0 14px 12px 41px; flex-wrap: wrap; }
   textarea, .line-input { flex: 1; width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--field); border: 0; border-radius: 8px; padding: 9px 11px; min-height: 40px; resize: none; }
   .strip .label { font-size: 13px; color: var(--muted); padding: 3px 4px 0 0; }
+  .strip.hours { gap: 4px; }
+  .strip.hours .small { padding: 2px 7px; white-space: nowrap; }
+  .strip.hours .small.now { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 
   .detail { border-top: 1px solid var(--line); padding: 12px 14px 14px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; height: 240px; }
   .proof { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); min-height: 0; }
@@ -139,22 +322,26 @@
   .stepper span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .stepper div { display: flex; gap: 4px; flex-shrink: 0; }
   .stepper button { width: 30px; height: 26px; border: 1px solid var(--line); font-size: 17px; line-height: 1; color: var(--text); }
+  .stepper button:hover:not(:disabled) { background: var(--field); border-color: var(--faint); }
   .stepper button:disabled { color: var(--faint); }
   .side { display: flex; flex-direction: column; min-height: 0; }
   .detail-tabs { display: flex; gap: 16px; font-size: 13px; margin-bottom: 6px; }
   .detail-tabs button { color: var(--muted); }
+  .detail-tabs button:hover { color: var(--text); }
   .detail-tabs button.on { color: var(--text); font-weight: 600; }
   .panel { font-size: 14px; overflow: auto; flex: 1; }
   .panel p { margin: 0 0 8px; }
   .panel dl { margin: 0; }
   .panel dt { font-weight: 500; }
   .panel dd { margin: 0 0 10px; color: var(--muted); }
-  @media (max-width: 760px) { .detail { grid-template-columns: 1fr; height: auto; } .facts { grid-template-columns: repeat(3, auto); } main { padding: 0 16px 96px 44px; } }
+  @media (max-width: 760px) { .detail { grid-template-columns: minmax(0, 1fr); height: auto; } .proof { height: 220px; } .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .facts > span:last-child { grid-column: 1 / -1; } main { padding: 0 16px 96px 44px; } }
 
   .asks { flex: 1; font-size: 16px; font-weight: 600; line-height: 1.35; }
   .answer { border-top: 1px solid var(--line); padding: 12px 14px 14px; }
   .option { display: flex; gap: 10px; padding: 5px 0; font-size: 14px; cursor: pointer; }
   .option small { display: block; color: var(--muted); }
+  .option > span { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  textarea.line-input { min-height: 56px; resize: vertical; }
   .answer .line-input { margin-top: 8px; }
   .send { display: flex; gap: 6px; margin-top: 8px; }
 
@@ -170,9 +357,11 @@
   .slot { margin-left: 64px; min-height: 6px; }
 
   .stream { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; }
-  .stream-head { cursor: pointer; padding: 12px 14px; }
+  .stream-head { cursor: pointer; padding: 12px 14px; border-radius: 9px; transition: background-color 0.12s; }
+  .stream-head:hover { background: var(--field); }
+  .stream.open .stream-head { border-radius: 9px 9px 0 0; }
   .stream .line { display: flex; justify-content: space-between; font-weight: 500; }
-  .stream .line span { color: var(--muted); font-size: 13px; font-weight: 400; }
+  .stream .line span { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 400; }
   .stream .bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; margin: 6px 0 0; }
   .stream .bar u { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
   .stream .tasks { padding: 14px 14px 1px 44px; background: var(--page); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
@@ -185,26 +374,121 @@
   .columns h2 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
   .columns h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 4px; }
   .columns h3 span { color: var(--faint); margin-left: 4px; }
-  .pull { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, auto) 38px 48px; gap: 10px; font-size: 13px; padding: 3px 0; }
-  a.pull:hover { text-decoration: none; }
+  .pull { display: grid; grid-template-columns: 34px minmax(30%, 1fr) auto minmax(0, auto) 38px 48px; gap: 10px; font-size: 13px; padding: 3px 6px; margin: 0 -6px; border-radius: 6px; }
+  a.pull:hover { text-decoration: none; background: var(--field); }
   a.pull:hover .title { text-decoration: underline; }
   .pull .number, .pull .where, .pull .what { color: var(--muted); white-space: nowrap; }
   .pull .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pull .what { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
   .pull .days { text-align: right; color: var(--muted); white-space: nowrap; }
   .pull .days.old { color: var(--failure); }
+  .pull .state, .task .state { align-self: center; font-size: 11px; line-height: 18px; padding: 0 8px; border-radius: 999px; white-space: nowrap; color: var(--hue, var(--muted)); background: color-mix(in srgb, var(--hue, var(--muted)) 9%, transparent); border: 1px solid color-mix(in srgb, var(--hue, var(--muted)) 22%, transparent); }
+  .pull .state:not([data-section]), .task .state:not([data-section]) { background: transparent; border-style: dashed; border-color: var(--line); }
+  .pull .state[data-pill-card]:hover, .task .state[data-pill-card]:hover { cursor: pointer; text-decoration: underline; }
+  .task .state { flex-shrink: 0; margin-left: 8px; }
+  .state[data-section="Questions"] { --hue: #b5544a; }
+  .state[data-section="Merge"] { --hue: #3f8a5a; }
+  .state[data-section="Review"] { --hue: #6a6ac4; }
+  .state[data-section="PRs"] { --hue: #a87a2e; }
+  .state[data-section="Ask"] { --hue: #3c8a8a; }
+  .task .state[data-flow] { margin: 0 8px 0 0; vertical-align: 1px; display: inline-block; border-style: solid; }
+  .state[data-flow="in-progress"] { --hue: #5b5bd6; }
+  .state[data-flow="queued"] { --hue: #3f8a5a; }
+  .state[data-flow="preparing"] { --hue: #a87a2e; }
+  .state[data-flow="blocked"] { --hue: #c4372a; }
+  .state[data-flow="complete"], .state[data-flow="not-started"] { --hue: #74767e; }
+  .task.check-failed { border: 2px solid var(--failure); }
+  .check-failed-why { margin: 8px 0 0 27px; font-size: 13px; color: var(--failure); }
+  .facts .count { display: inline-flex; align-items: center; gap: 4px; }
+  .facts .count svg { width: 13px; height: 13px; }
+  .facts .count.none { color: var(--faint); }
+  .agent-line .status { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; color: var(--accent); }
+  .agent-line .status svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .agent-line .status span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-line .status.stopped { color: var(--failure); }
+  .agent-line .status.finished, .agent-line .status.standing { color: var(--muted); }
+  .strip.block-strip input { flex: 1; }
+  nav.sub.project-tabs { margin: 0 0 12px; }
+  nav.sub.project-tabs button { font-size: 13px; padding: 2px 10px; }
+  nav button .tab-dot { display: inline-block; width: 7px; height: 7px; margin-left: 5px; border-radius: 50%; background: var(--failure); vertical-align: 6px; }
+  .agent-link.ok { font-weight: 600; }
+  .agent-link.bad { color: var(--failure); border-color: var(--failure); font-weight: 600; }
+  .ask .agent-row { display: flex; margin-top: 6px; }
+  .ask-media { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+  .ask-media img, .ask-media video { max-width: 100%; max-height: 140px; border-radius: 6px; border: 1px solid var(--line); background: var(--field); }
+  .ask-media img { cursor: zoom-in; }
 
-  main.log { padding-bottom: 16px; }
-  .chat { display: flex; flex-direction: column; min-height: calc(100vh - 290px); }
-  .bubbles { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
   .bubble { max-width: 72%; padding: 8px 13px; border-radius: 18px; background: var(--card); margin: 4px 0; font-size: 15px; align-self: flex-start; white-space: pre-wrap; }
-  .bubble.me { align-self: flex-end; background: var(--accent); color: #ffffff; }
+  .bubble.me { align-self: flex-end; background: var(--accent); color: var(--on-accent); }
+  .bubble .item { position: relative; padding-left: 14px; }
+  .bubble .item::before { content: "•"; position: absolute; left: 2px; }
+  .bubble div:empty { height: 0.6em; }
   .stamp { font-size: 11px; color: var(--muted); text-align: center; margin: 10px 0 4px; }
-  .compose { display: flex; gap: 8px; margin-top: 12px; position: sticky; bottom: 16px; }
-  .compose input { flex: 1; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; }
-  .compose button { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #ffffff; font-size: 17px; }
 
-  .lightbox { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; cursor: zoom-out; }
+  .chat-button { position: fixed; right: 20px; bottom: 20px; z-index: 4; width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); font-size: 24px; font-weight: 300; line-height: 1; display: grid; place-items: center; }
+  .chat-button:hover { background: var(--field); border-color: var(--faint); }
+  .chat-button:active { transform: scale(0.94); }
+  .chat-button span { transition: transform 0.2s ease; }
+  .chat-button.open span { transform: rotate(45deg); }
+  .chat-button b { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--failure); }
+  .chat-popup { position: fixed; right: 20px; bottom: 76px; z-index: 4; width: min(380px, calc(100vw - 40px)); height: min(560px, calc(100vh - 100px)); display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18); overflow: hidden; transform-origin: bottom right; animation: chat-open 0.16s ease-out; }
+  @keyframes chat-open { from { opacity: 0; transform: scale(0.96) translateY(6px); } }
+  .chat-head { position: relative; padding: 9px 14px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; font-weight: 600; }
+  .chat-head .agent-link { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 3px 5px; border: none; border-radius: 6px; background: none; color: var(--muted); }
+  .chat-head .agent-link:hover { background: var(--field); color: var(--accent); }
+  .chat-head .agent-link.ok { color: var(--accent); }
+  .chat-head .agent-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .chat-head .agent-link i { font-style: normal; }
+  .chat-list { flex: 1; overflow-y: auto; padding: 6px 12px 10px; display: flex; flex-direction: column; }
+  .chat-list > :first-child { margin-top: auto; }
+  .chat-popup .bubble { max-width: 82%; padding: 7px 12px; font-size: 14px; line-height: 1.4; background: var(--field); margin: 3px 0; }
+  .chat-popup .bubble.me { background: var(--accent); }
+  .chat-said { align-self: flex-end; display: flex; align-items: center; gap: 6px; margin: 1px 4px 4px; font-size: 11px; color: var(--accent); }
+  .chat-said.seen { color: var(--muted); }
+  .chat-said.bad { color: var(--failure); font-weight: 600; }
+  .chat-said i { width: 10px; height: 10px; border: 2px solid var(--track); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .chat-said button { padding: 0 5px; color: var(--muted); font-weight: 400; }
+  .chat-said button:hover { background: var(--field); color: var(--text); }
+  .typing { align-self: flex-start; display: flex; gap: 4px; padding: 11px 13px; margin: 3px 0; border-radius: 18px; background: var(--field); }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: typing 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: 0.2s; }
+  .typing i:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: none; } 30% { opacity: 1; transform: translateY(-2px); } }
+  .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 0; border-top: 1px solid var(--line); }
+  .draft-image { position: relative; display: inline-block; }
+  .draft-image img { display: block; height: 56px; max-width: 120px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+  .draft-image button { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); font-size: 12px; line-height: 14px; padding: 0; }
+  .chat-images { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
+  .chat-images img { max-width: 220px; max-height: 160px; border-radius: 8px; cursor: zoom-in; display: block; }
+  .draft-chip, .ref-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 2px 4px 2px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--field); color: var(--text); font-size: 12px; }
+  .draft-chip svg, .ref-chip svg { width: 12px; height: 12px; flex-shrink: 0; color: var(--muted); }
+  .draft-chip span, .ref-chip { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .draft-chip button { width: 18px; height: 18px; color: var(--muted); }
+  .draft-chip button:hover { background: var(--card); color: var(--text); }
+  .ref-chip { padding: 2px 8px; margin-top: 4px; text-align: left; cursor: pointer; }
+  .bubble.me .ref-chip { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.35); color: inherit; }
+  .bubble.me .ref-chip svg { color: inherit; }
+  .chat-compose { display: flex; gap: 8px; align-items: flex-end; padding: 8px 10px 10px; border-top: 1px solid var(--line); }
+  .chat-compose textarea { min-height: 36px; max-height: 120px; padding: 7px 14px; border-radius: 18px; line-height: 1.45; }
+  .chat-compose textarea:focus { outline: none; box-shadow: inset 0 0 0 1px var(--accent); }
+  .chat-compose button { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: 17px; flex-shrink: 0; }
+  .chat-compose button:hover { filter: brightness(1.12); }
+  .chat-compose button:active { transform: scale(0.94); }
+
+  .task.found { animation: found 1.8s ease-out; }
+  @keyframes found { from { box-shadow: 0 0 0 3px var(--accent); } }
+  .modal { position: fixed; inset: 0; z-index: 5; background: rgba(0, 0, 0, 0.55); display: grid; place-items: center; }
+  .help { position: relative; width: min(760px, 94vw); max-height: 88vh; overflow: auto; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 28px 26px; font-size: 14px; }
+  .help h2 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+  .help h3 { margin: 18px 0 4px; font-size: 14px; font-weight: 600; }
+  .help p { margin: 0 0 6px; color: var(--muted); }
+  .help dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 0; }
+  .help dt { font-weight: 500; white-space: nowrap; }
+  .help dd { margin: 0; color: var(--muted); }
+  .help .close { position: absolute; top: 14px; right: 16px; width: 30px; height: 30px; font-size: 20px; line-height: 1; color: var(--muted); }
+  .help .close:hover { background: var(--field); color: var(--text); }
+  @media (max-width: 760px) { .help { padding: 18px 16px 20px; } .help dl { grid-template-columns: 1fr; } .help dd { margin-bottom: 6px; } }
+  .lightbox { position: fixed; inset: 0; z-index: 6; background: rgba(0, 0, 0, 0.7); display: grid; place-items: center; cursor: zoom-out; }
   .lightbox img, .lightbox video { width: min(1000px, 90vw); max-height: 90vh; object-fit: contain; border-radius: 12px; background: var(--card); }
 </style>
 </head>
@@ -213,10 +497,11 @@
   <div class="head">
     <h1 id="date"></h1>
     <div class="head-buttons">
-      <span class="bad" id="offline" hidden>can't reach the server</span>
-      <button id="refresh" title="Read GitHub again now"></button>
-      <span class="agents-menu"><button class="bot" id="agents"></button><ul id="agents-list" hidden></ul></span>
-      <button class="ask-button" id="ask-button" title="Agents have questions for you" hidden>?<b></b></button>
+      <button class="bad" id="offline" title="Click to clear this message" hidden></button>
+      <span class="menu"><button class="sync-button" id="sync"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 6.5A5.5 5.5 0 0 0 3.4 4.6M2.5 9.5a5.5 5.5 0 0 0 10.1 1.9"/><path d="M3.2 1.8v3h3M12.8 14.2v-3h-3"/></svg></button><div class="questions" id="sync-list" hidden></div></span>
+      <span class="menu"><button class="bot" id="agents"></button><ul id="agents-list" hidden></ul></span>
+      <span class="menu"><button class="bot questions-button" id="questions"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h7a2 2 0 0 1 2 2V9a2 2 0 0 1-2 2H7.5l-3 2.5V11a2 2 0 0 1-2-2V4.5a2 2 0 0 1 2-2z"/></svg><b id="questions-dot" hidden></b></button><div class="questions" id="questions-list" hidden></div></span>
+      <button id="help-button" title="How this page works">?</button>
     </div>
   </div>
   <div class="trackers" id="trackers"></div>
@@ -224,30 +509,135 @@
   <nav class="sub" id="sub"></nav>
   <div id="view"></div>
 </main>
+<button class="chat-button" id="chat-button"><span>+</span><b id="chat-dot" hidden></b></button>
+<div class="chat-popup" id="chat-popup" hidden>
+  <div class="chat-head">Assistant<span id="chat-agent"></span></div>
+  <div class="chat-list" id="chat-list"></div>
+  <div class="chat-chips" id="chat-chips" hidden></div>
+  <div class="chat-compose"><textarea id="chat-field" rows="1" placeholder="Message the assistant"></textarea><button id="chat-send" title="Send this to the assistant. Enter sends, Shift+Enter starts a new line">↑</button></div>
+</div>
 <div class="lightbox" id="lightbox" hidden></div>
+<div class="pr-tip" id="pr-tip" hidden></div>
+<div class="comments-menu" id="comments-menu" hidden></div>
+<div class="modal" id="help" hidden>
+  <div class="help">
+    <button class="close" id="help-close" title="Close">×</button>
+    <h2>How this page works</h2>
+    <p>Every piece of work is shown by whose hands it is in. Facts come from GitHub every 2 minutes while the page is open, agents write what they know about their task, and the page saves what you do here: ticks, order, the Day, answers.</p>
 
+    <h3>Status: five sections in the order to work them, then Start</h3>
+    <dl>
+      <dt>1 Questions</dt><dd>An agent, or the assistant itself, asked you a question, or an agent stopped. It does nothing more until you answer. The Status tab carries a red dot while a question here has no answer. Each question has an "agent" button that opens that agent's session in Ghostty.</dd>
+      <dt>2 Merge</dt><dd>Every pull request of yours that GitHub calls approved and where nothing is left for you but the merge, whatever its agent is doing. Ready: mergeable now, the only place merge is enabled. Blocked: waiting on something that is not yours to fix now, with the reason as the card's last line (checks running, waits for #84, do not merge label). A frontend pull request waits for its backend half; the backend half does not wait for it. Then Complete: merged today. In merge order. One approval short of GitHub's decision is not here; it shows "1 approval" where it is. The page never merges by itself.</dd>
+      <dt>3 Review</dt><dd>A teammate's pull request that asks for you by name or for the move-ins team (drafts wait until they are ready for review), one you reviewed, or one an agent is preparing for you. Other teams' requests are left out.</dd>
+      <dt>4 PRs</dt><dd>Every open pull request of yours, drafts included. The ones you are reviewing sit on top with no heading, then Queued (prepared for you), Waiting for Me (drafts, open threads, requested changes), Waiting for Review, Blocked and Complete. Failing checks alone never put one in front of you: they show only as a reason on an approved pull request in Merge → Blocked.</dd>
+      <dt>5 Ask</dt><dd>Your pull requests to ask someone to review now: in each stack the earliest one no teammate has reviewed, plus more in a deep stack so no more than three unreviewed ones wait un-asked. Tick it once you asked.</dd>
+      <dt>6 Start</dt><dd>Tasks nobody has started (no agent, no pull request), grouped by project in the Projects tab's order, each in its project's own order, with its size, the project's due date in the heading, and its start button. The first five of a longer project show, with "and N more" for the rest. Its number is how many there are; nothing here needs you, so it never adds a red dot. Snoozed and dismissed tasks stay out. Dragging here reorders the project, as on the Projects tab.</dd>
+    </dl>
+    <p>The number on a section counts the cards that still need you. Review and Address are split into groups with their own counts; click a group's name to fold it, and the page remembers. Review: In Progress (an agent or your own unsent review is on it, or the author answered your review: pushed, replied in a thread, or asked you again), High Priority (urgent, or asked only of you and waiting over 2 days), Backlog (everything else waiting for your review), then Complete (you reviewed and it is in the author's hands; a card you ticked there comes back unticked when the author answers). Address: In Progress (an agent is on it or its fixes wait for you), Waiting for Me, and Waiting for Review (waiting on a reviewer, nothing for you). Every section ends with a folded Complete group, not counted, holding what is done: answered, merged today, fixes pushed with nothing left for you today, reviewers asked, reviews you submitted. Questions, Merge and Address clear it at midnight; a card comes back out as soon as it needs you again.</p>
+    <p>Cards keep their place: a refresh never reorders a list, a new card goes to the end, and only your drag moves one. The exception is your own pull requests in Address and Merge: they are in merge order (a pull request after the one it sits on or waits for, stacks in stack order, "3/10" on each), which changes only when a dependency does; a drag there holds until it does. When a card leaves a list, a grey copy of it, as it was, stays in its place until you remove it. The pill on its top edge says where it went (Complete, Waiting for Me, merged…): click it to go to the card. The round × removes the copy; ticking its box (the only live thing in it) ticks the real card and removes the copy too. A card that moves again updates its copy, and one that comes back removes it. Past three copies in a group the rest sit behind "and N more moved", with "× all". None for a card you ticked done. Every move is also listed in the sync arrows' history.</p>
+
+    <h3>A card</h3>
+    <dl>
+      <dt>Title</dt><dd>Opens the pull request or ticket. The tags say backend or frontend.</dd>
+      <dt>Robot line</dt><dd>Under the buttons: the agent on this card in a few words (working, reviewing, ready; red when it waits for you or stopped; faint "finished 2h ago" when it is done and nothing runs). Hover for its whole line; the robot at the top right opens the session. With no agent it shows where the card stands. After you press a button the same line shows what happened to the press, then goes back to the agent's status.</dd>
+      <dt>Facts line</dt><dd>Number and the branch it merges into, author, age, size, CI, reviews, then the standing: one phrase for where it stands and for how long.</dd>
+      <dt>Arrow</dt><dd>Points right when the card is closed, down when open. Opens the proof (recordings, screenshots) and the tabs: Explanation (what the agent is doing, the explanation, and pictures taken before any work of where the feature goes or what the bug is; click one to enlarge), the question, the decisions the agent made without asking, and its own review. Every card looks the same closed, wherever it is.</dd>
+      <dt>Tick</dt><dd>Yours only: the card stays where it is but shrinks to its title row, the title in grey (a red dot if something on it still needs you; click the title or the arrow to open the whole card). The section's number stops counting it, and the assistant checks it is really done. If something puts it back in your hands later (the author answered your review, a new review or comment on yours, checks start failing, it became mergeable, an agent asks you something or stops), the tick clears by itself and the card says "unticked: …" and why for a few minutes. On an Ask card it records that you asked the reviewer instead.</dd>
+      <dt>Drag</dt><dd>Drag cards to reorder a list.</dd>
+    </dl>
+
+    <h3>Buttons</h3>
+    <p>A card always shows every button its kind can have, in the same order. A faint dashed one is not available yet: hover it for why. Hover any button for what it does.</p>
+    <p>Any pull request number on the page (#87) is a link. Hover it for its title, whose it is, where it sits on the page, its standing and checks. Click it to go to its card, unfolding the group; when it has no card here it opens on GitHub, and cmd- or ctrl-click always opens GitHub.</p>
+    <p>After a press, a line on the card says what is happening: first that it is going through, then what the server did with it, then a tick once the page has seen it actually happen (the agent is working, the review is open, the pull request merged). If it was delivered but the agent has not reported anything yet, the line says so quietly in grey; if the server gave no answer at all (or none within 30 seconds), it says "no answer from the server, checking…", never presses again for you, and keeps checking whether it happened anyway, and only says so in red when nothing showed up; red means it was refused, failed to deliver, or the agent stopped, and stays until you clear it or what it complained about comes true after all, when it turns into the tick by itself.</p>
+    <dl>
+      <dt>answer</dt><dd>On a card whose agent asked you something: opens the question with its options and a box for your words. Open by default in Questions.</dd>
+      <dt>The row</dt><dd>Every card has queue, review, block, to queue, dismiss (a Merge card has merge first). A button that cannot act yet is dashed, and its tooltip says why. The robot at the card's top right opens its Claude session in Ghostty.</dd>
+      <dt>queue</dt><dd>Starts an agent that prepares what you need to review (addresses comments, fixes CI, or puts the review together); it shows "preparing" and lands in Queued when ready. Off once something is prepared.</dd>
+      <dt>to queue</dt><dd>Moves a card you are reviewing, or a blocked one, back to Queued. No agent is started.</dd>
+      <dt>block</dt><dd>Type in a line what it is blocked on: it moves to Blocked, the reason goes in its comments and to the assistant, which unblocks it when the reason no longer holds.</dd>
+      <dt>Tick</dt><dd>Done: the card stays ticked while the assistant checks. Done for real, it moves to Complete; not done, it comes back unticked with a red border and the reason.</dd>
+      <dt>Pencil and speech bubble</dt><dd>Small icons at the card's top right, beside the arrow. The pencil (with the count once the card has comments) is comment: a private reminder to yourself, never sent to any agent or posted anywhere. Both icons show when you hover the card; the pencil always shows, with a count, once the card has comments. Clicking it opens a dropdown: a box to add one (Enter saves, Shift+Enter starts a new line), then your comments newest first with when you wrote them, edit and remove. An outside click, Escape or a second click closes it. It stays with the card wherever it goes until you remove it, and the pencil's tooltip shows the newest, also on a ticked card. It never moves a card or changes a tick. The speech bubble is message: it opens the chat with this card attached as a chip above the field (press it on more cards to attach several). Type what you want ("complete this") and send; the message carries the card, and the chip in the sent bubble jumps to it. Both stay on a ticked card.</dd>
+      <dt>review</dt><dd>Opens every page prepared for the review in one Safari tab group and moves it to In Progress (the Now tab). On in every Queued card: one with nothing recorded to open asks its agent to open what it prepared instead. Send comments is on the bar above difit.</dd>
+      <dt>merge</dt><dd>Merges and deletes the branch. Asks once more first.</dd>
+      <dt>dismiss</dt><dd>Hides the card for good. Hidden cards are listed under the section to restore.</dd>
+      <dt>start</dt><dd>Starts an agent on a task you added by hand.</dd>
+    </dl>
+
+    <h3>Top of the page</h3>
+    <dl>
+      <dt>Sync arrows</dt><dd>GitHub sync: green when it last synced within 5 minutes, red when later or when the last sync failed (then the page shows what it read last), turning while a sync runs. Click for the history (when, what changed, how long) and "sync now".</dd>
+      <dt>Robot</dt><dd>How many agent sessions are busy right now, with a red dot when one is waiting for you (ready, a question, an approval). Lists the live sessions under the section their card is in, and the finished ones in a folded "Finished" group at the bottom, newest first; pick one to open it in a terminal (the row says "opened ✓" or why not), or → to go to its card.</dd>
+      <dt>Speech bubble</dt><dd>Agents' questions, with a red dot while one is open. Each open question is its own block under "Needs your answer": answer right there (the list stays open for the next one), or click the question to go to its card. After you send, your answer stays in its block with what happened to it, until the agent has actually picked it up; only then it moves down to Answered, the quieter list below, where a click shows the whole question and your answer.</dd>
+      <dt>Day, Water, Stand</dt><dd>Day is how much of 8 am to 6 pm has gone. Each click on Water or Stand adds one and moves its bar one step toward 8 for the day; Option-click, press and hold, or the "−" beside it takes the last one off. Under the bar, when you last marked it; it turns red when that was over an hour ago.</dd>
+    </dl>
+
+    <h3>The other tabs</h3>
+    <dl>
+      <dt>Now</dt><dd>Only what you are reviewing right now: every card you pressed review on and have not queued, blocked or finished.</dd>
+      <dt>Projects</dt><dd>Each project's progress and due date. Open one for its cards, and add a task by hand at the bottom. Each project has its own row of tabs, with counts (faint when empty): All, Not Started (a task with no agent and no pull request), then the Status sections. All shows every card with a pill saying where it stands; click the pill to go to the card on Status. The page remembers the tab you chose per project. Drag to reorder in any tab: in a tab that shows only some cards, the dragged card lands right after the card now above it (or right before the one below, at the top) in the project's one order.</dd>
+      <dt>PRs</dt><dd>Every open pull request in one list: yours, and the ones waiting on others, with stack position and age (red after 4 days).</dd>
+      <dt>+ at the bottom right</dt><dd>The Log: a chat with the assistant, a background session that posts what changed when it starts and every hour, and acts on what you write: says where something stands, adds a task, passes an instruction to an agent, starts work. It never merges, pushes or posts under your name. The robot icon in its header opens the assistant's own session in Ghostty (on the machine running this page), with a ✓ beside it once opened or a red "retry" when it was not. It opens from any tab, with a red dot when the assistant wrote since you last looked. Enter sends, Shift+Enter starts a new line. Under your message it says sending, then delivered, then ✓ once it is in the Log, and dots show until the assistant writes back, for up to two minutes.</dd>
+    </dl>
+
+    <h3>Reviewing</h3>
+    <p>A card's difit link opens difit under a thin bar with one button, "agent", which opens the agent's chat in Ghostty (on the machine running this page). The tab is named after the card. While you review, the agent watches difit and answers each comment you post as it lands: first a line saying what it will do, then the result.</p>
+    <p>To publish a teammate's review, write it in difit: start a comment with <b>post:</b> for each one that should go to GitHub, and leave one verdict comment starting <b>accept:</b>, <b>changes:</b> or <b>comment:</b> followed by the summary: the agent posts the review once it reads the verdict. On your own pull requests the same goes for fixes and replies: say "looks good" (or post:, accept:, changes:, comment:) in difit, and the agent pushes and posts them. If it finds one of your comments factually off, it asks you first: the question shows on the card and in the speech bubble, with options such as posting it revised (the revision in full), posting it as written, or dropping it, and a box for your own wording.</p>
+  </div>
+</div>
+
+<script src="buttons.js"></script>
 <script>
   const robot = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5" width="11" height="8" rx="2"/><path d="M8 5V2.5M6 9v1M10 9v1"/></svg>'
-  const tabs = ['Day', 'Status', 'Projects', 'PRs', 'Log']
-  const buttonOrder = ['merge', 'agent', 'open', 'send', 'publish', 'start', 'note', 'snooze', 'dismiss']
-  const buttonLabels = { open: 'review', send: 'send comments' }
-  const agentKinds = { Review: 'review', Respond: 'address' }
+  const chevron = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>'
+  const tabs = ['Now', 'Status', 'Projects', 'PRs']
+  const greptileIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M10.4 6.3A2.7 2.7 0 1 0 10.7 9H8.4"/></svg>'
+  const teammateIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c.6-2.6 2.6-4 5-4s4.4 1.4 5 4"/></svg>'
+  const flowHelp = { 'not-started': 'Nothing is prepared for you yet: queue has an agent prepare it', preparing: 'An agent is putting the review together; it lands in Queued when ready', queued: 'Prepared for your review: press review', 'in-progress': 'You are reviewing it now', blocked: 'Blocked: the reason is on the card', complete: 'Done' }
+  const flowWords = { 'not-started': 'not started', preparing: 'preparing', queued: 'queued', 'in-progress': 'in progress', blocked: 'blocked', complete: 'complete' }
+  const pencilIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3-8 8H2.5v-3z"/><path d="M9 4l3 3"/></svg>'
+  const buttonOrder = ['answer', 'merge', 'queue', 'review', 'block', 'requeue', 'dismiss']
+  const bubbleIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h7a2 2 0 0 1 2 2V9a2 2 0 0 1-2 2H7.5l-3 2.5V11a2 2 0 0 1-2-2V4.5a2 2 0 0 1 2-2z"/></svg>'
+  const renamedSections = { Answer: 'Questions', Respond: 'PRs', Address: 'PRs', Solicit: 'Ask' }
+  const assistantCard = 'notes/assistant'
   const fixture = new URLSearchParams(location.search).has('fixture')
   const storageKey = 'work-page'
+  const trackerGoal = 8
 
   const main = document.getElementById('main')
   const nav = document.getElementById('nav')
   const sub = document.getElementById('sub')
   const view = document.getElementById('view')
   const lightbox = document.getElementById('lightbox')
-  const askButton = document.getElementById('ask-button')
+  const commentsMenu = document.getElementById('comments-menu')
+  const help = document.getElementById('help')
+  const chatButton = document.getElementById('chat-button')
+  const chatPopup = document.getElementById('chat-popup')
+  const chatList = document.getElementById('chat-list')
+  const chatField = document.getElementById('chat-field')
+  const chatSeenKey = 'work-page-chat-seen'
+  const sectionHelp = { Start: 'Tasks nobody has started, by project, to pick the next one from', Questions: 'An agent or the assistant asked you a question, or an agent stopped', Merge: 'Your pull requests that are approved', Review: "Teammates' pull requests waiting for your review", PRs: 'All your open pull requests, and work an agent built that waits for your look', Ask: 'Your pull requests to ask someone to review now', Queued: 'Prepared for your review: press review to open it' }
 
   let state = null
   let stateText = ''
   let tab = 'Status'
-  let section = 'Answer'
-  let shownLogLength = -1
-  const ui = { open: {}, fields: {}, panel: {}, proofIndex: {}, confirm: {} }
+  let section = 'Questions'
+  const pendingKey = 'work-page-pending'
+  let pending = {}
+  const ui = { open: {}, fields: {}, panel: {}, proofIndex: {}, confirm: {}, commentAt: {}, opened: {} }
+  const chat = { open: false, sent: null, html: '', cards: [], images: [] }
+  const groupsKey = 'work-page-groups'
+  let groupsOpen = {}
+  try { groupsOpen = JSON.parse(localStorage.getItem(groupsKey) || '{}') } catch (error) {}
+  groupsOpen = Object.fromEntries(Object.entries(groupsOpen).map(([key, open]) => {
+    const [name, ...rest] = key.split(':')
+    return [[renamedSections[name] || name, ...rest].join(':').replace(/:Waiting for me$/, ':Waiting for Me'), open]
+  }))
+  const projectTabsKey = 'work-page-project-tabs'
+  let projectTabs = {}
+  try { projectTabs = JSON.parse(localStorage.getItem(projectTabsKey) || '{}') } catch (error) {}
+  let chatSeen = null
 
   const escape = (text) => String(text ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
   const minutesSince = (iso) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))
@@ -265,15 +655,41 @@
     if (minutes >= 60) return `${Math.floor(minutes / 60)}h old`
     return 'new'
   }
-  const hourLabel = (hour) => `${hour % 12 === 0 ? 12 : hour % 12} ${hour < 12 ? 'am' : 'pm'}`
   const clockOf = (date) => date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase()
   const localDate = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-  const currentHour = () => state && state.date === localDate(new Date()) ? new Date().getHours() : null
-  const paragraphs = (text) => text ? String(text).split(/\n\s*\n/).map((paragraph) => `<p>${escape(paragraph)}</p>`).join('') : ''
-  const sectionOf = (id) => (state.sections.find((entry) => entry.cards.includes(id)) || {}).name
+  const pullRefs = (text, id) => {
+    const repository = /^[\w.-]+#\d+$/.test(id || '') ? id.split('#')[0] : 'valinor'
+    return escape(text).replace(/(^|[^&\w])#(\d+)\b/g, (whole, before, number) => `${before}<a class="pr-ref" data-pr="${repository}#${number}" href="https://github.com/augusthealth/${repository}/pull/${number}" target="_blank" rel="noopener">#${number}</a>`)
+  }
+  const linkText = (text, id) => String(text ?? '').split(/(https?:\/\/[^\s<>"'`]*[^\s<>"'`.,;:!?)\]])/).map((piece, index) => index % 2
+    ? `<a href="${escape(piece)}" target="_blank" rel="noopener">${escape(piece)}</a>`
+    : pullRefs(piece, id)).join('')
+  const pullSummary = (id) => {
+    const item = state.cards[id]
+    if (!item) return ''
+    const entry = state.sections.find((candidate) => candidate.cards.includes(id))
+    const group = entry && (entry.groups || []).find((candidate) => candidate.cards.includes(id))
+    const place = entry ? `${entry.name}${group && group.name ? ` → ${group.name}` : ''}` : 'not on the Status tab'
+    const checks = { pass: 'CI pass', fail: 'CI fail', pending: 'CI pending' }[item.checks]
+    return [item.title, item.who === 'you' ? 'yours' : item.who ? `${item.who}'s` : '', place, item.standing, checks].filter(Boolean).join(' · ')
+  }
+  const paragraphs = (text) => text ? String(text).split(/\n\s*\n/).map((paragraph) => `<p>${pullRefs(paragraph)}</p>`).join('') : ''
+  const sectionOf = (id) => {
+    const homes = state.sections.filter((entry) => entry.cards.includes(id))
+    return (homes.find((entry) => !(entry.name === 'Merge' && state.cards[id] && state.cards[id].mergeBlockers) && !(entry.name === 'PRs' && state.cards[id] && state.cards[id].prsCopy)) || homes[0] || {}).name
+  }
   const ticked = (item) => item.reviewer ? Boolean(item.asked) : Boolean(item.checked)
   const unanswered = (item) => item.question && !item.question.answer
-  const countOf = (entry) => entry.cards.filter((id) => state.cards[id] && !ticked(state.cards[id]) && !state.cards[id].waits).length
+  const awaiting = (item) => Boolean(item.question && item.question.answer && !item.question.received)
+  const asking = (item) => Boolean(unanswered(item)) || awaiting(item)
+  const questionMedia = (item) => asking(item) ? (item.question.pictures || []).map((url) => ({ url: url, kind: /\.(mp4|mov|webm|m4v)$/i.test(url) ? 'video' : 'image', caption: 'from the question' })) : []
+  const answering = (item) => {
+    const record = pending[item.id]
+    return Boolean(item.question) && Boolean(record) && record.kind === 'answer' && !record.failed && !(record.late && pressLateBad(record, item)) && !(record.at < Date.parse(item.question.asked))
+  }
+  const openAsk = (item) => Boolean(unanswered(item)) && !answering(item)
+  const addressed = (item) => Boolean(item.question) && !openAsk(item) && !(item.agent && item.agent.state === 'stopped')
+  const countOf = (entry) => (entry.groups ? entry.groups.filter((group) => !['Complete', 'Waiting for Review', 'Blocked'].includes(group.name)).flatMap((group) => group.cards) : entry.cards).filter((id) => state.cards[id] && !ticked(state.cards[id]) && !state.cards[id].waits && !(entry.name === 'PRs' && state.cards[id].prsCopy) && !(entry.name === 'Questions' && addressed(state.cards[id]))).length
   const isOpen = (part, place, id, fallback) => {
     const key = `${part}|${place}|${id}`
     return key in ui.open ? ui.open[key] : fallback
@@ -288,6 +704,7 @@
     const hash = new URLSearchParams(location.hash.slice(1))
     if (tabs.includes(hash.get('tab'))) tab = hash.get('tab')
     if (hash.get('section')) section = hash.get('section')
+    section = renamedSections[section] || section
   }
   const savePlace = () => {
     try { localStorage.setItem(storageKey, JSON.stringify({ tab: tab, section: section })) } catch (error) {}
@@ -328,154 +745,327 @@
   }
 
   const cardPanels = (item) => {
-    const links = (item.links || []).length ? `<div class="links">${item.links.map((link) => `<a href="${escape(link.url)}" target="_blank" rel="noopener">${escape(link.label)}</a>`).join('')}</div>` : ''
-    const panels = { Explanation: `${paragraphs(item.explanation) || '<p>No explanation written yet.</p>'}${links}` }
-    if ((item.decisions || []).length) panels.Decisions = `<dl>${item.decisions.map((decision) => `<dt>${escape(decision.title)}</dt><dd>${escape(decision.why)}${decision.alternative ? ` Alternative: ${escape(decision.alternative)}.` : ''}</dd>`).join('')}</dl>`
+    const linkUrl = (link) => {
+      const address = new URL(link.url, location.href)
+      if (link.label.startsWith('difit')) return `review.html?id=${encodeURIComponent(item.id)}&port=${address.port}`
+      if (address.hostname === 'localhost' || address.hostname === '127.0.0.1') address.hostname = location.hostname
+      return address.href
+    }
+    const shown = new Set()
+    const uniqueLinks = (item.links || []).filter((link) => {
+      const target = linkUrl(link)
+      if (shown.has(target)) return false
+      shown.add(target)
+      return true
+    })
+    const difitLinks = uniqueLinks.filter((link) => link.label.startsWith('difit'))
+    const linkName = (link) => {
+      const index = difitLinks.indexOf(link)
+      if (index < 0) return link.label
+      const own = link.label.replace(/^difit\s*/i, '').trim()
+      const name = own && !/^lan$/i.test(own) ? own : (item.difitLabels || [])[index] || ''
+      return name ? `difit: ${name}` : difitLinks.length > 1 ? `difit ${index + 1} of ${difitLinks.length}` : 'difit'
+    }
+    const hrefOf = (link) => {
+      const name = linkName(link).replace(/^difit:\s*/, '')
+      return difitLinks.includes(link) && linkName(link).startsWith('difit:') ? `${linkUrl(link)}&name=${encodeURIComponent(name)}` : linkUrl(link)
+    }
+    const links = uniqueLinks.length ? `<div class="links">${uniqueLinks.map((link) => `<a href="${escape(hrefOf(link))}" target="_blank" rel="noopener">${escape(linkName(link))}</a>`).join('')}</div>` : ''
+    const agent = item.agent
+    const finished = Boolean(agent) && agentWord(item).startsWith('finished')
+    const doing = agent && agent.doing ? `<p class="doing${finished ? ' finished' : ''}">${robot}<span>${escape(agentWord(item))}${agent.since && !finished ? `, ${ago(agent.since)}` : ''}: ${pullRefs(agent.doing, item.id)}</span></p>` : ''
+    const context = (item.context || []).length ? `<div class="context">${item.context.map((entry, index) => `<button class="context-item" data-action="context" data-index="${index}" title="Enlarge"><span class="thumb">${entry.kind === 'video' ? `<video muted preload="metadata" src="${escape(entry.url)}#t=0.1"></video><b>▶</b>` : `<img src="${escape(entry.url)}" alt="" draggable="false">`}</span><small>${escape(entry.caption)}</small></button>`).join('')}</div>` : ''
+    const panels = { Explanation: `${doing}${paragraphs(item.explanation) || '<p>No explanation written yet.</p>'}${context}${links}` }
+    if (asking(item)) panels.Question = `${paragraphs(item.question.explanation) || '<p>No explanation written yet.</p>'}${item.question.why ? `<p><b>Why you:</b> ${escape(item.question.why)}</p>` : ''}`
+    if ((item.decisions || []).length) panels.Decisions = `<dl>${item.decisions.map((decision) => `<dt>${escape(decision.title)}</dt><dd>${pullRefs(decision.why, item.id)}${decision.alternative ? ` Alternative: ${pullRefs(decision.alternative, item.id)}.` : ''}</dd>`).join('')}</dl>`
     if ((item.findings || []).length) panels['Agent review'] = `<dl>${item.findings.map((finding) => `<dt>${escape(finding.title)}</dt><dd>${finding.reproduced ? 'Reproduced: ' : 'Not reproduced: '}${escape(finding.detail)}</dd>`).join('')}</dl>`
     return panels
   }
 
+  const finishedWhen = (iso) => {
+    if (!iso) return ''
+    const days = Math.floor((new Date(`${localDate(new Date())}T00:00:00`) - new Date(`${localDate(new Date(iso))}T00:00:00`)) / 86400000)
+    return days === 0 ? `${ago(iso)} ago` : days === 1 ? 'yesterday' : `${days} days ago`
+  }
+  const agentWord = (item) => {
+    if (unanswered(item)) return answering(item) ? 'sending your answer' : 'waiting for you'
+    if (awaiting(item)) return 'answer sent'
+    const state = item.agent.state
+    if (state === 'stopped' && /approval/.test(item.agent.doing || '')) return 'needs approval'
+    if (state === 'done') return `finished ${finishedWhen(item.agent.since)}`.trim()
+    return { blocked: 'waiting for you' }[state] || state
+  }
+  const agentKindLabels = { fix: 'fixing CI', address: 'addressing comments', review: 'reviewing', start: 'building' }
+  const agentActivity = (agent) => {
+    const doing = agent.doing || ''
+    const stated = /^(fixing CI|addressing comments|reviewing|building)\s*[:·—-]\s*/i.exec(doing)
+    const starting = /^(fix|address|review|start) starting$/.exec(doing)
+    const label = agentKindLabels[agent.kind] || (stated && stated[1]) || (starting && agentKindLabels[starting[1]]) || ''
+    const prefix = new RegExp(`^${label}(\\s*[:·—-]\\s*|\\s+)`, 'i')
+    return { label, doing: starting ? 'starting' : label ? doing.replace(prefix, '') : doing }
+  }
   const agentStatus = (item) => {
-    if (!item.agent) return ''
-    const agent = item.agent
-    const withoutAddress = (agent.doing || '').replace(/:?\s*https?:\S+/g, '').trim()
-    const doing = withoutAddress.length > 36 ? `${withoutAddress.slice(0, 35)}…` : withoutAddress
-    const needsApproval = agent.state === 'stopped' && /approval/.test(agent.doing || '')
-    const text = needsApproval ? doing
-      : agent.state === 'working' ? `${doing || 'working'}, ${ago(agent.since)}`
-      : agent.state === 'stopped' ? `stopped, ${ago(agent.since)}`
-      : (doing || agent.state)
-    const title = agent.doing ? `${agent.doing}. Open this agent in a terminal` : 'Open this agent in a terminal'
-    return `<button class="bot${agent.state === 'stopped' ? ' stopped' : ''}" data-action="terminal" title="${escape(title)}">${robot}${escape(text)}</button>`
+    if (!item.agent && !asking(item)) return item.standing ? `<p class="agent-line"><span class="status standing" title="${escape(item.standing)}"><span>${pullRefs(item.standing, item.id)}</span></span></p>` : ''
+    const activity = item.agent ? agentActivity(item.agent) : { label: '', doing: '' }
+    const word = item.agent && item.agent.state === 'working' && !asking(item) && activity.label ? activity.label : agentWord(item)
+    const full = activity.doing
+    const clause = full.replace(/https?:\S+/g, '').split(/:|;|\(| - |,/)[0].trim()
+    const short = clause.length > 30 ? `${clause.slice(0, 29).trim()}…` : clause
+    const text = short && short !== word && word !== 'needs approval' ? `${word} · ${short}` : word
+    const since = item.agent && item.agent.since ? `, ${ago(item.agent.since)}` : ''
+    const title = `${word}${since}${full ? `: ${full}` : ''}`
+    const alarm = word === 'stopped' || word === 'needs approval' || word === 'waiting for you'
+    const finished = word.startsWith('finished')
+    return `<p class="agent-line"><span class="status${alarm ? ' stopped' : ''}${finished ? ' finished' : ''}" title="${escape(finished ? `${title}. Nothing is running on this card now` : title)}">${robot}<span>${pullRefs(text, item.id)}</span></span></p>`
   }
 
-  const cardButtons = (item) => buttonOrder.filter((name) => (item.buttons || []).includes(name)).map((name) => {
-    const primary = name === item.primary
-    const disabled = primary && item.waits
-    const label = name === 'merge' && ui.confirm[item.id] ? `merge #${item.id.split('#')[1]}?` : (buttonLabels[name] || name)
-    const behaviour = name === 'agent' || name === 'note' ? 'data-toggle="note"' : name === 'publish' ? 'data-toggle="publish"' : `data-action="${name}"`
-    return `<button class="${primary && !disabled ? 'main' : ''}" ${behaviour} ${disabled ? 'disabled' : ''}>${escape(label)}</button>`
-  }).join('')
+  const cardButtons = (item, place) => {
+    const given = item.buttons || []
+    const drawn = buttonOrder.filter((name) => (name === 'answer' && asking(item)) || (item.possible || []).includes(name) || given.includes(name))
+    const sectionName = sectionOf(item.id)
+    const busy = waitingOn(item.id)
+    return `<div class="buttons">${drawn.map((name) => {
+      const off = name === 'answer' ? '' : buttonOff(name, item, sectionName)
+      const label = name === 'merge' && ui.confirm[item.id] ? `merge #${item.id.split('#')[1]}?` : (buttonLabels[name] || name)
+      const part = name === 'block' || name === 'answer' ? name : null
+      const behaviour = off || busy ? 'aria-disabled="true"' : part ? `data-toggle="${part}"` : `data-action="${name}"`
+      const classes = `small${off ? ' off' : ''}${busy && !off ? ' busy' : ''}${part && !off && isOpen(part, place, item.id, part === 'answer' && place === 'Questions') ? ' open' : ''}`
+      const title = busy && !off ? 'Wait: the last press on this card is still going through' : buttonTitle(name, item, sectionName)
+      return `<button class="${classes}" ${behaviour} title="${escape(title)}">${escape(label)}</button>`
+    }).join('')}</div>`
+  }
+  const commentsMenuHtml = (id) => {
+    const comments = [...((state.cards[id] || {}).comments || [])].reverse()
+    const editing = ui.commentAt[id]
+    const box = `<div class="comment-box"><textarea rows="2" data-field="comment:${escape(id)}" data-enter="comment" placeholder="${editing ? 'Edit your comment' : 'A reminder for yourself · only you see it'}">${escape(ui.fields[`comment:${id}`])}</textarea><button class="small" data-comment-save title="Enter saves, Shift+Enter starts a new line, Escape ${editing ? 'cancels the edit' : 'closes'}">${editing ? 'save edit' : 'add'}</button></div>`
+    const lines = comments.map((comment) => `<div class="comment${editing === comment.at ? ' editing' : ''}"><p>${linkText(comment.text, id)}</p><small>${escape(stampText(new Date(comment.at), null).replace(/^(Today|Yesterday)/, (word) => word.toLowerCase()))}<button data-comment-edit="${escape(comment.at)}" title="Edit this comment">edit</button><button data-comment-remove="${escape(comment.at)}" title="Remove this comment">remove</button></small></div>`).join('')
+    return `${box}${lines || '<p class="comment-none">No comments on this task yet.</p>'}`
+  }
+  const blockedLine = (blockers) => blockers ? `<p class="blocked-why"><b>Blocked:</b> ${blockers.map((blocker) => blocker.card ? `<a class="pr-ref" data-pr="${escape(blocker.card)}" href="https://github.com/augusthealth/${escape(blocker.card.replace('#', '/pull/'))}" target="_blank" rel="noopener">${escape(blocker.text)}</a>` :blocker.url ? `<a href="${escape(blocker.url)}" target="_blank" rel="noopener">${escape(blocker.text)}</a>` : escape(blocker.text)).join(' · ')}</p>` : ''
 
   const facts = (item) => {
     const sizeCell = item.lines != null
       ? `<span class="size"><i><u style="width:${Math.min(100, Math.round(item.lines / 11))}%"></u></i>${item.lines} lines</span>`
       : `<span>${escape(item.size)}</span>`
     const checks = { pass: 'CI pass', fail: 'CI fail', pending: 'CI pending' }[item.checks] || ''
-    const reviews = item.reviews == null ? '' : `${item.reviews} review${item.reviews === 1 ? '' : 's'}`
-    return `<div class="facts"><span>${escape(item.ref)}</span><span>${escape(item.who)}</span><span>${ageOf(item.opened)}</span>${sizeCell}<span class="${item.checks === 'fail' ? 'bad' : ''}">${checks}</span><span>${reviews}</span><span>${escape(item.waits || item.standing)}</span></div>`
+    const count = (icon, number, who) => number == null ? '<span></span>' : `<span class="count${number ? '' : ' none'}" title="${number} ${who} review${number === 1 ? '' : 's'}">${icon}${number}</span>`
+    const approval = item.reviewState && item.reviewState !== 'review required' ? `<span>${escape(item.reviewState)}</span>` : '<span></span>'
+    return `<div class="facts"><span>${pullRefs(item.ref, item.id)}</span><span>${escape(item.who)}</span><span>${ageOf(item.opened)}</span>${sizeCell}<span class="${item.checks === 'fail' ? 'bad' : ''}">${checks}</span>${count(greptileIcon, item.greptileReviews, 'Greptile')}${count(teammateIcon, item.teammateReviews, 'teammate')}${approval}</div>`
   }
 
-  const hourPicker = (item, place) => {
-    const now = currentHour()
-    const hours = state.day.filter((entry) => now === null || entry.hour >= now)
-    return `<div class="strip" data-part="add" ${isOpen('add', place, item.id, false) ? '' : 'hidden'}><span class="label">Add to</span>${hours.map((entry) => `<button class="small" data-action="day-add" data-hour="${entry.hour}">${hourLabel(entry.hour)}${entry.cards.includes(item.id) ? ' ✓' : ''}</button>`).join('')}</div>`
+  const checkbox = (item) => `<input type="checkbox" data-action="tick" ${ticked(item) ? 'checked' : ''} title="${item.reviewer ? `Record that you asked ${escape(item.reviewer)} for a review, and when` : 'Mark it done: the card stays ticked while the assistant checks it is really done, then moves to Complete, or comes back unticked with a red border and the reason'}">`
+
+  const openQuestionIds = () => {
+    const questions = state.sections.find((entry) => entry.name === 'Questions')
+    return questions ? (questions.groups || [{ name: '', cards: questions.cards }]).filter((group) => group.name !== 'Complete').flatMap((group) => group.cards) : []
   }
-
-  const checkbox = (item) => `<input type="checkbox" data-action="tick" ${ticked(item) ? 'checked' : ''} title="${item.reviewer ? `I asked ${escape(item.reviewer)}` : 'Done'}">`
-
-  const questionCard = (item, place) => {
-    const question = item.question
-    const pictures = (question.pictures || []).map((url) => ({ url: url, kind: 'image', caption: '' }))
-    const panels = { Explanation: paragraphs(question.explanation) || '<p>No explanation written yet.</p>', 'Why you': paragraphs(question.why) || '<p>Not given.</p>' }
-    const options = (question.options || []).map((option) => {
+  const agentLinkParts = (id, label) => {
+    const item = state.cards[id]
+    const opened = ui.opened[id]
+    const where = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'this machine' : location.hostname
+    const whose = id === assistantCard ? "the assistant's session" : "this card's agent session"
+    if (id !== assistantCard && !(item && item.agent && (item.agent.session || item.agent.sessionId))) return { off: true, classes: 'small agent-link off', text: label, title: 'Not available now: no agent session is recorded on this card.' }
+    if (opened && opened.state === 'opening') return { off: true, classes: 'small agent-link busy', text: 'opening…', mark: '…', title: 'Opening it in Ghostty' }
+    if (opened && opened.state === 'ok') return { off: false, classes: 'small agent-link ok', text: 'opened ✓', mark: '✓', title: `Opened in Ghostty on ${where}. Click to open another tab` }
+    if (opened && opened.state === 'bad') return { off: false, classes: 'small agent-link bad', text: 'not opened · retry', mark: 'retry', title: `Not opened: ${opened.error}. Click to try again` }
+    return { off: false, classes: 'small agent-link', text: label, mark: '', title: id === assistantCard ? 'Open the assistant in Ghostty' : `Open ${whose} in Ghostty, on ${where}` }
+  }
+  const agentLinkContent = (parts, label) => label === 'icon' ? `${robot}${parts.mark ? `<i>${escape(parts.mark)}</i>` : ''}` : escape(parts.text)
+  const agentLink = (id, label = 'agent') => {
+    const parts = agentLinkParts(id, label)
+    return `<button class="${parts.classes}" data-open-agent="${escape(id)}" data-label="${escape(label)}" ${parts.off ? 'aria-disabled="true"' : ''} title="${escape(parts.title)}">${agentLinkContent(parts, label)}</button>`
+  }
+  const paintAgentLinks = (id) => {
+    document.querySelectorAll('[data-open-agent]').forEach((button) => {
+      if (button.dataset.openAgent !== id) return
+      const parts = agentLinkParts(id, button.dataset.label)
+      button.className = button.classList.contains('card-icon') ? `card-icon${parts.off ? ' off' : ''}` : parts.classes
+      button.innerHTML = agentLinkContent(parts, button.dataset.label)
+      button.title = parts.title
+      if (parts.off) button.setAttribute('aria-disabled', 'true')
+      else button.removeAttribute('aria-disabled')
+    })
+  }
+  const openAgent = async (id) => {
+    ui.opened[id] = { state: 'opening' }
+    paintAgentLinks(id)
+    const reply = await post('/api/terminal', id === assistantCard ? { assistant: true } : { id: id }, true)
+    ui.opened[id] = reply.ok ? { state: 'ok' } : { state: 'bad', error: reply.error || 'the server refused it' }
+    paintAgentLinks(id)
+    if (reply.ok) setTimeout(() => {
+      if (!ui.opened[id] || ui.opened[id].state !== 'ok') return
+      delete ui.opened[id]
+      paintAgentLinks(id)
+    }, 8000)
+  }
+  const answerBlock = (item) => {
+    if (!awaiting(item)) return `${answerFields(item)}${pressLine(item.id)}`
+    const answer = item.question.answer
+    const reply = [(answer.options || []).join(', '), answer.text].filter(Boolean).join('. ')
+    const status = pressLine(item.id) || `<p class="pressed waiting">sent ${clockOf(new Date(answer.at))}, not picked up yet: the agent has not reported in since</p>`
+    return `<p class="your-answer">You: ${escape(reply)} · ${clockOf(new Date(answer.at))}</p>${status}<div class="send">${agentLink(item.id)}</div>`
+  }
+  const answerFields = (item) => {
+    const options = (item.question.options || []).map((option) => {
       const key = `option:${item.id}:${option.label}`
       return `<label class="option"><input type="checkbox" data-field="${escape(key)}" ${ui.fields[key] ? 'checked' : ''}><span>${escape(option.label)}<small>${escape(option.cost)}</small></span></label>`
     }).join('')
     return `
-      <div class="face"><div class="title-row">${checkbox(item)}<div class="asks">${escape(question.text)}</div><div class="actions"><button class="bot" data-action="terminal" title="Open this agent in a terminal">${robot}blocked, ${ago(question.asked)}</button><button class="more" data-toggle="body" title="Proof, explanation and answer">⌄</button></div></div></div>
-      ${hourPicker(item, place)}
-      <div data-part="body" ${isOpen('body', place, item.id, place === 'Answer') ? '' : 'hidden'}>
-        ${detail(item.id, pictures, panels, true)}
-        <div class="answer">
-          ${options}
-          <input class="line-input" type="text" data-field="answer:${escape(item.id)}" data-enter="answer" value="${escape(ui.fields[`answer:${item.id}`])}" placeholder="Answer in your own words, or ask the agent something first">
-          <div class="send"><button class="small main" data-action="answer">send</button></div>
-        </div>
-      </div>`
+      ${options}
+      <textarea class="line-input" rows="2" data-field="answer:${escape(item.id)}" data-enter="answer" placeholder="Your own answer or revision · Enter sends, Shift+Enter new line">${escape(ui.fields[`answer:${item.id}`])}</textarea>
+      <div class="send">${agentLink(item.id)}<button class="small" data-action="answer" data-answer="${escape(item.id)}" title="Send the ticked options and your words to the agent, which carries on">send</button></div>`
   }
 
-  const plainCard = (item, place) => {
-    const title = item.url ? `<a href="${escape(item.url)}" target="_blank" rel="noreferrer">${escape(item.title)}</a>` : `<span>${escape(item.title)}</span>`
-    const publishText = ui.fields[`publish:${item.id}`] ?? item.description ?? ''
+  const cardIcons = (item) => {
+    const comments = item.comments || []
+    const commentTitle = comments.length ? `${comments[comments.length - 1].text.split('\n')[0]} · ${comments.length === 1 ? 'your comment' : `newest of ${comments.length} comments`}, click to see them` : buttonHelp('comment')
+    const session = agentLinkParts(item.id, 'icon')
+    return `<button class="card-icon on-hover" data-action="message" title="${escape(buttonHelp('message'))}">${bubbleIcon}</button><button class="card-icon comment-icon${comments.length ? '' : ' on-hover'}${ui.commentsMenu && ui.commentsMenu.id === item.id ? ' open' : ''}" data-action="comments-menu" title="${escape(commentTitle)}">${pencilIcon}${comments.length ? `<span>${comments.length}</span>` : ''}</button><button class="card-icon${session.off ? ' on-hover off' : ''}" data-open-agent="${escape(item.id)}" data-label="icon" ${session.off ? 'aria-disabled="true"' : ''} title="${escape(session.off ? "No Claude session is recorded on this task yet" : "Open this task's Claude session in Ghostty")}">${robot}</button>`
+  }
+  const compactCard = (item, place) => {
+    const record = pending[item.id]
+    const alarm = openAsk(item) || (item.agent && item.agent.state === 'stopped') || (record && (record.failed || (record.late && pressLateBad(record, item))))
     return `
       <div class="face">
         <div class="title-row">
           ${checkbox(item)}
-          <div class="name">${(item.tags || []).map((tag) => `<span class="tag">${escape(tag)}</span>`).join('')}${title}</div>
-          <div class="actions">${agentStatus(item)}${cardButtons(item)}<button class="more" data-toggle="detail" title="Proof and explanation">⌄</button></div>
+          <div class="name"><button class="done-title" data-action="expand-done" title="${escape(item.title)}. Done: click to open the whole card">${escape(item.title)}</button>${alarm ? '<b class="alarm-dot" title="Something here still needs you: open the card"></b>' : ''}</div>
+          <div class="actions">${cardIcons(item)}<button class="more" data-action="expand-done" title="Open the whole card">${chevron}</button></div>
         </div>
-        ${facts(item)}
-      </div>
-      <div class="strip" data-part="note" ${isOpen('note', place, item.id, false) ? '' : 'hidden'}><textarea rows="1" data-field="note:${escape(item.id)}" placeholder="${(item.buttons || []).includes('note') ? 'Tell this agent something' : 'Anything the agent should know or do differently? Optional'}">${escape(ui.fields[`note:${item.id}`])}</textarea><button class="small main" data-action="agent-start">${(item.buttons || []).includes('note') ? 'send' : 'start'}</button></div>
-      <div class="strip" data-part="publish" ${isOpen('publish', place, item.id, false) ? '' : 'hidden'}><textarea rows="5" data-field="publish:${escape(item.id)}">${escape(publishText)}</textarea><button class="small main" data-action="publish-send">open pull request</button></div>
-      ${hourPicker(item, place)}
-      ${detail(item.id, item.proof || [], cardPanels(item), isOpen('detail', place, item.id, false))}`
+      </div>`
   }
 
-  const card = (id, place, hour) => {
+  const statePill = (item) => item.state ? `<span class="state" data-flow="${escape(item.state)}" title="${escape(flowHelp[item.state] || '')}">${escape(flowWords[item.state] || item.state)}</span>` : ''
+  const titleChips = (item, parts) => [
+    parts.state ? statePill(item) : '',
+    item.project ? `<span class="tag" title="Project">${escape(item.project)}</span>` : '',
+    item.stackOrder ? `<span class="tag" title="Its place in its stack of pull requests">${escape(item.stackOrder)}</span>` : '',
+    ...(item.tags || []).map((tag) => `<span class="tag">${escape(tag)}</span>`)
+  ].join('')
+  const plainCard = (item, place, parts) => {
+    const title = item.url ? `<a href="${escape(item.url)}" target="_blank" rel="noreferrer">${escape(item.title)}</a>` : `<span>${escape(item.title)}</span>`
+    const blockers = place === 'Merge' && item.mergeBlockers ? item.mergeBlockers : item.blockers || (item.block ? [{ text: item.block.reason }] : null)
+    return `
+      <div class="face">
+        <div class="title-row">
+          ${checkbox(item)}
+          <div class="name">${titleChips(item, parts)}${title}</div>
+          <div class="actions">${cardIcons(item)}<button class="more${isOpen('detail', place, item.id, false) ? ' open' : ''}" data-toggle="detail" title="Show or hide the proof, the explanation, the agent's decisions and its review">${chevron}</button></div>
+        </div>
+        ${facts(item)}
+        ${cardButtons(item, place)}
+        ${pending[item.id] && pending[item.id].kind !== 'answer' ? pressLine(item.id) : item.unticked ? `<p class="pressed bad unticked" title="You had ticked this done; it needs you again">unticked: ${escape(item.unticked.why)} ${clockOf(new Date(item.unticked.at))}</p>` : agentStatus(item)}
+        ${item.checkFailed ? `<p class="check-failed-why" title="The assistant checked your tick ${escape(clockOf(new Date(item.checkFailed.at)))}">Not done: ${pullRefs(item.checkFailed.reason, item.id)}</p>` : ''}
+        ${blockedLine(blockers)}
+      </div>
+      ${asking(item) ? `<div class="strip answer" data-part="answer" ${isOpen('answer', place, item.id, place === 'Questions') ? '' : 'hidden'}><div class="asks">${pullRefs(item.question.text, item.id)}<small>asked ${ago(item.question.asked)} ago</small></div>${answerBlock(item)}</div>` : ''}
+      <div class="strip block-strip" data-part="block" ${isOpen('block', place, item.id, false) ? '' : 'hidden'}><input class="line-input" type="text" data-field="block:${escape(item.id)}" data-enter="block" value="${escape(ui.fields[`block:${item.id}`])}" placeholder="What is it blocked on? One line · Enter blocks it"><button class="small" data-action="block-send" title="Move it to Blocked with this reason, add the reason to its comments, and tell the assistant">block</button></div>
+      ${detail(item.id, [...(item.proof || []), ...questionMedia(item)], cardPanels(item), isOpen('detail', place, item.id, false))}`
+  }
+
+  const allParts = { state: true }
+  const card = (id, place, parts = allParts) => {
     const item = state.cards[id]
     if (!item) return ''
-    const gutter = place === 'day'
-      ? '<button class="gutter" data-action="remove" title="Remove from the day">−</button>'
-      : '<button class="gutter" data-toggle="add" title="Add to the day">+</button>'
-    const classes = `task${ticked(item) ? ' done' : ''}${item.waits ? ' waits' : ''}`
+    const compact = ticked(item) && !item.reviewer && !isOpen('detail', place, id, false)
+    const classes = `task${ticked(item) ? ' done' : ''}${compact ? ' compact' : ''}${item.waits && !item.blockers ? ' waits' : ''}${item.checkFailed ? ' check-failed' : ''}`
     return `
-    <div class="${classes}" draggable="true" data-id="${escape(id)}" data-place="${escape(place)}" ${hour != null ? `data-hour="${hour}"` : ''}>
-      ${gutter}
-      ${unanswered(item) ? questionCard(item, place) : plainCard(item, place)}
+    <div class="${classes}" draggable="true" data-id="${escape(id)}" data-place="${escape(place)}">
+      ${compact ? compactCard(item, place) : plainCard(item, place, { ...allParts, ...parts })}
     </div>`
   }
 
-  const statusView = () => {
-    const entry = state.sections.find((candidate) => candidate.name === section) || state.sections[0]
-    const hiddenHere = (state.hidden || []).filter((hiddenCard) => hiddenCard.section === entry.name)
-    const hiddenRows = ui.open['hidden|' + entry.name]
-      ? hiddenHere.map((hiddenCard) => `<div class="hidden-row"><a href="${escape(hiddenCard.url)}" target="_blank" rel="noopener">${escape(hiddenCard.title)}</a><span>${escape(hiddenCard.why)}</span><button class="small" data-action="restore" data-restore="${escape(hiddenCard.id)}" data-why="${escape(hiddenCard.why)}">restore</button></div>`).join('')
-      : ''
-    const hiddenBlock = hiddenHere.length ? `<div class="hidden-cards"><button data-action="show-hidden">${hiddenHere.length} hidden</button>${hiddenRows}</div>` : ''
-    if (!entry.cards.length) return `<p class="empty">Nothing here.</p>${hiddenBlock}`
-    return `<div class="list" data-list="${escape(entry.name)}">${entry.cards.map((id) => card(id, entry.name)).join('')}</div>${hiddenBlock}`
-  }
-
-  const dayView = () => {
-    const now = currentHour()
-    const emptyAndPast = (entry) => now !== null && entry.hour < now && !entry.title && !ui.fields[`hour:${entry.hour}`] && !entry.cards.length && !(entry.meetings || []).length
-    return state.day.map((entry, index) => {
-      if (emptyAndPast(entry) && !ui.open.pastHours) {
-        if (index > 0 && emptyAndPast(state.day[index - 1])) return ''
-        const runEnd = state.day.slice(index).findIndex((later) => !emptyAndPast(later))
-        const last = state.day[(runEnd === -1 ? state.day.length : index + runEnd) - 1]
-        const span = last.hour === entry.hour ? hourLabel(entry.hour) : `${hourLabel(entry.hour)} to ${hourLabel(last.hour)}`
-        return `<button class="past-hours" data-action="past-hours">${span}, nothing planned</button>`
-      }
-      const title = ui.fields[`hour:${entry.hour}`] ?? entry.title ?? ''
+  const startable = (id) => notStarted(id) && !sectionOf(id) && !(state.hidden || []).some((hiddenCard) => hiddenCard.id === id)
+  const startGroups = () => state.projects.map((project) => ({ project: project, cards: project.cards.filter(startable) })).filter((group) => group.cards.length)
+  const startView = () => {
+    const groups = startGroups()
+    if (!groups.length) return '<p class="empty">Nothing waiting to be started.</p>'
+    return groups.map(({ project, cards }) => {
+      const key = `Start:${project.name}`
+      const open = key in groupsOpen ? groupsOpen[key] : true
+      const all = Boolean(ui.open[`start|${project.name}`])
+      const shown = all || cards.length <= 6 ? cards : cards.slice(0, 5)
+      const more = cards.length > 6 ? `<button class="start-more" data-start-more="${escape(project.name)}" title="${all ? 'Show only the first five' : `Show every task of ${escape(project.name)} not started yet`}">${all ? 'show fewer' : `and ${cards.length - shown.length} more`}</button>` : ''
+      const due = project.due ? `<small>due ${new Date(`${project.due}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</small>` : ''
       return `
-      <section class="hour-block${now !== null && entry.hour < now ? ' past' : ''}">
-        <div class="hour${entry.hour === now ? ' now' : ''}"><time>${hourLabel(entry.hour)}</time><div contenteditable="true" spellcheck="false" data-field="hour:${entry.hour}" data-title-hour="${entry.hour}">${escape(title)}</div></div>
-        ${(entry.meetings || []).map((meeting) => `<div class="meeting">${escape(meeting)}</div>`).join('')}
-        <div class="slot list" data-list="day:${entry.hour}">${entry.cards.map((id) => card(id, 'day', entry.hour)).join('')}</div>
+      <section class="group${open ? ' open' : ''}">
+        <button class="group-head${open ? ' open' : ''}" data-group="${escape(key)}" title="${open ? 'Hide' : 'Show'} this project's tasks">${chevron}<span>${escape(project.name)}</span><b>${cards.length}</b>${due}</button>
+        <div class="group-body" ${open ? '' : 'hidden'}><div class="list" data-list="project:${escape(project.name)}" data-filtered="${escape(project.name)}">${shown.map((id) => card(id, 'start', { state: false })).join('')}</div>${more}</div>
       </section>`
     }).join('')
   }
 
+  const statusView = () => {
+    if (section === 'Start') return startView()
+    const entry =state.sections.find((candidate) => candidate.name === section) || state.sections[0]
+    const hiddenHere = (state.hidden || []).filter((hiddenCard) => hiddenCard.section === entry.name)
+    const hiddenRows = ui.open['hidden|' + entry.name]
+      ? hiddenHere.map((hiddenCard) => `<div class="hidden-row"><a href="${escape(hiddenCard.url)}" target="_blank" rel="noopener">${escape(hiddenCard.title)}</a><span>${escape(hiddenCard.why)}</span><button class="small" data-action="restore" data-restore="${escape(hiddenCard.id)}" data-why="${escape(hiddenCard.why)}" title="Bring this card back into the section">restore</button></div>`).join('')
+      : ''
+    const hiddenBlock = hiddenHere.length ? `<div class="hidden-cards"><button data-action="show-hidden" title="List the cards you snoozed or dismissed here">${hiddenHere.length} hidden</button>${hiddenRows}</div>` : ''
+    const groups = entry.groups || [{ name: '', cards: entry.cards }]
+    const listOf = (key, ids) => `<div class="list" data-list="${escape(key)}">${ids.map((id) => card(id, entry.name, { state: false })).join('')}</div>`
+    const nothing = groups.every((group) => !group.cards.length)
+    return `${groups.map((group) => {
+      const key = `${entry.name}:${group.name}`
+      if (!group.name) return group.cards.length ? listOf(key, group.cards) : nothing ? '<p class="empty">Nothing here.</p>' : ''
+      const open = group.cards.length > 0 && (key in groupsOpen ? groupsOpen[key] : !key.endsWith(':Complete') && key !== 'Review:Backlog')
+      return `
+      <section class="group${open ? ' open' : ''}">
+        <button class="group-head${open ? ' open' : ''}" data-group="${escape(key)}" title="${open ? 'Hide' : 'Show'} this group">${chevron}<span>${escape(group.name)}</span>${group.name === 'Complete' ? '' : `<b>${group.cards.length}</b>`}</button>
+        <div class="group-body" ${open ? '' : 'hidden'}>${group.cards.length ? listOf(key, group.cards) : ''}</div>
+      </section>`
+    }).join('')}${hiddenBlock}`
+  }
+
+  const inProgressIds = () => state.sections.flatMap((entry) => entry.cards).filter((id, index, all) => all.indexOf(id) === index && state.cards[id] && state.cards[id].state === 'in-progress')
+  const nowView = () => {
+    const ids = inProgressIds()
+    if (!ids.length) return '<p class="empty">Nothing in progress. Press review on a queued card to start one.</p>'
+    return `<div class="list" data-list="now">${ids.map((id) => card(id, 'now', { state: false })).join('')}</div>`
+  }
+
+  const notStarted = (id) => Boolean(state.cards[id]) && !state.cards[id].agent && !state.cards[id].done && !/#\d+$/.test(id)
+  const projectStatus = (id) => sectionOf(id) || (notStarted(id) ? 'Not Started' : null)
+  const projectPill = (id) => {
+    const item = state.cards[id]
+    const row = [...(state.pulls.you || []), ...(state.pulls.others || [])].flatMap((group) => group.rows).find((candidate) => candidate.id === id)
+    const waiting = notStarted(id) ? 'Not started' : row && row.waiting ? row.waiting : item.agent ? `agent ${agentWord(item)}` : item.standing || 'not on Status'
+    return pillOf({ id: id, waiting: waiting })
+  }
   const projectsView = () => state.projects.map((project) => {
     const due = project.due ? `due ${new Date(`${project.due}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''
     const count = [project.total ? `${project.done} of ${project.total}` : '', due].filter(Boolean).join(' · ')
     const width = project.total ? Math.round(project.done / project.total * 100) : 0
     const key = `task:${project.name}`
+    const tabNames = ['All', 'Not Started', 'Queued', ...state.sections.map((entry) => entry.name)]
+    const cardsOf = (name) => name === 'All' ? project.cards : name === 'Queued' ? project.cards.filter((id) => state.cards[id] && state.cards[id].state === 'queued') : project.cards.filter((id) => projectStatus(id) === name || state.sections.some((entry) => entry.name === name && entry.cards.includes(id)))
+    const chosen = tabNames.includes(projectTabs[project.name]) ? projectTabs[project.name] : 'All'
+    const tabRow = tabNames.map((name) => `<button data-project-tab="${escape(name)}" data-project="${escape(project.name)}" title="${escape(name === 'All' ? 'Every card of this project, each with where it stands' : name === 'Not Started' ? 'Tasks with no agent and no pull request' : `This project's cards in ${name}: ${(sectionHelp[name] || '').toLowerCase()}`)}" class="${cardsOf(name).length ? '' : 'none'}${name === chosen ? ' on' : ''}">${escape(name)}<b>${cardsOf(name).length}</b></button>`).join('')
+    const shown = cardsOf(chosen)
+    const rows = shown.map((id) => chosen === 'All' ? card(id, 'projects').replace('<div class="actions">', `${projectPill(id)}<div class="actions">`) : card(id, 'projects')).join('')
     return `
-    <div class="stream">
-      <div class="stream-head" data-action="project" data-project="${escape(project.name)}"><div class="line">${escape(project.name)} <span>${escape(count)}</span></div><div class="bar"><u style="width:${width}%"></u></div></div>
+    <div class="stream${isOpen('project', 'projects', project.name, false) ? ' open' : ''}">
+      <div class="stream-head" data-action="project" data-project="${escape(project.name)}"><div class="line">${escape(project.name)} <span>${escape(count)}${chevron}</span></div><div class="bar"><u style="width:${width}%"></u></div></div>
       <div class="tasks" ${isOpen('project', 'projects', project.name, false) ? '' : 'hidden'}>
-        <div class="list" data-list="project:${escape(project.name)}">${project.cards.map((id) => card(id, 'projects')).join('')}</div>
+        <nav class="sub project-tabs">${tabRow}</nav>
+        <div class="list" data-list="project:${escape(project.name)}" ${chosen === 'All' ? '' : `data-filtered="${escape(project.name)}"`}>${rows || `<p class="empty">Nothing in ${escape(chosen)}.</p>`}</div>
         <div class="new-task"><input class="line-input" type="text" data-field="${escape(key)}" data-enter="task" data-project="${escape(project.name)}" value="${escape(ui.fields[key])}" placeholder="+ Add a task to ${escape(project.name)}, then press return"></div>
       </div>
     </div>`
   }).join('')
 
+  const pillOf = (row) => {
+    const entry = state.sections.find((candidate) => candidate.name === sectionOf(row.id))
+    if (!entry) return `<span class="state" title="Not on the Status tab: ${escape(row.waiting)}">${escape(row.waiting)}</span>`
+    const group = (entry.groups || []).find((candidate) => candidate.cards.includes(row.id))
+    const groupName = group ? group.name : ''
+    const words = entry.name === 'Ask' ? 'not asked' : groupName ? groupName.toLowerCase() : row.state === 'in-progress' ? 'in progress' : ''
+    const text = words ? `${entry.name} · ${words}` : entry.name
+    return `<span class="state" data-section="${escape(entry.name)}" data-pill-card="${escape(row.id)}" title="Go to this card on the Status tab">${escape(text)}</span>`
+  }
   const pullRow = (row) => {
-    const cells = `<span class="number">${escape(row.number)}</span><span class="title">${escape(row.title)}</span><span class="what">${escape(row.note)}</span><span class="where">${escape(row.stack)}</span><span class="days${row.old ? ' old' : ''}">${escape(row.age)}</span>`
+    const cells = `<span class="number">${escape(row.number)}</span><span class="title" title="${escape(row.title)}">${escape(row.title)}</span>${pillOf(row)}<span class="what" title="${escape(row.note)}">${escape(row.note)}</span><span class="where">${escape(row.stack)}</span><span class="days${row.old ? ' old' : ''}">${escape(row.age)}</span>`
     return row.url ? `<a class="pull" href="${escape(row.url)}" target="_blank" rel="noreferrer">${cells}</a>` : `<div class="pull">${cells}</div>`
   }
   const pullColumn = (heading, groups) => `
@@ -493,23 +1083,39 @@
     const day = localDate(at) === localDate(today) ? 'Today' : localDate(at) === localDate(yesterday) ? 'Yesterday' : at.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     return `${day} ${clockOf(at)}`
   }
-  const logView = () => {
+  const messageHtml = (text) => String(text ?? '').split('\n').map((line) => {
+    const reference = /^re: (.+) \(([^\s()]+)\)$/.exec(line)
+    if (reference) return `<div><button class="ref-chip" data-ref-card="${escape(reference[2])}" title="Go to this card">${bubbleIcon}${escape(reference[1])}</button></div>`
+    const listed = line.startsWith('- ')
+    return `<div${listed ? ' class="item"' : ''}>${linkText(listed ? line.slice(2) : line)}</div>`
+  }).join('')
+  const chatImagesHtml = (urls) => urls.length ? `<span class="chat-images">${urls.map((url) => `<img src="${escape(url)}" alt="pasted image" data-zoom="${escape(url)}" title="Enlarge">`).join('')}</span>` : ''
+  const bubblesHtml = () => {
     let previous = null
-    const bubbles = state.log.map((message) => {
+    return state.log.map((message) => {
       const at = new Date(message.at)
       const stamp = !previous || at - previous >= 10 * 60000 ? `<div class="stamp">${stampText(at, previous)}</div>` : ''
       previous = at
-      const linked = escape(message.text).replace(/#(\d+)/g, (whole, number) => {
-        const known = state.cards[`valinor#${number}`]
-        return known ? `<a href="${escape(known.url)}" target="_blank" rel="noopener" title="${escape(known.title)}">#${number}</a>` : whole
-      })
-      return `${stamp}<div class="bubble${message.from === 'me' ? ' me' : ''}">${linked}</div>`
+      return `${stamp}<div class="bubble${message.from === 'me' ? ' me' : ''}">${chatImagesHtml((message.images || []).map((name) => `/log-images/${encodeURIComponent(name)}`))}${messageHtml(message.text)}</div>`
     }).join('')
-    return `
-    <div class="chat">
-      <div class="bubbles">${bubbles}</div>
-      <div class="compose"><input type="text" data-field="log" data-enter="log" value="${escape(ui.fields.log)}" placeholder="Message the assistant"><button data-action="log" title="Send">↑</button></div>
-    </div>`
+  }
+
+  const questionsView = () => {
+    const answerIds = openQuestionIds()
+    const waiting = [...answerIds, ...Object.keys(state.cards).filter((id) => !answerIds.includes(id) && asking(state.cards[id]))].map((id) => state.cards[id]).filter(Boolean)
+    const askHtml = (item) => asking(item)
+      ? `<div class="ask open${addressed(item) ? ' sent' : ''}"><button class="ask-title" data-goto="${escape(item.id)}" title="Go to this question in Questions, with its explanation and pictures"><small>${escape(item.title)} · asked ${ago(item.question.asked)} ago</small>${pullRefs(item.question.text, item.id)}</button>${questionMedia(item).length ? `<div class="ask-media">${questionMedia(item).map((entry) => entry.kind === 'video' ? `<video controls preload="metadata" src="${escape(entry.url)}"></video>` : `<img src="${escape(entry.url)}" alt="from the question" data-zoom="${escape(entry.url)}" title="Enlarge">`).join('')}</div>` : ''}${answerBlock(item)}</div>`
+      : `<div class="ask open"><button class="ask-title" data-goto="${escape(item.id)}" title="Go to this card in Questions"><small>${pullRefs(item.standing || 'agent stopped', item.id)}</small>${escape(item.title)}</button><div class="agent-row">${agentLink(item.id)}</div></div>`
+    const open = waiting.filter((item) => !addressed(item)).map(askHtml)
+    const settling = waiting.filter(addressed).map(askHtml).join('')
+    const past = (state.answered || []).filter((entry) => !(state.cards[entry.id] && awaiting(state.cards[entry.id]) && state.cards[entry.id].question.answer.at === entry.at)).map((entry) => {
+      const reply = [(entry.options || []).join(', '), entry.text].filter(Boolean).join('. ')
+      const expanded = Boolean(ui.open[`answered|${entry.at}`])
+      return `<button class="ask past${expanded ? ' expanded' : ''}" data-expand="${escape(entry.at)}" title="${expanded ? 'Show less' : 'Show the whole question and answer'}"><small>${escape(entry.title)}</small><span class="said-question">${pullRefs(entry.question, entry.id)}</span><span class="said-you">You: ${escape(reply)} · ${stampText(new Date(entry.at), null)}</span></button>`
+    }).join('')
+    const sent = Object.keys(pending).filter((id) => pending[id].kind === 'answer' && pending[id].seen && !waiting.some((item) => item.id === id)).map((id) => `<div class="ask"><small>${escape(pending[id].title)}</small>${pressLine(id)}</div>`).join('')
+    const top = open.length ? `<h3 class="needs">Needs your answer · ${open.length}</h3>${open.join('')}` : '<p class="nothing-waiting">Nothing waiting for you</p>'
+    return `${top}${settling || past || sent ? `<div class="answered"><h3>Answered</h3>${settling}${sent}${past}</div>` : ''}`
   }
 
   const renderTrackers = () => {
@@ -519,46 +1125,153 @@
     start.setHours(8, 0, 0, 0)
     const share = Math.min(1, Math.max(0, (now - start) / (10 * 3600000)))
     const tracker = (label, name) => {
-      const marks = (state.trackers || {})[name] || []
+      const marks = ((state.trackers || {})[name] || []).filter((mark) => localDate(new Date(mark)) === localDate(now))
       const last = marks.length ? marks.reduce((latest, mark) => new Date(mark) > new Date(latest) ? mark : latest) : null
       const minutes = last ? minutesSince(last) : null
-      const text = minutes === null ? 'no mark yet' : minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m ago` : `${minutes} min ago`
-      const width = minutes === null ? 100 : Math.min(100, Math.round(minutes / 60 * 100))
-      const due = minutes === null || minutes >= 60
-      return `<div class="tracker${due ? ' due' : ''}" data-tracker="${name}" title="Click to mark now"><b>${label}</b><i><u style="width:${width}%"></u></i><span>${text}</span></div>`
+      const sinceStart = Math.floor((now - start) / 60000)
+      const since = minutes === null ? '' : minutes === 0 ? 'just now' : minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ''} ago` : `${minutes}m ago`
+      const width = Math.min(100, marks.length / trackerGoal * 100)
+      const due = (minutes === null ? sinceStart : minutes) > 60
+      return `<div class="tracker-row"><button class="tracker${due ? ' due' : ''}" data-tracker="${name}" title="${marks.length} of ${trackerGoal} today. Click to add one; Option-click, or press and hold, to undo the last"><b>${label}</b><i><u style="width:${width}%"></u></i><span>${since}</span></button><button class="tracker-undo" data-undo-tracker="${name}" title="Undo the last one" ${marks.length ? '' : 'disabled'}>−</button></div>`
     }
-    document.getElementById('trackers').innerHTML = `<div class="tracker"><b>Day</b><i><u style="width:${Math.round(share * 100)}%"></u></i><span>${clockOf(now)}</span></div>${tracker('Water', 'water')}${tracker('Stand', 'stood')}`
+    document.getElementById('trackers').innerHTML = `<div class="tracker-row"><div class="tracker"><b>Day</b><i><u style="width:${Math.round(share * 100)}%"></u></i><span>${clockOf(now)}</span></div></div>${tracker('Water', 'water')}${tracker('Stand', 'stood')}`
+  }
+
+  const chatLanded = () => Boolean(chat.sent) && state.log.some((message) => message.from === 'me' && message.text === chat.sent.text.trim() && Date.parse(message.at) > chat.sent.at - 60000)
+  const chatReplied = () => Boolean(chat.sent) && state.log.some((message) => message.from === 'assistant' && Date.parse(message.at) > chat.sent.at)
+  const chatWaiting = () => Boolean(chat.sent) && Boolean(chat.sent.said) && chat.sent.delivery !== 'assistant off' && !chatReplied() && Date.now() - chat.sent.at < 120000
+
+  const renderChat = () => {
+    if (!state) return
+    const latest = state.log.filter((message) => message.from === 'assistant').reduce((last, message) => message.at > last ? message.at : last, '')
+    if ((chatSeen === null || chat.open) && chatSeen !== latest) {
+      chatSeen = latest
+      try { localStorage.setItem(chatSeenKey, latest) } catch (error) {}
+    }
+    const unread = !chat.open && latest > chatSeen
+    chatButton.classList.toggle('open', chat.open)
+    chatButton.title = chat.open ? 'Close the chat. Escape or a click outside closes it too' : `${unread ? 'The assistant wrote since you last looked. ' : ''}Message the assistant, from any tab`
+    document.getElementById('chat-dot').hidden = !unread
+    const sent = chat.sent
+    let tail = ''
+    if (sent && sent.queued && (state.acked || []).includes(sent.queued)) {
+      sent.queued = null
+      sent.said = 'Delivered'
+    }
+    if (sent && !chatReplied()) {
+      const landed = chatLanded()
+      const said = sent.failed ? `<p class="chat-said bad">Not sent: ${escape(sent.failed)}<button data-chat-clear title="Clear this message">×</button></p>`
+        : !sent.answered ? '<p class="chat-said"><i></i>Sending…</p>'
+        : landed ? `<p class="chat-said seen" title="In the Log">✓ ${escape(sent.said)}</p>`
+        : `<p class="chat-said">${escape(sent.said)}</p>`
+      const typing = chatWaiting() ? '<div class="typing" title="Waiting for the assistant to write back"><i></i><i></i><i></i></div>' : ''
+      tail = `${landed ? '' : `<div class="bubble me">${chatImagesHtml(sent.images || [])}${messageHtml(sent.text)}</div>`}${said}${typing}`
+    }
+    const html = `${bubblesHtml()}${tail}` || '<p class="empty">Nothing in the Log yet.</p>'
+    if (html === chat.html) return
+    const atBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 60
+    chatList.innerHTML = html
+    chat.html = html
+    if (atBottom) chatList.scrollTop = chatList.scrollHeight
+    if (atBottom) chatList.querySelectorAll('.chat-images img').forEach((image) => image.addEventListener('load', () => { chatList.scrollTop = chatList.scrollHeight }, { once: true }))
+  }
+
+  const renderSync = () => {
+    const sync = state.sync || { running: false, lastOk: state.updated, history: [] }
+    const last = sync.history[0]
+    const running = sync.running || (ui.syncPress && !ui.syncPress.answered)
+    const fresh = sync.lastOk && minutesSince(sync.lastOk) <= 5
+    const failed = last && !last.ok
+    const paused = Boolean(sync.pausedUntil) && last && last.paused
+    const button = document.getElementById('sync')
+    button.className = `sync-button${running ? ' running' : ''}${paused ? ' paused' : !fresh || failed ? ' bad' : ' good'}`
+    button.title = running ? 'GitHub sync running…'
+      : paused ? `GitHub sync ${last.error}. Showing what was read at ${sync.lastOk ? clockOf(new Date(sync.lastOk)) : 'no time yet'}. Sync now still tries once`
+      : failed ? `GitHub sync failed at ${clockOf(new Date(last.at))}: ${last.error}. Showing what was read at ${sync.lastOk ? clockOf(new Date(sync.lastOk)) : 'no time yet'}`
+      : sync.lastOk ? `GitHub synced ${ago(sync.lastOk)} ago${fresh ? '' : '. It syncs every 2 minutes, so this is late'}` : 'GitHub has not synced yet'
+    const press = ui.syncPress
+    const pressText = !press ? '' : press.failed ? `<p class="pressed bad">did not sync: ${escape(press.failed)}</p>`
+      : press.seen ? `<p class="pressed seen">✓ synced at ${clockOf(new Date(press.seen.at))} · ${escape(press.seen.change || 'no change')}</p>`
+      : `<p class="pressed"><i></i>${press.answered ? 'the server finished, waiting for the history to show it…' : 'syncing with GitHub…'}</p>`
+    const moveName = (move) => move.id.includes('#') ? `#${move.id.split('#')[1]}` : move.title
+    const entries = [...sync.history.map((entry) => ({ ...entry, kind: 'sync' })), ...(sync.moves || []).map((move) => ({ ...move, kind: 'move' }))].sort((first, second) => second.at.localeCompare(first.at)).slice(0, 60)
+    const rows = entries.map((entry) => entry.kind === 'move'
+      ? `<li class="sync-row move"><b>${clockOf(new Date(entry.at))}</b><span title="${escape(entry.title)}">${pullRefs(moveName(entry), entry.id)} ${pullRefs(entry.text, entry.id)}${entry.from ? ` (from ${escape(entry.from)})` : ''}</span><small></small></li>`
+      : `<li class="sync-row${entry.ok ? '' : entry.paused ? ' paused' : ' bad'}"><b>${clockOf(new Date(entry.at))}</b><span>${entry.ok ? pullRefs(entry.change || 'no change') : entry.paused ? escape(entry.error) : `failed: ${escape(entry.error)}`}</span><small>${entry.seconds}s</small></li>`).join('')
+    const list = document.getElementById('sync-list')
+    list.innerHTML = `<button class="sync-now" data-sync-now title="Read GitHub again now. It also syncs by itself every 2 minutes while this page is open or an agent is working, else every 10, and pauses after GitHub's rate limit"${running ? ' disabled' : ''}>sync now</button>${pressText}<h3>History</h3><ul>${rows || '<li class="sync-row"><span>No syncs recorded yet</span></li>'}</ul>`
   }
 
   const render = () => {
     if (!state) return
+    settlePending()
     document.getElementById('date').textContent = new Date(`${state.date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
     const agents = document.getElementById('agents')
-    agents.innerHTML = `${state.agentsWorking || 0} ${robot}`
-    agents.title = `${state.agentsWorking || 0} agents working`
-    document.getElementById('agents-list').innerHTML = (state.agents || []).map((agent) => `<li><button data-session="${escape(agent.name)}" title="Open in a terminal">${escape(agent.name)}<span>${escape(agent.status)}</span></button></li>`).join('') || '<li class="none">No agent sessions</li>'
-    document.getElementById('refresh').textContent = state.updated ? `updated ${ago(state.updated)} ago` : 'never updated'
-    const answer = state.sections.find((entry) => entry.name === 'Answer')
-    askButton.hidden = !answer || !answer.cards.length
-    renderTrackers()
-    if (!state.sections.some((entry) => entry.name === section)) section = state.sections[0].name
-    nav.innerHTML = tabs.map((name) => `<button data-name="${name}" class="${name === tab ? 'on' : ''}">${name}</button>`).join('')
-    sub.hidden = tab !== 'Status'
-    sub.innerHTML = state.sections.map((entry, index) => `<button data-name="${escape(entry.name)}" class="${countOf(entry) ? '' : 'none'}${entry.name === section ? ' on' : ''}"><i>${index + 1}</i>${escape(entry.name)}<b>${countOf(entry)}</b></button>`).join('')
-    main.classList.toggle('wide', tab === 'PRs')
-    main.classList.toggle('log', tab === 'Log')
-    const views = { Day: dayView, Status: statusView, Projects: projectsView, PRs: pullsView, Log: logView }
-    view.innerHTML = views[tab]()
-    if (tab === 'Log' && state.log.length !== shownLogLength) {
-      shownLogLength = state.log.length
-      window.scrollTo(0, document.body.scrollHeight)
+    const sessionWord = (agent) => {
+      const item = agent.card && state.cards[agent.card]
+      if (item && item.agent) return agentWord(item)
+      if (agent.status === 'needs an approval') return 'needs approval'
+      if (!agent.card) return agent.status === 'busy' ? 'busy' : 'idle'
+      return { blocked: 'waiting for you', done: 'finished', working: 'working' }[agent.state] || agent.status || agent.state || 'unknown'
     }
-    if (tab !== 'Log') shownLogLength = -1
+    const finishedSession = (agent) => sessionWord(agent).startsWith('finished')
+    const finishedAt = (agent) => {
+      const item = agent.card && state.cards[agent.card]
+      return item && item.agent && item.agent.since ? item.agent.since : ''
+    }
+    const sessionRow = (agent, finished) => `<li class="session"><button data-session="${escape(agent.name)}" title="${escape(agent.name)}. Open it in a terminal"><em>${escape(agent.name)}</em>${finished ? `<small>${escape(agent.section || 'Other')}</small>` : ''}<span class="${/^finished|^idle/.test(sessionWord(agent)) ? 'finished' : /^stopped|^needs approval|^waiting for you/.test(sessionWord(agent)) ? 'alarm' : ''}">${escape(finished ? sessionWord(agent).replace(/^finished\s*/, '') : sessionWord(agent))}</span></button>${agent.card && state.cards[agent.card] && agent.section ? `<button class="to-card" data-agent-card="${escape(agent.card)}" title="Go to its card in ${escape(agent.section)}">→</button>` : ''}</li>`
+    const sessions = state.agents || []
+    const live = sessions.filter((agent) => !finishedSession(agent))
+    const finished = sessions.filter(finishedSession).sort((first, second) => finishedAt(second).localeCompare(finishedAt(first)))
+    const waitingSessions = live.filter((agent) => /^ready|^waiting for you|^needs approval/.test(sessionWord(agent))).length
+    agents.innerHTML = `${state.agentsWorking || 0} ${robot}${waitingSessions ? '<b class="robot-dot"></b>' : ''}`
+    agents.title = `${state.agentsWorking || 0} working · ${waitingSessions} waiting for you. Lists the agent sessions by the section their card is in; pick one to open it in a terminal`
+    const sessionGroups = [...state.sections.map((entry) => ({ name: entry.name, sessions: live.filter((agent) => agent.section === entry.name).sort((first, second) => entry.cards.indexOf(first.card) - entry.cards.indexOf(second.card)) })), { name: 'Other', sessions: live.filter((agent) => !agent.section) }].filter((group) => group.sessions.length)
+    const finishedOpen = Boolean(groupsOpen['agents:finished'])
+    const liveRows = `${live.some((agent) => agent.card) ? '' : '<li class="none">No agents working</li>'}${sessionGroups.map((group) => `<li class="heading">${escape(group.name)} <span>${group.sessions.length}</span></li>${group.sessions.map((agent) => sessionRow(agent, false)).join('')}`).join('')}`
+    const finishedRows = finished.length ? `<li class="finished-group"><button class="finished-head${finishedOpen ? ' open' : ''}" data-finished-toggle title="${finishedOpen ? 'Hide' : 'Show'} the finished sessions">${chevron}Finished <span>${finished.length}</span></button></li>${finishedOpen ? finished.map((agent) => sessionRow(agent, true)).join('') : ''}` : ''
+    document.getElementById('agents-list').innerHTML = `${liveRows}${finishedRows}`
+    renderSync()
+    const answerOpen = openQuestionIds()
+    const waiting = [...answerOpen, ...Object.keys(state.cards).filter((id) => !answerOpen.includes(id) && asking(state.cards[id]))].filter((id) => state.cards[id] && !addressed(state.cards[id])).length
+    document.getElementById('questions-dot').hidden = !waiting
+    document.getElementById('questions').title = waiting ? `${waiting} waiting for your answer. Answer here, or see your past answers` : 'No agent is waiting on you. Shows your past answers'
+    if (!document.getElementById('questions-list').contains(document.activeElement)) document.getElementById('questions-list').innerHTML = questionsView()
+    renderTrackers()
+    if (section !== 'Start' && !state.sections.some((entry) => entry.name === section)) section = state.sections[0].name
+    const unansweredQuestions = answerOpen.filter((id) => state.cards[id] && openAsk(state.cards[id])).length
+    nav.innerHTML = tabs.map((name) => `<button data-name="${name}" class="${name === tab ? 'on' : ''}"${name === 'Status' && unansweredQuestions ? ` title="${unansweredQuestions === 1 ? 'A question in Questions has' : `${unansweredQuestions} questions in Questions have`} no answer yet"` : ''}>${name}${name === 'Status' && unansweredQuestions ? '<b class="tab-dot"></b>' : ''}</button>`).join('')
+    document.getElementById('chat-agent').innerHTML = agentLink(assistantCard, 'icon')
+    sub.hidden = tab !== 'Status'
+    const subTabs = [...state.sections.map((entry) => ({ name: entry.name, count: countOf(entry) })), { name: 'Start', count: startGroups().reduce((total, group) => total + group.cards.length, 0) }]
+    sub.innerHTML = subTabs.map((entry, index) => `<button data-name="${escape(entry.name)}" title="${escape(sectionHelp[entry.name] || '')}" class="${entry.count ? '' : 'none'}${entry.name === section ? ' on' : ''}"><i>${index + 1}</i>${escape(entry.name)}<b>${entry.count}</b></button>`).join('')
+    main.classList.toggle('wide', tab === 'PRs')
+    const views = { Now: nowView, Status: statusView, Projects: projectsView, PRs: pullsView }
+    view.innerHTML = views[tab]()
+    const elsewhere = Object.keys(pending).filter((id) => !view.querySelector(`.task[data-id="${CSS.escape(id)}"]`))
+    if (elsewhere.length) view.insertAdjacentHTML('afterbegin', `<div class="notices">${elsewhere.map((id) => `<div><b>${escape(pending[id].title)}</b>${pressLine(id)}</div>`).join('')}</div>`)
+    renderChat()
+    renderCommentsMenu(false)
+  }
+  const renderCommentsMenu = (force) => {
+    const anchor = ui.commentsMenu && state.cards[ui.commentsMenu.id] && view.querySelector(`.task[data-id="${CSS.escape(ui.commentsMenu.id)}"][data-place="${CSS.escape(ui.commentsMenu.place)}"] [data-action="comments-menu"]`)
+    if (!anchor) {
+      ui.commentsMenu = null
+      commentsMenu.hidden = true
+      return
+    }
+    const typing = commentsMenu.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA' && commentsMenu.dataset.id === ui.commentsMenu.id
+    if (force || !typing) commentsMenu.innerHTML = commentsMenuHtml(ui.commentsMenu.id)
+    commentsMenu.dataset.id = ui.commentsMenu.id
+    commentsMenu.hidden = false
+    const box = anchor.getBoundingClientRect()
+    commentsMenu.style.top = `${box.bottom + window.scrollY + 6}px`
+    commentsMenu.style.left = `${Math.max(8, box.right + window.scrollX - commentsMenu.offsetWidth)}px`
   }
 
   const fieldFocused = () => {
     const element = document.activeElement
-    return Boolean(element && (element.matches('input[type=text], textarea') || element.isContentEditable))
+    return Boolean(element && element !== chatField && (element.matches('input[type=text], textarea') || element.isContentEditable))
   }
   const videoPlaying = () => [...document.querySelectorAll('video')].some((video) => !video.paused && !video.ended)
 
@@ -582,8 +1295,10 @@
       const response = await fetch(fixture ? 'fixture.json' : '/api/state', { cache: 'no-store' })
       if (!response.ok) throw new Error(`state answered ${response.status}`)
       text = await response.text()
-      document.getElementById('offline').hidden = true
+      document.getElementById('offline').textContent = ui.problem || ''
+      document.getElementById('offline').hidden = !ui.problem
     } catch (error) {
+      document.getElementById('offline').textContent = "can't reach the server"
       document.getElementById('offline').hidden = false
       return
     }
@@ -594,24 +1309,119 @@
     redrawKeepingFocus()
   }
 
-  const post = async (path, body) => {
+  const post = async (path, body, quiet, patience) => {
+    let reply = { ok: true }
     if (fixture) {
       console.log('fixture, not sent', path, JSON.stringify(body))
     } else {
       try {
-        await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: patience ? AbortSignal.timeout(patience) : undefined })
+        reply = await response.json()
       } catch (error) {
-        document.getElementById('offline').hidden = false
+        reply = { ok: false, error: "can't reach the server", unreachable: true }
       }
     }
+    if (!quiet) {
+      ui.problem = reply.ok ? '' : `That did not go through: ${reply.error || reply.output || 'the server refused it'}`
+      document.getElementById('offline').textContent = ui.problem
+      document.getElementById('offline').hidden = reply.ok
+    }
     await fetchState(true)
+    return reply
   }
 
-  const enlarge = (cardElement) => {
+  const waitingOn = (id) => Boolean(pending[id]) && !pending[id].failed && !pending[id].seen && !pending[id].late
+  const savePending = () => {
+    try { localStorage.setItem(pendingKey, JSON.stringify(pending)) } catch (error) {}
+  }
+  const settlePending = () => {
+    if (!state) return false
+    let changed = false
+    Object.keys(pending).forEach((id) => {
+      const record = pending[id]
+      if (record.seen && Date.now() - record.seenAt > 15000) {
+        delete pending[id]
+        changed = true
+        return
+      }
+      if (record.seen || !record.answered || record.kind === 'day') return
+      if (record.queued && !record.acked && (state.acked || []).includes(record.queued)) {
+        record.acked = true
+        record.said = pressSaid(record.kind, { delivery: /^relayed/.test(record.delivery || '') ? 'relayed through the assistant' : 'delivered' })
+        changed = true
+      }
+      if (record.kind === 'answer' && (record.noAnswer || record.failed) && state.cards[id] && !unanswered(state.cards[id])) {
+        record.noAnswer = false
+        record.failed = null
+        record.said = pressSaid('answer', { delivery: 'delivered' })
+        changed = true
+      }
+      const seen = pressSeen(record, state.cards[id], sectionOf(id), (state.hidden || []).some((hiddenCard) => hiddenCard.id === id))
+      if (record.failed && !seen) return
+      if (seen) {
+        record.seen = seen
+        record.seenAt = Date.now()
+        record.late = false
+        record.failed = null
+        changed = true
+      } else if (record.late && !pressLateBad(record, state.cards[id]) && Date.now() - record.lateAt > 120000) {
+        delete pending[id]
+        changed = true
+      } else if (!record.late && Date.now() - record.at > pressLimit(record)) {
+        record.late = true
+        record.lateAt = Date.now()
+        changed = true
+      }
+    })
+    if (changed) savePending()
+    return changed
+  }
+  const press = async (id, kind, path, body) => {
+    if (waitingOn(id)) return
+    const item = state.cards[id] || {}
+    const agent = item.agent || {}
+    pending[id] = { kind: kind, at: Date.now(), title: item.title || '', section: sectionOf(id) || null, doing: agent.doing || null, already: kind === 'open' && agent.state === 'reviewing' }
+    savePending()
+    render()
+    const reply = await post(path, body, true, 30000)
+    if (!pending[id]) return
+    pending[id].answered = true
+    const answerRecorded = kind === 'answer' && !reply.ok && !reply.unreachable && Boolean(state.cards[id]) && !unanswered(state.cards[id])
+    if (reply.ok || reply.unreachable) pending[id].said = pressSaid(kind, reply)
+    else if (answerRecorded) pending[id].said = pressSaid(kind, { delivery: 'delivered' })
+    else pending[id].failed = reply.error || 'the server refused it'
+    if (reply.queued) {
+      pending[id].queued = reply.queued
+      pending[id].delivery = reply.delivery
+    }
+    if (reply.unreachable) pending[id].noAnswer = true
+    savePending()
+    settlePending()
+    redrawKeepingFocus()
+  }
+  const tell = (id, text) => {
+    if (!waitingOn(id)) pending[id] ={ kind: 'day', at: Date.now(), title: (state.cards[id] || {}).title || '', seen: text, seenAt: Date.now() }
+    savePending()
+    render()
+  }
+  const pressLine = (id) => {
+    const record = pending[id]
+    if (!record) return ''
+    const item = state.cards[id]
+    const clear = `<button data-clear="${escape(id)}" title="Clear this message">×</button>`
+    const retry = record.kind === 'answer' && item && unanswered(item) ? `<button class="undo" data-action="answer" data-answer="${escape(id)}" title="Send your answer again">retry</button>` : ''
+    if (record.failed) return `<p class="pressed bad">${escape(buttonLabels[record.kind] || record.kind)} did not go through: ${escape(record.failed)}${retry}${clear}</p>`
+    if (record.seen) return `<p class="pressed seen">✓ ${escape(record.seen)}${record.kind === 'dismiss' ? `<button class="undo" data-undo="${escape(id)}" title="Bring the card back">undo</button>` : ''}</p>`
+    if (record.late) return `<p class="pressed ${pressLateBad(record, item) ? 'bad' : 'waiting'}">${escape(pressLate(record, item).replace(/ · retry$/, retry ? '' : ' · retry'))}${pressLateBad(record, item) ? retry : ''}${clear}</p>`
+    const telling = record.said && item && item.agent && item.agent.doing && record.kind === 'open' ?` Agent: ${item.agent.doing}` : ''
+    return `<p class="pressed${record.kind === 'answer' ? ' waiting' : ''}"><i></i>${escape(record.said || pressStart[record.kind])}${escape(telling)}</p>`
+  }
+
+  const enlarge = (cardElement, contextIndex) => {
     const id = cardElement.dataset.id
     const item = state.cards[id]
-    const proof = unanswered(item) ? (item.question.pictures || []).map((url) => ({ url: url, kind: 'image' })) : (item.proof || [])
-    const entry = proof[Math.min(ui.proofIndex[id] || 0, proof.length - 1)]
+    const proof = [...(item.proof || []), ...questionMedia(item)]
+    const entry = contextIndex != null ? (item.context || [])[contextIndex] : proof[Math.min(ui.proofIndex[id] || 0, proof.length - 1)]
     if (!entry) return
     cardElement.querySelectorAll('.detail video').forEach((video) => video.pause())
     lightbox.innerHTML = entry.kind === 'video' ? `<video controls autoplay src="${escape(entry.url)}"></video>` : `<img src="${escape(entry.url)}" alt="${escape(entry.caption)}">`
@@ -626,7 +1436,7 @@
     tab = name
     savePlace()
     render()
-    if (name !== 'Log') window.scrollTo(0, 0)
+    window.scrollTo(0, 0)
   }
 
   nav.addEventListener('click', (event) => {
@@ -639,57 +1449,401 @@
     section = button.dataset.name
     showTab('Status')
   })
+  const showMenu = (shown) => ['sync', 'agents', 'questions'].forEach((name) => {
+    document.getElementById(`${name}-list`).hidden = name !== shown
+    document.getElementById(name).setAttribute('aria-expanded', String(name === shown))
+  })
+  document.getElementById('sync').addEventListener('click', () => {
+    showMenu(document.getElementById('sync-list').hidden ? 'sync' : null)
+  })
   document.getElementById('agents').addEventListener('click', () => {
-    const list = document.getElementById('agents-list')
-    list.hidden = !list.hidden
+    showMenu(document.getElementById('agents-list').hidden ? 'agents' : null)
   })
-  document.getElementById('agents-list').addEventListener('click', (event) => {
+  document.getElementById('questions').addEventListener('click', () => {
+    showMenu(document.getElementById('questions-list').hidden ? 'questions' : null)
+  })
+  document.getElementById('sync-list').addEventListener('click', async (event) => {
+    if (!event.target.closest('[data-sync-now]') || (ui.syncPress && !ui.syncPress.answered)) return
+    const press = { at: new Date().toISOString() }
+    ui.syncPress = press
+    renderSync()
+    const reply = await post('/api/refresh', {}, true)
+    press.answered = true
+    if (!reply.ok) press.failed = reply.output || reply.error || 'the server refused it'
+    const entry = (state.sync || { history: [] }).history.find((candidate) => candidate.at >= press.at)
+    if (entry && entry.ok) press.seen = entry
+    else if (entry) press.failed = entry.error
+    renderSync()
+  })
+  document.getElementById('agents-list').addEventListener('click', async (event) => {
+    if (event.target.closest('[data-finished-toggle]')) {
+      groupsOpen['agents:finished'] = !groupsOpen['agents:finished']
+      try { localStorage.setItem(groupsKey, JSON.stringify(groupsOpen)) } catch (error) {}
+      render()
+      return
+    }
+    const toCard = event.target.closest('[data-agent-card]')
+    if (toCard) {
+      showMenu(null)
+      const id = toCard.dataset.agentCard
+      const entry = state.sections.find((candidate) => candidate.cards.includes(id))
+      const group = entry && (entry.groups || []).find((candidate) => candidate.cards.includes(id))
+      if (entry) goToCard(id, `${entry.name}:${group ? group.name : ''}`)
+      return
+    }
     const chosen = event.target.closest('[data-session]')
-    if (chosen) post('/api/terminal', { session: chosen.dataset.session })
+    if (!chosen) return
+    const status = chosen.querySelector('span')
+    status.className = ''
+    status.textContent = 'opening…'
+    const reply = await post('/api/terminal', { session: chosen.dataset.session }, true)
+    const row = [...document.querySelectorAll('#agents-list [data-session]')].find((button) => button.dataset.session === chosen.dataset.session)
+    if (!row) return
+    const shown = row.querySelector('span')
+    shown.className = reply.ok ? 'opened' : 'alarm'
+    shown.textContent = reply.ok ? 'opened ✓' : 'not opened'
+    row.title = reply.ok ? `Opened in Ghostty on ${location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'this machine' : location.hostname}` : `Not opened: ${reply.error || 'the server refused it'}`
+    if (reply.ok) setTimeout(() => showMenu(null), 1500)
   })
-  document.getElementById('refresh').addEventListener('click', async (event) => {
-    event.target.textContent = 'reading GitHub…'
-    await post('/api/refresh', {})
+  const sendAnswer = async (id) => {
+    if (waitingOn(id)) return
+    const question = state.cards[id].question
+    const options = (question.options || []).map((option) => option.label).filter((label) => ui.fields[`option:${id}:${label}`])
+    const text = (ui.fields[`answer:${id}`] || '').trim()
+    if (!text && !options.length) return
+    document.activeElement.blur()
+    await press(id, 'answer', '/api/answer', { id: id, text: text, options: options })
+    if (!pending[id] || pending[id].failed || pending[id].noAnswer) return
+    delete ui.fields[`answer:${id}`]
+    ;(question.options || []).forEach((option) => { delete ui.fields[`option:${id}:${option.label}`] })
+    redrawKeepingFocus()
+  }
+  const renderChips = () => {
+    const chips = document.getElementById('chat-chips')
+    chips.hidden = !chat.cards.length && !chat.images.length
+    chips.innerHTML = chat.images.map((url, index) => `<span class="draft-image"><img src="${escape(url)}" alt="attached image"><button data-image-remove="${index}" title="Take this image off the message">×</button></span>`).join('') + chat.cards.map((id) => `<span class="draft-chip" title="${escape(id)}">${bubbleIcon}<span>${escape((state.cards[id] || {}).title || id)}</span><button data-chip-remove="${escape(id)}" title="Take this card off the message">×</button></span>`).join('')
+  }
+  const showChat = (open) => {
+    chat.open = open
+    chatPopup.hidden = !open
+    chat.html = ''
+    renderChat()
+    renderChips()
+    if (!open) return
+    chatList.scrollTop = chatList.scrollHeight
+    chatField.focus()
+  }
+  const messageAbout = (id) => {
+    if (!chat.cards.includes(id)) chat.cards = [...chat.cards, id]
+    if (chat.open) {
+      renderChips()
+      chatField.focus()
+    } else showChat(true)
+  }
+  const sendChat = async () => {
+    const text = chatField.value.trim()
+    if ((!text && !chat.images.length) || !state || (chat.sent && !chat.sent.answered)) return
+    chatField.value = ''
+    chatField.style.height = ''
+    const cards = chat.cards
+    const images = chat.images
+    chat.cards = []
+    chat.images = []
+    renderChips()
+    const sent = { text: [text, ...cards.map((id) => `re: ${(state.cards[id] || {}).title || id} (${id})`)].join('\n'), images: images, at: Date.now() }
+    chat.sent = sent
+    renderChat()
+    chatList.scrollTop = chatList.scrollHeight
+    const reply = await post('/api/log', { text: text, ...(cards.length ? { card: cards } : {}), ...(images.length ? { images: images } : {}) }, true)
+    if (chat.sent !== sent) return
+    sent.answered = true
+    if (reply.ok) {
+      sent.delivery = reply.delivery
+      sent.queued = reply.queued
+      sent.said = { delivered: 'Delivered', queued: 'Delivered · the assistant is busy and reads it when its turn ends', 'queued for a new assistant': 'Delivered · an assistant is starting and reads this first', 'queued until its terminal tab closes': 'Queued · the assistant will pick this up shortly', 'assistant off': 'Saved to the Log · the assistant is switched off' }[reply.delivery] || 'Saved to the Log'
+    } else {
+      sent.failed = reply.error || 'the server refused it'
+      if (!chatField.value) chatField.value = text
+      if (!chat.cards.length) chat.cards = cards
+      if (!chat.images.length) chat.images = images
+      renderChips()
+    }
+    renderChat()
+  }
+  chatButton.addEventListener('click', () => showChat(!chat.open))
+  document.getElementById('chat-send').addEventListener('click', () => {
+    sendChat()
+    chatField.focus()
   })
-  askButton.addEventListener('click', () => {
-    section = 'Answer'
+  chatField.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return
+    event.preventDefault()
+    sendChat()
+  })
+  chatField.addEventListener('input', () => {
+    chatField.style.height = 'auto'
+    chatField.style.height = `${Math.min(chatField.scrollHeight, 120)}px`
+  })
+  const attachImages = (files) => {
+    const pictures = [...files].filter((file) => /^image\/(png|jpeg|gif|webp)$/.test(file.type))
+    pictures.forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        chat.sent = { text: '', at: Date.now(), answered: true, failed: `${file.name || 'the image'} is over 10 MB` }
+        renderChat()
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = () => {
+        chat.images = [...chat.images, reader.result]
+        renderChips()
+      }
+      reader.readAsDataURL(file)
+    })
+    return pictures.length > 0
+  }
+  chatField.addEventListener('paste', (event) => {
+    if (attachImages(event.clipboardData ? event.clipboardData.files : [])) event.preventDefault()
+  })
+  chatPopup.addEventListener('dragover', (event) => {
+    if ([...event.dataTransfer.items].some((item) => item.kind === 'file')) event.preventDefault()
+  })
+  chatPopup.addEventListener('drop', (event) => {
+    if (attachImages(event.dataTransfer.files)) event.preventDefault()
+  })
+  chatList.addEventListener('click', (event) => {
+    const zooming = event.target.closest('[data-zoom]')
+    if (zooming) {
+      lightbox.innerHTML = `<img src="${escape(zooming.dataset.zoom)}" alt="pasted image">`
+      lightbox.hidden = false
+      return
+    }
+    if (!event.target.closest('[data-chat-clear]')) return
+    chat.sent = null
+    renderChat()
+  })
+  document.getElementById('chat-chips').addEventListener('click', (event) => {
+    const removeImage = event.target.closest('[data-image-remove]')
+    if (removeImage) {
+      chat.images = chat.images.filter((_, index) => index !== Number(removeImage.dataset.imageRemove))
+      renderChips()
+      chatField.focus()
+      return
+    }
+    const remove = event.target.closest('[data-chip-remove]')
+    if (!remove) return
+    chat.cards = chat.cards.filter((id) => id !== remove.dataset.chipRemove)
+    renderChips()
+    chatField.focus()
+  })
+  document.addEventListener('click', (event) => {
+    const chip = event.target.closest('[data-ref-card]')
+    if (!chip) return
+    if (chat.open) showChat(false)
+    revealCard(chip.dataset.refCard)
+  })
+  document.addEventListener('click', (event) => {
+    if (chat.open && !event.composedPath().some((element) => element === chatPopup || element === chatButton || (element.dataset && element.dataset.action === 'message'))) showChat(false)
+  })
+  document.addEventListener('click', (event) => {
+    const cleared = event.target.closest('[data-clear]')
+    const undone = event.target.closest('[data-undo]')
+    if (!cleared && !undone) return
+    const id = (cleared || undone).dataset.clear || undone.dataset.undo
+    const record = pending[id]
+    delete pending[id]
+    savePending()
+    if (undone && record) post(`/api/${record.kind}`, { id: id, undo: true })
+    else render()
+  })
+  document.getElementById('questions-list').addEventListener('click', (event) => {
+    const answering = event.target.closest('[data-answer]')
+    if (answering) { sendAnswer(answering.dataset.answer); return }
+    const zooming = event.target.closest('[data-zoom]')
+    if (zooming) {
+      lightbox.innerHTML = `<img src="${escape(zooming.dataset.zoom)}" alt="from the question">`
+      lightbox.hidden = false
+      return
+    }
+    const expanding = event.target.closest('[data-expand]')
+    if (expanding) {
+      const key = `answered|${expanding.dataset.expand}`
+      ui.open[key] = !ui.open[key]
+      expanding.classList.toggle('expanded', ui.open[key])
+      expanding.title = ui.open[key] ? 'Show less' : 'Show the whole question and answer'
+      return
+    }
+    const chosen = event.target.closest('[data-goto]')
+    if (!chosen) return
+    section = 'Questions'
+    ui.open[`answer|Questions|${chosen.dataset.goto}`] = true
+    showMenu(null)
     showTab('Status')
+    const found = view.querySelector(`.task[data-id="${CSS.escape(chosen.dataset.goto)}"]`)
+    if (!found) return
+    found.scrollIntoView({ block: 'center' })
+    found.classList.add('found')
+  })
+  document.addEventListener('click', (event) => {
+    if (!event.composedPath().some((element) => element.classList && element.classList.contains('menu'))) showMenu(null)
+  })
+  document.getElementById('help-button').addEventListener('click', () => { help.hidden = false })
+  document.getElementById('help-close').addEventListener('click', () => { help.hidden = true })
+  help.addEventListener('click', (event) => {
+    if (event.target === help) help.hidden = true
+  })
+  const markTracker = (name, undo) => post('/api/tracker', { name: name, undo: undo })
+  let trackerPress = null
+  let trackerHeld = 0
+  document.getElementById('trackers').addEventListener('pointerdown', (event) => {
+    const tracker = event.target.closest('[data-tracker]')
+    if (!tracker || event.button !== 0) return
+    trackerPress = setTimeout(() => {
+      trackerPress = null
+      trackerHeld = Date.now()
+      markTracker(tracker.dataset.tracker, true)
+    }, 600)
+  })
+  ;['pointerup', 'pointercancel', 'pointerout'].forEach((type) => document.getElementById('trackers').addEventListener(type, (event) => {
+    const tracker = event.target.closest('[data-tracker]')
+    if (type === 'pointerout' && tracker && tracker.contains(event.relatedTarget)) return
+    clearTimeout(trackerPress)
+    trackerPress = null
+  }))
+  document.getElementById('trackers').addEventListener('contextmenu', (event) => {
+    if (event.target.closest('[data-tracker]')) event.preventDefault()
   })
   document.getElementById('trackers').addEventListener('click', (event) => {
+    const undoing = event.target.closest('[data-undo-tracker]')
+    if (undoing) { markTracker(undoing.dataset.undoTracker, true); return }
     const tracker = event.target.closest('[data-tracker]')
-    if (tracker) post('/api/tracker', { name: tracker.dataset.tracker })
+    if (!tracker || Date.now() - trackerHeld < 1000) return
+    markTracker(tracker.dataset.tracker, event.altKey)
   })
   lightbox.addEventListener('click', (event) => {
     if (event.target.tagName !== 'VIDEO') closeLightbox()
   })
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !lightbox.hidden) closeLightbox()
+    if (event.key !== 'Escape') return
+    showMenu(null)
+    help.hidden = true
+    if (chat.open) showChat(false)
   })
 
+  const revealCard = (id) => {
+    const entry = state.sections.find((candidate) => candidate.cards.includes(id))
+    if (!entry) return
+    const group = (entry.groups || []).find((candidate) => candidate.cards.includes(id))
+    goToCard(id, `${entry.name}:${group ? group.name : ''}`)
+  }
+  const goToCard = (id, key) => {
+    const [sectionName, groupName] = key.split(':')
+    section = sectionName
+    if (groupName) groupsOpen[key] = true
+    showTab('Status')
+    const found = view.querySelector(`.task[data-id="${CSS.escape(id)}"]`)
+    if (!found) return
+    found.scrollIntoView({ block: 'center' })
+    found.classList.add('found')
+  }
+  const pullTip = document.getElementById('pr-tip')
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('.pr-ref')
+    if (!link) return
+    event.stopPropagation()
+    pullTip.hidden = true
+    if (event.metaKey || event.ctrlKey || !sectionOf(link.dataset.pr)) return
+    event.preventDefault()
+    if (chat.open) showChat(false)
+    revealCard(link.dataset.pr)
+  }, true)
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-open-agent]')
+    if (!button) return
+    event.preventDefault()
+    event.stopPropagation()
+    button.blur()
+    if (button.getAttribute('aria-disabled') !== 'true') openAgent(button.dataset.openAgent)
+  }, true)
+  document.addEventListener('click', (event) => {
+    const pill = event.target.closest('[data-pill-card]')
+    if (!pill) return
+    event.preventDefault()
+    event.stopPropagation()
+    revealCard(pill.dataset.pillCard)
+  }, true)
+  document.addEventListener('mouseover', (event) => {
+    const link = event.target.closest('.pr-ref')
+    const summary = link && state ? pullSummary(link.dataset.pr) : ''
+    if (!summary) {
+      pullTip.hidden = true
+      return
+    }
+    pullTip.textContent = summary
+    pullTip.hidden = false
+    const box = link.getBoundingClientRect()
+    pullTip.style.left = `${Math.max(8, Math.min(box.left, window.innerWidth - pullTip.offsetWidth - 8))}px`
+    pullTip.style.top = `${box.bottom + 6 + pullTip.offsetHeight > window.innerHeight ? box.top - pullTip.offsetHeight - 6 : box.bottom + 6}px`
+  })
   view.addEventListener('click', (event) => {
+    const groupHead = event.target.closest('[data-group]')
+    if (groupHead) {
+      const sectionElement = groupHead.closest('.group')
+      const open = !sectionElement.classList.contains('open')
+      groupsOpen[groupHead.dataset.group] = open
+      try { localStorage.setItem(groupsKey, JSON.stringify(groupsOpen)) } catch (error) {}
+      sectionElement.classList.toggle('open', open)
+      groupHead.classList.toggle('open', open)
+      groupHead.title = `${open ? 'Hide' : 'Show'} this group`
+      sectionElement.querySelector('.group-body').hidden = !open
+      return
+    }
+    const projectTab = event.target.closest('[data-project-tab]')
+    if (projectTab) {
+      projectTabs[projectTab.dataset.project] = projectTab.dataset.projectTab
+      try { localStorage.setItem(projectTabsKey, JSON.stringify(projectTabs)) } catch (error) {}
+      render()
+      return
+    }
+    const goto = event.target.closest('[data-goto-card]')
+    if (goto) { goToCard(goto.dataset.gotoCard, goto.dataset.gotoKey); return }
+    const startMore = event.target.closest('[data-start-more]')
+    if (startMore) {
+      ui.open[`start|${startMore.dataset.startMore}`] = !ui.open[`start|${startMore.dataset.startMore}`]
+      render()
+      return
+    }
     const cardElement = event.target.closest('.task')
     const id = cardElement ? cardElement.dataset.id : null
     const place = cardElement ? cardElement.dataset.place : null
     const toggle = event.target.closest('[data-toggle]')
+    if (toggle && cardElement && toggle.dataset.toggle === 'detail' && cardElement.classList.contains('done') && ticked(state.cards[id]) && !state.cards[id].reviewer) {
+      ui.open[`detail|${place}|${id}`] = false
+      render()
+      return
+    }
     if (toggle && cardElement) {
       const part = cardElement.querySelector(`[data-part="${toggle.dataset.toggle}"]`)
       part.hidden = !part.hidden
+      toggle.classList.toggle('open', !part.hidden)
       ui.open[`${toggle.dataset.toggle}|${place}|${id}`] = !part.hidden
+      if (toggle.dataset.toggle === 'block' && !part.hidden) part.querySelector('input').focus()
       return
     }
     const target = event.target.closest('[data-action]')
     if (!target) return
     const action = target.dataset.action
     if (action === 'tick') return
+    if (action === 'expand-done') {
+      ui.open[`detail|${place}|${id}`] = true
+      render()
+      return
+    }
     if (action === 'project') {
       const key = `project|projects|${target.dataset.project}`
       ui.open[key] = !isOpen('project', 'projects', target.dataset.project, false)
       target.nextElementSibling.hidden = !ui.open[key]
-      return
-    }
-    if (action === 'past-hours') {
-      ui.open.pastHours = true
-      render()
+      target.parentElement.classList.toggle('open', ui.open[key])
       return
     }
     if (action === 'show-hidden') {
@@ -699,13 +1853,6 @@
     }
     if (action === 'restore') {
       post(target.dataset.why === 'dismissed' ? '/api/dismiss' : '/api/snooze', { id: target.dataset.restore, undo: true })
-      return
-    }
-    if (action === 'log') {
-      const text = (ui.fields.log || '').trim()
-      if (!text) return
-      delete ui.fields.log
-      post('/api/log', { text: text })
       return
     }
     if (action === 'panel') {
@@ -721,6 +1868,7 @@
       return
     }
     if (action === 'enlarge') { enlarge(cardElement); return }
+    if (action === 'context') { enlarge(cardElement, Number(target.dataset.index)); return }
     if (action === 'terminal') { post('/api/terminal', { id: id }); return }
     if (action === 'merge') {
       if (!ui.confirm[id]) {
@@ -729,53 +1877,42 @@
         return
       }
       delete ui.confirm[id]
-      post('/api/merge', { id: id })
+      press(id, 'merge', '/api/merge', { id: id })
       return
     }
-    if (action === 'open' || action === 'send' || action === 'snooze' || action === 'dismiss') { post(`/api/${action}`, { id: id }); return }
-    if (action === 'start') { post('/api/agent', { id: id, kind: 'start', note: '' }); return }
-    if (action === 'agent-start') {
-      const note = ui.fields[`note:${id}`] || ''
-      delete ui.fields[`note:${id}`]
-      ui.open[`note|${place}|${id}`] = false
-      post('/api/agent', { id: id, kind: agentKinds[sectionOf(id)] || 'fix', note: note })
+    if (action === 'queue' || action === 'review' || action === 'requeue' || action === 'dismiss') { press(id, action, `/api/${action}`, { id: id }); return }
+    if (action === 'block-send') { sendBlock(id, place); return }
+    if (action === 'message') { messageAbout(id); return }
+    if (action === 'comments-menu') {
+      const again = Boolean(ui.commentsMenu) && ui.commentsMenu.id === id && ui.commentsMenu.place === place
+      delete ui.commentAt[id]
+      ui.commentsMenu = again ? null : { id: id, place: place }
+      render()
+      if (!again && !(state.cards[id].comments || []).length) commentsMenu.querySelector('textarea').focus()
       return
     }
-    if (action === 'publish-send') {
-      const description = ui.fields[`publish:${id}`] ?? state.cards[id].description ?? ''
-      delete ui.fields[`publish:${id}`]
-      ui.open[`publish|${place}|${id}`] = false
-      post('/api/publish', { id: id, description: description })
-      return
-    }
-    if (action === 'answer') {
-      const question = state.cards[id].question
-      const options = (question.options || []).map((option) => option.label).filter((label) => ui.fields[`option:${id}:${label}`])
-      const text = (ui.fields[`answer:${id}`] || '').trim()
-      if (!text && !options.length) return
-      delete ui.fields[`answer:${id}`]
-      ;(question.options || []).forEach((option) => { delete ui.fields[`option:${id}:${option.label}`] })
-      post('/api/answer', { id: id, text: text, options: options })
-      return
-    }
-    if (action === 'day-add') {
-      post('/api/day', { action: 'add', hour: Number(target.dataset.hour), id: id })
-      return
-    }
-    if (action === 'remove') {
-      post('/api/day', { action: 'remove', hour: Number(cardElement.dataset.hour), id: id })
-      return
-    }
+    if (action === 'answer') { sendAnswer(id); return }
   })
+  const sendBlock = (id, place) => {
+    const reason = (ui.fields[`block:${id}`] || '').trim()
+    if (!reason) {
+      const box = view.querySelector(`.task[data-id="${CSS.escape(id)}"][data-place="${CSS.escape(place)}"] [data-part="block"] input`)
+      if (box) box.focus()
+      return
+    }
+    delete ui.fields[`block:${id}`]
+    ui.open[`block|${place}|${id}`] = false
+    press(id, 'block', '/api/block', { id: id, reason: reason })
+  }
 
-  view.addEventListener('input', (event) => {
+  document.addEventListener('input', (event) => {
     const field = event.target.dataset.field
     if (!field) return
     if (event.target.isContentEditable) ui.fields[field] = event.target.textContent
     else if (event.target.type !== 'checkbox') ui.fields[field] = event.target.value
   })
 
-  view.addEventListener('change', (event) => {
+  document.addEventListener('change', async (event) => {
     const target = event.target
     if (target.dataset.field && target.type === 'checkbox') {
       ui.fields[target.dataset.field] = target.checked
@@ -785,43 +1922,108 @@
     const cardElement = target.closest('.task')
     const item = state.cards[cardElement.dataset.id]
     cardElement.classList.toggle('done', target.checked)
-    if (item.reviewer) post('/api/asked', { id: item.id, reviewer: item.reviewer, asked: target.checked })
-    else post('/api/tick', { id: item.id, checked: target.checked })
+    if (item.reviewer) {
+      post('/api/asked', { id: item.id, reviewer: item.reviewer, asked: target.checked })
+      return
+    }
+    item.checked = target.checked
+    item.checkFailed = null
+    render()
+    await post('/api/tick', { id: item.id, checked: target.checked })
   })
 
-  view.addEventListener('keydown', (event) => {
+  const closeCommentsMenu = () => {
+    if (!ui.commentsMenu) return
+    delete ui.fields[`comment:${ui.commentsMenu.id}`]
+    delete ui.commentAt[ui.commentsMenu.id]
+    ui.commentsMenu = null
+    render()
+  }
+  const focusCommentBox = () => {
+    const field = commentsMenu.querySelector('textarea')
+    if (!field) return
+    field.focus()
+    field.setSelectionRange(field.value.length, field.value.length)
+  }
+  const saveComment = async () => {
+    const id = ui.commentsMenu.id
+    const text = (ui.fields[`comment:${id}`] || '').trim()
+    const at = ui.commentAt[id]
+    if (!text && !at) return
+    delete ui.fields[`comment:${id}`]
+    delete ui.commentAt[id]
+    await post('/api/comment', at ? (text ? { id: id, at: at, text: text } : { id: id, at: at, remove: true }) : { id: id, text: text })
+    renderCommentsMenu(true)
+    focusCommentBox()
+  }
+  commentsMenu.addEventListener('click', (event) => {
+    if (!ui.commentsMenu) return
+    const id = ui.commentsMenu.id
+    if (event.target.closest('[data-comment-save]')) {
+      saveComment()
+      return
+    }
+    const edit = event.target.closest('[data-comment-edit]')
+    if (edit) {
+      ui.commentAt[id] = edit.dataset.commentEdit
+      ui.fields[`comment:${id}`] = state.cards[id].comments.find((comment) => comment.at === edit.dataset.commentEdit).text
+      renderCommentsMenu(true)
+      focusCommentBox()
+      return
+    }
+    const remove = event.target.closest('[data-comment-remove]')
+    if (remove) post('/api/comment', { id: id, at: remove.dataset.commentRemove, remove: true })
+  })
+  document.addEventListener('click', (event) => {
+    if (ui.commentsMenu && !event.composedPath().some((element) => element === commentsMenu || (element.dataset && element.dataset.action === 'comments-menu'))) closeCommentsMenu()
+  })
+
+  document.addEventListener('keydown', (event) => {
     const target = event.target
+    if (target.dataset.enter === 'comment' && (event.key === 'Escape' || (event.key === 'Enter' && !event.shiftKey && !event.isComposing))) {
+      event.preventDefault()
+      event.stopPropagation()
+      if (event.key === 'Enter') saveComment()
+      else if (ui.commentAt[ui.commentsMenu.id]) {
+        delete ui.commentAt[ui.commentsMenu.id]
+        delete ui.fields[`comment:${ui.commentsMenu.id}`]
+        renderCommentsMenu(true)
+        focusCommentBox()
+      } else closeCommentsMenu()
+      return
+    }
+    if (event.key === 'Escape' && ui.commentsMenu) {
+      closeCommentsMenu()
+      return
+    }
     if (target.isContentEditable && event.key === 'Enter') {
       event.preventDefault()
       target.blur()
       return
     }
-    if (event.key !== 'Enter' || !target.dataset.enter) return
+    if (event.key !== 'Enter' || !target.dataset.enter || event.shiftKey || event.isComposing) return
+    if (target.tagName === 'TEXTAREA') event.preventDefault()
     const text = target.value.trim()
-    if (target.dataset.enter === 'log' && text) {
-      delete ui.fields.log
-      post('/api/log', { text: text })
-    }
     if (target.dataset.enter === 'task' && text) {
       delete ui.fields[target.dataset.field]
       post('/api/task', { project: target.dataset.project, title: text })
     }
-    if (target.dataset.enter === 'answer') target.closest('.answer').querySelector('[data-action="answer"]').click()
-  })
-
-  view.addEventListener('focusout', (event) => {
-    const target = event.target
-    if (!target.dataset.titleHour) return
-    const hour = Number(target.dataset.titleHour)
-    const title = target.textContent.trim()
-    delete ui.fields[`hour:${hour}`]
-    const entry = state.day.find((candidate) => candidate.hour === hour)
-    if (entry && (entry.title || '') !== title) post('/api/day', { action: 'title', hour: hour, title: title })
+    if (target.dataset.enter === 'answer') sendAnswer(target.dataset.field.slice('answer:'.length))
+    if (target.dataset.enter === 'block') {
+      const cardElement = target.closest('.task')
+      sendBlock(cardElement.dataset.id, cardElement.dataset.place)
+    }
   })
 
   let dragged = null
   let orderBefore = ''
   const listIds = (list) => [...list.children].filter((child) => child.classList.contains('task')).map((child) => child.dataset.id)
+  const projectOrder = (name, shown, moved) => {
+    const rest = state.projects.find((project) => project.name === name).cards.filter((id) => id !== moved)
+    const index = shown.indexOf(moved)
+    const at = index > 0 ? rest.indexOf(shown[index - 1]) + 1 : rest.indexOf(shown[1])
+    return [...rest.slice(0, at), moved, ...rest.slice(at)]
+  }
   view.addEventListener('dragstart', (event) => {
     dragged = event.target.closest('.task')
     if (!dragged) return
@@ -832,9 +2034,11 @@
     if (!dragged) return
     dragged.classList.remove('dragging')
     const list = dragged.parentElement
+    const moved = dragged.dataset.id
     dragged = null
     const ids = listIds(list)
-    if (ids.join('\n') !== orderBefore && list.dataset.list) post('/api/order', { list: list.dataset.list, ids: ids })
+    if (ids.join('\n') === orderBefore || !list.dataset.list) return
+    post('/api/order', { list: list.dataset.list, ids: list.dataset.filtered ? projectOrder(list.dataset.filtered, ids, moved) : ids })
   })
   view.addEventListener('dragover', (event) => {
     const over = event.target.closest('.task')
@@ -844,10 +2048,33 @@
     over.parentElement.insertBefore(dragged, event.clientY < box.top + box.height / 2 ? over : over.nextSibling)
   })
 
+  document.getElementById('offline').addEventListener('click', () => {
+    ui.problem = ''
+    document.getElementById('offline').hidden = true
+  })
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(pendingKey) || '{}')
+    Object.keys(saved).filter((id) => Date.now() - saved[id].at < 3600000).forEach((id) => { pending[id] = { ...saved[id], answered: true } })
+  } catch (error) {}
+
+  try { chatSeen = localStorage.getItem(chatSeenKey) } catch (error) {}
+
   loadPlace()
   savePlace()
   fetchState(true)
+  setInterval(() => {
+    if (!chat.sent) return
+    if (chatWaiting()) fetchState(false)
+    renderChat()
+  }, 3000)
   setInterval(() => fetchState(false), 30000)
+  setInterval(async () => {
+    if (!Object.keys(pending).length) return
+    const before = stateText
+    if (Object.keys(pending).some(waitingOn)) await fetchState(false)
+    if (stateText === before && settlePending() && !videoPlaying()) redrawKeepingFocus()
+  }, 3000)
   setInterval(renderTrackers, 60000)
   window.addEventListener('hashchange', () => { loadPlace(); if (state) render() })
   window.addEventListener('focus', () => fetchState(false))

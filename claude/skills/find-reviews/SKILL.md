@@ -7,7 +7,7 @@ description: Rebuild the pull request review queue, the Reviews stream of the da
 
 Runs unattended on a schedule as well as on request, so it never asks questions: it decides, writes, and reports what it did in a few lines.
 
-The queue lives in the day plan, as the `Reviews` stream of `~/Documents/notes/today/backlog.js` (he moved it off organize.md on 2026-11-20). The today skill describes that file; read its `backlog.js` section before writing.
+The queue lives on the work page at `http://localhost:4990`, which builds its Review section from GitHub by itself (since 2026-11-23), so skip step 2: agents no longer write `backlog.js`. Until then it was the `Reviews` stream of `~/Documents/notes/today/backlog.js`, described by the today skill.
 
 ## 1. Collect
 

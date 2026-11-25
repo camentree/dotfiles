@@ -18,7 +18,7 @@ Only his own pull requests: the author is `camentree`. Anyone else's: stop, `--s
 
 ## Reporting
 
-This session is the only writer of the task's `task.json`: `node ~/.claude/scripts/task-set.cjs` from the worktree. At the start `--pull <url> --kind mine --state working --doing "reading the failing checks"`, then `--doing` at least every 10 minutes, saying what it is on.
+This session is the only writer of the task's `task.json`: `node ~/.claude/scripts/task-set.cjs` from the worktree. At the start `--pull <url> --kind mine --state working --doing "fixing CI: reading logs"`, then `--doing` at least every 10 minutes, always starting "fixing CI:" so the card says which kind of agent it is (he asked, 2026-11-25).
 
 ## Steps
 
@@ -31,7 +31,7 @@ This session is the only writer of the task's `task.json`: `node ~/.claude/scrip
    - Real: the branch's own code, or a base it now merges in. Reproduce it locally as the repo's notes say, fix it in a new commit whose message says what behavior was broken, and run the tests that cover it.
    - Neither: a package not yet published, a secret or infra outside the repo. Record it; do not work around it.
 6. Push, a plain `git push`.
-7. Watch the checks: `gh pr checks <number> --watch --fail-fast` in a background Bash, and stop it before you end. A new failure goes back to step 5; the same failure after a different fix is stuck: record what was tried.
-8. `task-set.cjs --decision "<what it did, in a few words>" --why "<what was failing and why>" [--alternative "..."] --state done --doing "<checks passing | what is still failing>"`, one decision per thing done (merged the base, fixed a test, re-ran a flaky job), each with the commit or run link in `why`.
+7. Watch the checks: `gh pr checks <number> --watch --fail-fast --interval 60` in a background Bash (the default 10s interval helped trip GitHub's rate limit, 2026-11-25), and stop it before you end. A new failure goes back to step 5; the same failure after a different fix is stuck: record what was tried.
+8. `task-set.cjs --decision "<what it did, in a few words>" --why "<what was failing and why>" [--alternative "..."] --state done --doing "<checks passing | what is still failing>"`, one decision per thing done (merged the base, fixed a test, re-ran a flaky job), each with the commit or run link in `why`. Write no `--material`: a CI fix pushes without his look, and materials would queue the card for him (2026-11-25).
 
 If a step here fails or is missing, fix it, then record the fix once: how to do the step → this skill; a fact about the repo → its CLAUDE.md if mine, else CLAUDE.local.md; how I want you to work → my CLAUDE.md. Rule and one-line why, edit an existing entry over adding one.
